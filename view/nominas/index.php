@@ -181,13 +181,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="modal-content">
       <form action="../controller/Nominas/Insertar.php" method="POST">
         <div class="modal-header">
-          <h5 class="modal-title" id="modalNomina">Nueva Nómina<h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
+          <h5 class="modal-title" id="modalNomina">Nueva Nómina</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
         <div class="modal-body nuevaNominaForm">
           <div class="row">
+            <!-- Selección de Zona -->
             <div class="col-md-4">
               <div class="form-group">
                 <label>Zona:</label>
@@ -201,6 +202,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </select>
               </div>
             </div>
+
+            <!-- Selección de Fondo de Ahorro -->
+            <div class="col-md-4">
+  <div class="form-group">
+    <label for="fondoSelect">Fondo de Ahorro:</label>
+    <select id="fondoSelect" name="fondo" class="form-control form-control-sm" aria-label="Fondo select" required>
+      <option value="" selected disabled hidden>Seleccione fondo</option>
+      <?php $fondos = $modelNomina->base_datos->select("fondo", ["id", "valor_fondo"]);
+      foreach ($fondos as $fondo): ?>
+        <option value="<?php echo htmlspecialchars($fondo['valor_fondo'], ENT_QUOTES, 'UTF-8'); ?>">
+          Fondo ID: <?php echo htmlspecialchars($fondo['id'], ENT_QUOTES, 'UTF-8'); ?> - Valor: <?php echo htmlspecialchars($fondo['valor_fondo'], ENT_QUOTES, 'UTF-8'); ?>
+        </option>
+      <?php endforeach; ?>
+    </select>
+  </div>
+</div>
+
+            <!-- Fechas Desde y Hasta -->
             <div class="col-md-3">
               <div class="form-group">
                 <label>Desde:</label>
@@ -215,6 +234,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
           </div>
         </div>
+
+        <!-- Footer con Botones -->
         <div class="modal-footer">
           <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cancelar</button>
           <input type="submit" class="btn btn-primary btn-sm" value="Generar nómina">
@@ -223,6 +244,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
   </div>
 </div>
+
 <!-- Modal Nueva Nómina -->
 
 <script>

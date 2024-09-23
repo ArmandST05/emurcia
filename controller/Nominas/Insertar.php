@@ -84,7 +84,7 @@ function calcularComision($comisiones, $valor, $tipoempleado)
 $fechaInicial = $_POST["fechaInicial"];
 $fechaFinal = $_POST["fechaFinal"];
 $zonaId = $_POST["zona"];
-
+$fondo = $_POST["fondo"]; 
 if (!isset($zonaId) || !isset($fechaInicial) || !isset($fechaFinal)) {
   echo "<script>
         alert('Introduce toda la información');
@@ -166,7 +166,8 @@ if (!isset($zonaId) || !isset($fechaInicial) || !isset($fechaFinal)) {
           $nominaEmpleado->infonavit,
           $total,
           $banco,
-          $efectivo
+          $efectivo,
+          $fondo // Pasar el valor del fondo de ahorro
         );
       }
     }

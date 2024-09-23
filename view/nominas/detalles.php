@@ -45,7 +45,6 @@ $diasTrabajados = $diferencia->days + 1;
 
 $metasEmpleados = []; //Array para guardar todas las metas por tipo de empleado a utilizar
 $metasGerente = [];
-$fondos = $modelNomina->base_datos->select("fondo", ["id", "valor_fondo"]);
 ?>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Page Heading -->
@@ -69,18 +68,9 @@ $fondos = $modelNomina->base_datos->select("fondo", ["id", "valor_fondo"]);
           <h6 class="m-0 font-weight-bold text-primary">Nómina por empleados</h6>
         </div>
         <div class="form-group"  style="max-width: 400px;">
-  <label for="fondo_id">Seleccione un Fondo:</label>
-  <select id="fondoSelect" class="form-select form-select-sm" aria-label="Fondo select">
-  <?php foreach ($fondos as $fondo): ?>
-      <option value="<?php echo htmlspecialchars($fondo['valor_fondo'], ENT_QUOTES, 'UTF-8'); ?>">
-        Fondo ID: <?php echo htmlspecialchars($fondo['id'], ENT_QUOTES, 'UTF-8'); ?> - Valor: <?php echo htmlspecialchars($fondo['valor_fondo'], ENT_QUOTES, 'UTF-8'); ?>
-      </option>
-    <?php endforeach; ?>
-  </select>
+
 </div>
-<div class="form-group mt-3">
-  <button type="button" class="btn btn-primary btn-sm" id="aplicarFondo">Aplicar Fondo</button>
-</div>
+
         <!-- Card Body -->
         <div class="card-body">
           <div class="row">
@@ -325,7 +315,10 @@ $fondos = $modelNomina->base_datos->select("fondo", ["id", "valor_fondo"]);
                               <td id="e<?php echo $empleadoId ?>total" data-columna-nombre="total" class="empleado-total"><?php echo number_format($nominaEmpleado->total, 2, '.', ',') ?></td>
                               <td id="e<?php echo $empleadoId ?>banco" data-columna-nombre="banco" class="editValueEmployee empleado-banco"><?php echo number_format($nominaEmpleado->banco, 2, '.', ',') ?></td>
                               <td id="e<?php echo $empleadoId ?>efectivo" data-columna-nombre="efectivo" class="empleado-efectivo"><?php echo number_format($nominaEmpleado->efectivo, 2, '.', ',') ?></td>
-                              <td id="fondo"></td>
+                               <!-- Nueva celda para mostrar el valor del fondo -->
+                              <td id="e<?php echo $empleadoId ?>fondo" data-columna-nombre="fondo" class="gerente-fondo editValueEmployee">
+                                  <?php echo number_format($nominaEmpleado->fondo, 2, '.', ',') ?>
+                              </td>
                               <td id="e<?php echo $empleadoId ?>observaciones" data-columna-nombre="observaciones" class="editValueEmployee"><?php echo $nominaEmpleado->observaciones ?></td>
                             </tr>
                           <?php endforeach; ?>
@@ -759,15 +752,14 @@ $fondos = $modelNomina->base_datos->select("fondo", ["id", "valor_fondo"]);
         }
 
         // Obtener el valor del fondo seleccionado y restarlo del total
-        let fondoSeleccionado = parseFloat(document.getElementById('fondoSelect').value) || 0;
-        console.log('Fondo seleccionado:', fondoSeleccionado); // Depuración
+        let fondo = parseFloat(trEmpleado.find('td[data-columna-nombre="fondo"]').text().replace(/,/g, '')) || 0;
 
         // Calcular total
         let faltas = parseFloat(trEmpleado.find('td[data-columna-nombre="faltas"]').text().replace(/,/g, '')) || 0;
         let infonavit = parseFloat(trEmpleado.find('td[data-columna-nombre="infonavit"]').text().replace(/,/g, '')) || 0;
 
         let totalOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="total"]').text().replace(/,/g, '')) || 0;
-        let total = extras + sueldoBaseTotal - faltas - infonavit - fondoSeleccionado;
+        let total = extras + sueldoBaseTotal - faltas - infonavit - fondo; // Restar el valor del fondo
         console.log('Total calculado:', total); // Depuración
 
         if (totalOriginal != total) {
@@ -785,6 +777,7 @@ $fondos = $modelNomina->base_datos->select("fondo", ["id", "valor_fondo"]);
 
     calcularTotalGerente();
 }
+
 
 document.getElementById('fondoSelect').addEventListener('change', function() {
     let valorSeleccionado = parseFloat(this.value) || 0;
