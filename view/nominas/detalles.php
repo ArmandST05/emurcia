@@ -67,10 +67,6 @@ $metasGerente = [];
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
           <h6 class="m-0 font-weight-bold text-primary">Nómina por empleados</h6>
         </div>
-        <div class="form-group"  style="max-width: 400px;">
-
-</div>
-
         <!-- Card Body -->
         <div class="card-body">
           <div class="row">
@@ -315,7 +311,6 @@ $metasGerente = [];
                               <td id="e<?php echo $empleadoId ?>total" data-columna-nombre="total" class="empleado-total"><?php echo number_format($nominaEmpleado->total, 2, '.', ',') ?></td>
                               <td id="e<?php echo $empleadoId ?>banco" data-columna-nombre="banco" class="editValueEmployee empleado-banco"><?php echo number_format($nominaEmpleado->banco, 2, '.', ',') ?></td>
                               <td id="e<?php echo $empleadoId ?>efectivo" data-columna-nombre="efectivo" class="empleado-efectivo"><?php echo number_format($nominaEmpleado->efectivo, 2, '.', ',') ?></td>
-                               <!-- Nueva celda para mostrar el valor del fondo -->
                               <td id="e<?php echo $empleadoId ?>fondo" data-columna-nombre="fondo" class="gerente-fondo editValueEmployee">
                                   <?php echo number_format($nominaEmpleado->fondo, 2, '.', ',') ?>
                               </td>
@@ -366,11 +361,8 @@ $metasGerente = [];
                         <td id="e<?php echo $empleadoId ?>sueldo_base_total" data-columna-nombre="sueldo_base_total" class="gerente-sueldo_base_total editValueEmployee"><?php echo ($datosEmpleadoGerente->sueldo_base_dia) ?></td>
                         <td id="e<?php echo $empleadoId ?>extras" data-columna-nombre="extras" class="gerente-extras editValueEmployee"><?php echo number_format($datosEmpleadoGerente->extras, 2, '.', ',') ?></td>
                         <td id="e<?php echo $empleadoId ?>total" data-columna-nombre="total" class="gerente-total empleado-total"><?php echo number_format($datosEmpleadoGerente->total, 2, '.', ',') ?></td>
-                        
                         <td id="e<?php echo $empleadoId ?>banco" data-columna-nombre="banco" class="gerente-banco editValueEmployee empleado-banco"><?php echo number_format($datosEmpleadoGerente->banco, 2, '.', ',') ?></td>
-
                         <td id="e<?php echo $empleadoId ?>efectivo" data-columna-nombre="efectivo" class="gerente-efectivo empleado-efectivo"><?php echo number_format($datosEmpleadoGerente->efectivo, 2, '.', ',') ?></td>
-                        
                         <td id="e<?php echo $empleadoId ?>fondo" data-columna-nombre="fondo" class="gerente-fondo editValueEmployee"><?php echo number_format($datosEmpleadoGerente->fondo, 2, '.', ',') ?></td>
 
                         <td id="e<?php echo $empleadoId ?>observaciones" data-columna-nombre="observaciones" class="gerente-observaciones editValueEmployee"><?php echo $datosEmpleadoGerente->observaciones ?></td>
@@ -478,7 +470,7 @@ $metasGerente = [];
           </div>
           <div class="row">
             <div class="col-md-1 offset-md-11">
-              <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+              <button type="submit" class="btn btn-primary btn-sm" id="save" onclick="save()">Guardar</button>
             </div>
           </div>
         </div>
@@ -488,6 +480,8 @@ $metasGerente = [];
 <?php endif; ?>
 <!-- Fin nómina por tipos de empleado -->
 <script>
+
+
   var metasEmpleados = <?php echo json_encode($metasEmpleados) ?>;
   var metasGerente = <?php echo json_encode($metasGerente) ?>;
 
@@ -732,62 +726,75 @@ $metasGerente = [];
 
     });
   }
+
   function calcularTotalesEmpleado(trEmpleado) {
     let empleadoId = trEmpleado.data('empleado-id');
     let tipoEmpleadoId = trEmpleado.data('tipo-empleado-id');
 
-    if (tipoEmpleadoId != 2) {
-        let extras = parseFloat(trEmpleado.find('td[data-columna-nombre="extras"]').text().replace(/,/g, '')) || 0;
-        let sueldoBaseDiario = parseFloat(trEmpleado.find('td[data-columna-nombre="sueldo_base_dia"]').text().replace(/,/g, '')) || 0;
-        let diasTrabajados = parseFloat("<?php echo $diasTrabajados ?>");
-        let sueldoBaseTotal = sueldoBaseDiario * diasTrabajados;
+    if(tipoEmpleadoId != 2){
+      let tipoGananciaId = trEmpleado.data('tipo-ganancia-id');
+      let rutaId = trEmpleado.data('ruta-id');
+      let extras = parseFloat(trEmpleado.find('td[data-columna-nombre="extras"]').text().replace(/,/g, '')) || 0;
 
-        // Obtener el valor del fondo seleccionado y restarlo del total
-        let fondo = parseFloat(trEmpleado.find('td[data-columna-nombre="fondo"]').text().replace(/,/g, '')) || 0;
+      let diasTrabajados = parseFloat("<?php echo $diasTrabajados ?>");
+      let sueldoBaseDiario = parseFloat(trEmpleado.find('td[data-columna-nombre="sueldo_base_dia"]').text().replace(/,/g, '')) || 0;
+      let sueldoBaseTotal = 0;
+      let sueldoBaseTotalOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="sueldo_base_total"]').text().replace(/,/g, '')) || 0;;
 
-        // Calcular total
-        let faltas = parseFloat(trEmpleado.find('td[data-columna-nombre="faltas"]').text().replace(/,/g, '')) || 0;
-        let infonavit = parseFloat(trEmpleado.find('td[data-columna-nombre="infonavit"]').text().replace(/,/g, '')) || 0;
-        let totalOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="total"]').text().replace(/,/g, '')) || 0;
-
-        let total = extras + sueldoBaseTotal - faltas - infonavit - fondo; // Restar el fondo
-        console.log('Total calculado:', total); // Depuración
-
-        if (totalOriginal != total) {
-            actualizarValorEmpleado(empleadoId, "total", total); //Actualizar valor en la tabla
+      if (tipoEmpleadoId == 4) { //Tipo empleado oficina y gerente no tiene salario por día trabajado, tienen salario fijo
+        sueldoBaseTotal = sueldoBaseTotalOriginal;
+      } else {
+        sueldoBaseTotal = sueldoBaseDiario * diasTrabajados;
+        if (sueldoBaseTotalOriginal != sueldoBaseTotal) {
+          actualizarValorEmpleado(empleadoId, "sueldo_base_total", sueldoBaseTotal); //Actualizar valor en la tabla
         }
+      }
+      //Recalcular comisiones
+      //Normales
+      let cantidadNormal = parseFloat(trEmpleado.find('td[data-columna-nombre="cantidad_normal"]').text().replace(/,/g, '')) || 0;
+      let colorCantidadNormal = getColorMetaEmpleado(tipoEmpleadoId, tipoGananciaId, 0, rutaId, cantidadNormal); //Sin descuento, es normal
+      trEmpleado.find('td[data-columna-nombre="cantidad_normal"]').css("background-color", colorCantidadNormal);
+      let comisionNormalOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="comisiones"]').text().replace(/,/g, '')) || 0;
+      let comisionNormal = calcularComisionEmpleado(tipoEmpleadoId, tipoGananciaId, 0, rutaId, cantidadNormal);
 
-        // Calcular efectivo (Total - Banco)
-        let banco = parseFloat(trEmpleado.find('td[data-columna-nombre="banco"]').text().replace(/,/g, '')) || 0;
-        let efectivoOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="efectivo"]').text().replace(/,/g, '')) || 0;
-        let efectivo = total - banco;
+      if (comisionNormalOriginal != comisionNormal) {
+        actualizarValorEmpleado(empleadoId, "comisiones", comisionNormal); //Actualizar valor en la tabla
+      }
 
-        if (efectivoOriginal != efectivo) {
-            actualizarValorEmpleado(empleadoId, "efectivo", efectivo); //Actualizar valor en la tabla
-        }
+      //Con descuento
+      let cantidadDescuento = parseFloat(trEmpleado.find('td[data-columna-nombre="cantidad_descuento"]').text().replace(/,/g, '')) || 0;
+      let colorCantidadDescuento = getColorMetaEmpleado(tipoEmpleadoId, tipoGananciaId, 1, rutaId, cantidadDescuento); //Con descuento
+      trEmpleado.find('td[data-columna-nombre="cantidad_descuento"]').css("background-color", colorCantidadDescuento);
+      let comisionDescuentoOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="comisiones_descuento"]').text().replace(/,/g, '')) || 0;
+      let comisionDescuento = calcularComisionEmpleado(tipoEmpleadoId, tipoGananciaId, 1, rutaId, cantidadDescuento);
+
+      if (comisionDescuentoOriginal != comisionDescuento) {
+        actualizarValorEmpleado(empleadoId, "comisiones_descuento", comisionDescuento); //Actualizar valor en la tabla
+      }
+      //Fin recalcular comisiones
+
+      //Calcular total
+      let faltas = parseFloat(trEmpleado.find('td[data-columna-nombre="faltas"]').text().replace(/,/g, '')) || 0;
+      let infonavit = parseFloat(trEmpleado.find('td[data-columna-nombre="infonavit"]').text().replace(/,/g, '')) || 0;
+      let fondo = parseFloat(trEmpleado.find('td[data-columna-nombre="fondo"]').text().replace(/,/g, '')) || 0;
+
+      let totalOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="total"]').text().replace(/,/g, '')) || 0;
+      let total = extras + sueldoBaseTotal + comisionNormal + comisionDescuento - faltas - infonavit - fondo;
+      if (totalOriginal != total) {
+        actualizarValorEmpleado(empleadoId, "total", total); //Actualizar valor en la tabla
+      }
+
+      //Calcular efectivo (Total - Banco)
+      let banco = parseFloat(trEmpleado.find('td[data-columna-nombre="banco"]').text().replace(/,/g, '')) || 0;
+      let efectivoOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="efectivo"]').text().replace(/,/g, '')) || 0;
+      let efectivo = total - banco;
+      if (efectivoOriginal != efectivo) {
+        actualizarValorEmpleado(empleadoId, "efectivo", efectivo); //Actualizar valor en la tabla
+      }
     }
 
-    // Después de calcular para el empleado, actualiza los totales generales
-    calcularTotalesNomina();
-}
-
-
-document.getElementById('fondoSelect').addEventListener('change', function() {
-    let valorSeleccionado = parseFloat(this.value) || 0;
-
-    // Actualizar el contenido de todas las celdas <td> con la clase 'fondo'
-    document.querySelectorAll('td.fondo').forEach(function(td) {
-        td.textContent = valorSeleccionado;
-    });
-
-    // Recalcular los totales de todos los empleados visibles en la tabla
-    $('tr[data-empleado-id]').each(function() {
-        calcularTotalesEmpleado($(this));
-    });
-});
-
-
-
+    calcularTotalGerente();
+  }
 
   function calcularTotalGerente() {
     let tipoEmpleadoId = 2;
@@ -869,25 +876,54 @@ document.getElementById('fondoSelect').addEventListener('change', function() {
   }
 
   function calcularTotalesNomina() {
+    let observaciones = null;
     let totalGral = 0;
-    $('.empleado-total').each(function() {
-        totalGral += parseFloat($(this).text().replace(/,/g, '')) || 0;
+    $('.empleado-total').each(function(index) {
+      totalGral = totalGral + parseFloat($(this).text().replace(/,/g, ''));
     });
 
     let totalBanco = 0;
-    $('.empleado-banco').each(function() {
-        totalBanco += parseFloat($(this).text().replace(/,/g, '')) || 0;
+    $('.empleado-banco').each(function(index) {
+      totalBanco = totalBanco + parseFloat($(this).text().replace(/,/g, ''));
     });
 
     let totalEfectivo = 0;
-    $('.empleado-efectivo').each(function() {
-        totalEfectivo += parseFloat($(this).text().replace(/,/g, '')) || 0;
+    $('.empleado-efectivo').each(function(index) {
+      totalEfectivo = totalEfectivo + parseFloat($(this).text().replace(/,/g, ''));
     });
 
-    // Actualizar los campos en la tabla
-    $('#nominaTotal').text(totalGral.toFixed(2));
-    $('#nominaBanco').text(totalBanco.toFixed(2));
-    $('#nominaEfectivo').text(totalEfectivo.toFixed(2));
-}
+    $.ajax({
+      type: "POST",
+      url: "../controller/Nominas/ActualizarDatosNomina.php",
+      data: {
+        nominaId: "<?php echo $nominaId ?>",
+        total: totalGral,
+        banco: totalBanco,
+        efectivo: totalEfectivo,
+        observaciones: observaciones,
+      },
+      success: function() {
+        $("#nominaTotal").text(parseFloat(totalGral).toLocaleString('es-MX', {
+          minimumFractionDigits: 2
+        }));
+        $("#nominaBanco").text(parseFloat(totalBanco).toLocaleString('es-MX', {
+          minimumFractionDigits: 2
+        }));
+        $("#nominaEfectivo").text(parseFloat(totalEfectivo).toLocaleString('es-MX', {
+          minimumFractionDigits: 2
+        }));
 
+        Toast.fire({
+          icon: 'success',
+          title: 'Datos nómina actualizados'
+        });
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        Toast.fire({
+          icon: 'error',
+          title: 'Datos nómina no actualizados'
+        });
+      }
+    });
+  }
 </script>
