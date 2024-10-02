@@ -477,6 +477,30 @@ class ModelVenta
 
 		], ["iddetalleventa[=]" => $detalleVtaId]);
 	}
+	function obtenerClientes() {
+		return $this->base_datos->select("clientes_descuento", [
+			"idclientedescuento",
+			"nombre"
+		]);
+	}
+	
+	
+	function obtenerVentasPorCliente($clienteId) {
+    return $this->base_datos->select("venta_cliente_descuentos", [
+        "[>]clientes_descuento" => ["cliente_descuento_id" => "idclientedescuento"]
+    ], [
+        "venta_cliente_descuentos.idventaclientedescuento",
+        "venta_cliente_descuentos.detalle_venta_id",
+        "venta_cliente_descuentos.cantidad",
+        "venta_cliente_descuentos.total",
+        "venta_cliente_descuentos.created_at",
+        "clientes_descuento.nombre"
+    ], [
+        "cliente_descuento_id" => $clienteId
+    ]);
+}
+
+
 
 	function actualizarFechaVenta($ventaId, $fecha)
 	{
