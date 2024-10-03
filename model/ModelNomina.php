@@ -22,11 +22,10 @@ class ModelNomina
         return $this->base_datos->id();
     }
 
-    function insertarEmpleadoNomina(
-        $nominaId, $empleadoId, $tipoEmpleadoId, $rutaId, $tipoGananciaRutaId, $cantidadNormal, 
-        $cantidadDescuento, $metaCumplidaId, $diasLaborados, $faltas, $extras, $sueldoBaseDia, 
-        $sueldoBaseTotal, $comisiones, $infonavit, $total, $banco, $efectivo, $fondo // Nuevo parámetro
-    ) {
+    function insertarEmpleadoNomina($nominaId, $empleadoId, $tipoEmpleadoId, $rutaId, $tipoGananciaRutaId,
+     $cantidadNormal, $cantidadDescuento, $metaCumplidaId, $diasLaborados, $faltas, $extras, $sueldoBaseDia,
+      $sueldoBaseTotal, $comisiones, $infonavit, $total, $banco, $efectivo, $fondo)
+    {
         $this->base_datos->insert("nomina_empleados", [
             "nomina_id" => $nominaId,
             "empleado_id" => $empleadoId,
@@ -46,11 +45,11 @@ class ModelNomina
             "total" => $total,
             "banco" => $banco,
             "efectivo" => $efectivo,
-            "fondo" => $fondo // Almacenar el fondo de ahorro
+            "fondo" => $fondo
         ]);
         return $this->base_datos->id();
     }
-    
+
 
     function actualizarValorEmpleado($nominaId, $empleadoId, $columnaNombre, $valor)
     {

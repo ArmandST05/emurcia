@@ -231,6 +231,7 @@ include_once('../model/ModelNomina.php');
                     </a>
                     <div id="collapseVentas" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
                         <div class="bg-transparent py-2 collapse-inner rounded">
+                            <a class="collapse-item" href="index.php?action=ventas/ventas_cliente.php">Ventas por cliente</a>
                             <a class="collapse-item" href="index.php?action=ventas/index.php">Ventas Gas</a>
                             <a class="collapse-item" href="index.php?action=preciosproductos/capturar_precio_mes_gas.php">Precio Gas</a>
                             <a class="collapse-item" href="index.php?action=ventasgasolina/index.php">Ventas Gasolina</a>
