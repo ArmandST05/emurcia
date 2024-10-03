@@ -737,38 +737,69 @@ $metasGerente = [];
     let tipoEmpleadoId = trEmpleado.data('tipo-empleado-id');
 
     if (tipoEmpleadoId != 2) {
+        let tipoGananciaId = trEmpleado.data('tipo-ganancia-id');
+        let rutaId = trEmpleado.data('ruta-id');
         let extras = parseFloat(trEmpleado.find('td[data-columna-nombre="extras"]').text().replace(/,/g, '')) || 0;
-        let sueldoBaseDiario = parseFloat(trEmpleado.find('td[data-columna-nombre="sueldo_base_dia"]').text().replace(/,/g, '')) || 0;
-        let diasTrabajados = parseFloat("<?php echo $diasTrabajados ?>");
-        let sueldoBaseTotal = sueldoBaseDiario * diasTrabajados;
 
-        // Obtener el valor del fondo seleccionado y restarlo del total
-        let fondo = parseFloat(trEmpleado.find('td[data-columna-nombre="fondo"]').text().replace(/,/g, '')) || 0;
+        let diasTrabajados = parseFloat("<?php echo $diasTrabajados ?>");
+        let sueldoBaseDiario = parseFloat(trEmpleado.find('td[data-columna-nombre="sueldo_base_dia"]').text().replace(/,/g, '')) || 0;
+        let sueldoBaseTotal = 0;
+        let sueldoBaseTotalOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="sueldo_base_total"]').text().replace(/,/g, '')) || 0;
+
+        if (tipoEmpleadoId == 4) { // Tipo empleado oficina y gerente no tiene salario por día trabajado, tienen salario fijo
+            sueldoBaseTotal = sueldoBaseTotalOriginal;
+        } else {
+            sueldoBaseTotal = sueldoBaseDiario * diasTrabajados;
+            if (sueldoBaseTotalOriginal != sueldoBaseTotal) {
+                actualizarValorEmpleado(empleadoId, "sueldo_base_total", sueldoBaseTotal); // Actualizar valor en la tabla
+            }
+        }
+
+        // Recalcular comisiones
+        // Normales
+        let cantidadNormal = parseFloat(trEmpleado.find('td[data-columna-nombre="cantidad_normal"]').text().replace(/,/g, '')) || 0;
+        let colorCantidadNormal = getColorMetaEmpleado(tipoEmpleadoId, tipoGananciaId, 0, rutaId, cantidadNormal); // Sin descuento, es normal
+        trEmpleado.find('td[data-columna-nombre="cantidad_normal"]').css("background-color", colorCantidadNormal);
+        let comisionNormalOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="comisiones"]').text().replace(/,/g, '')) || 0;
+        let comisionNormal = calcularComisionEmpleado(tipoEmpleadoId, tipoGananciaId, 0, rutaId, cantidadNormal);
+
+        if (comisionNormalOriginal != comisionNormal) {
+            actualizarValorEmpleado(empleadoId, "comisiones", comisionNormal); // Actualizar valor en la tabla
+        }
+
+        // Con descuento
+        let cantidadDescuento = parseFloat(trEmpleado.find('td[data-columna-nombre="cantidad_descuento"]').text().replace(/,/g, '')) || 0;
+        let colorCantidadDescuento = getColorMetaEmpleado(tipoEmpleadoId, tipoGananciaId, 1, rutaId, cantidadDescuento); // Con descuento
+        trEmpleado.find('td[data-columna-nombre="cantidad_descuento"]').css("background-color", colorCantidadDescuento);
+        let comisionDescuentoOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="comisiones_descuento"]').text().replace(/,/g, '')) || 0;
+        let comisionDescuento = calcularComisionEmpleado(tipoEmpleadoId, tipoGananciaId, 1, rutaId, cantidadDescuento);
+
+        if (comisionDescuentoOriginal != comisionDescuento) {
+            actualizarValorEmpleado(empleadoId, "comisiones_descuento", comisionDescuento); // Actualizar valor en la tabla
+        }
+        // Fin recalcular comisiones
 
         // Calcular total
         let faltas = parseFloat(trEmpleado.find('td[data-columna-nombre="faltas"]').text().replace(/,/g, '')) || 0;
         let infonavit = parseFloat(trEmpleado.find('td[data-columna-nombre="infonavit"]').text().replace(/,/g, '')) || 0;
+        let fondo = parseFloat(trEmpleado.find('td[data-columna-nombre="fondo"]').text().replace(/,/g, '')) || 0; // Obtener el valor del fondo
+
         let totalOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="total"]').text().replace(/,/g, '')) || 0;
-
-        let total = extras + sueldoBaseTotal - faltas - infonavit - fondo; // Restar el fondo
-        console.log('Total calculado:', total); // Depuración
-
+        let total = extras + sueldoBaseTotal + comisionNormal + comisionDescuento - faltas - infonavit;
         if (totalOriginal != total) {
-            actualizarValorEmpleado(empleadoId, "total", total); //Actualizar valor en la tabla
+            actualizarValorEmpleado(empleadoId, "total", total); // Actualizar valor en la tabla
         }
 
-        // Calcular efectivo (Total - Banco)
+        // Calcular efectivo (Total - Banco - Fondo)
         let banco = parseFloat(trEmpleado.find('td[data-columna-nombre="banco"]').text().replace(/,/g, '')) || 0;
         let efectivoOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="efectivo"]').text().replace(/,/g, '')) || 0;
-        let efectivo = total - banco;
-
+        let efectivo = total - banco - fondo; // Restar el fondo del total
         if (efectivoOriginal != efectivo) {
-            actualizarValorEmpleado(empleadoId, "efectivo", efectivo); //Actualizar valor en la tabla
+            actualizarValorEmpleado(empleadoId, "efectivo", efectivo); // Actualizar valor en la tabla
         }
     }
 
-    // Después de calcular para el empleado, actualiza los totales generales
-    calcularTotalesNomina();
+    calcularTotalGerente();
 }
 
 
@@ -870,24 +901,43 @@ document.getElementById('fondoSelect').addEventListener('change', function() {
 
   function calcularTotalesNomina() {
     let totalGral = 0;
-    $('.empleado-total').each(function() {
-        totalGral += parseFloat($(this).text().replace(/,/g, '')) || 0;
-    });
-
     let totalBanco = 0;
-    $('.empleado-banco').each(function() {
-        totalBanco += parseFloat($(this).text().replace(/,/g, '')) || 0;
+    let totalEfectivo = 0;
+
+    console.log("Iniciando el cálculo de totales...");
+
+    // Calcular el total general (suma de todos los empleados)
+    $('.empleado-total').each(function() {
+        let valorTotalEmpleado = parseFloat($(this).text().replace(/,/g, '')) || 0;
+        totalGral += valorTotalEmpleado;
+        console.log("Valor total empleado:", valorTotalEmpleado, "Total General acumulado:", totalGral);
     });
 
-    let totalEfectivo = 0;
+    // Calcular el total en banco
+    $('.empleado-banco').each(function() {
+        let valorBancoEmpleado = parseFloat($(this).text().replace(/,/g, '')) || 0;
+        totalBanco += valorBancoEmpleado;
+        console.log("Valor banco empleado:", valorBancoEmpleado, "Total Banco acumulado:", totalBanco);
+    });
+
+    // Calcular el total en efectivo
     $('.empleado-efectivo').each(function() {
-        totalEfectivo += parseFloat($(this).text().replace(/,/g, '')) || 0;
+        let valorEfectivoEmpleado = parseFloat($(this).text().replace(/,/g, '')) || 0;
+        totalEfectivo += valorEfectivoEmpleado;
+        console.log("Valor efectivo empleado:", valorEfectivoEmpleado, "Total Efectivo acumulado:", totalEfectivo);
     });
 
     // Actualizar los campos en la tabla
+    console.log("Total General:", totalGral);
+    console.log("Total Banco:", totalBanco);
+    console.log("Total Efectivo:", totalEfectivo);
+
     $('#nominaTotal').text(totalGral.toFixed(2));
     $('#nominaBanco').text(totalBanco.toFixed(2));
     $('#nominaEfectivo').text(totalEfectivo.toFixed(2));
+
+    console.log("Cálculo de totales completado.");
 }
+
 
 </script>
