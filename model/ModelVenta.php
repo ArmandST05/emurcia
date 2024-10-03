@@ -484,22 +484,84 @@ class ModelVenta
 		]);
 	}
 	
+	function obtenerProductosPorTipo() {
+		return $this->base_datos->select("detalles_venta", [
+			"[>]productos" => ["producto_id" => "idproducto"] // Hacemos JOIN con la tabla productos usando producto_id
+		], [
+			"productos.nombre" // Obtenemos el nombre del producto
+		]);
+	}
 	
 	function obtenerVentasPorCliente($clienteId) {
-    return $this->base_datos->select("venta_cliente_descuentos", [
-        "[>]clientes_descuento" => ["cliente_descuento_id" => "idclientedescuento"]
-    ], [
-        "venta_cliente_descuentos.idventaclientedescuento",
-        "venta_cliente_descuentos.detalle_venta_id",
-        "venta_cliente_descuentos.cantidad",
-        "venta_cliente_descuentos.total",
-        "venta_cliente_descuentos.created_at",
-        "clientes_descuento.nombre"
-    ], [
-        "cliente_descuento_id" => $clienteId
-    ]);
-}
-
+		return $this->base_datos->select("venta_cliente_descuentos", [
+			"[>]clientes_descuento" => ["cliente_descuento_id" => "idclientedescuento"],
+			"[>]detalles_venta" => ["detalle_venta_id" => "iddetalleventa"],
+			"[>]ventas" => ["detalles_venta.venta_id" => "idventa"],
+			"[>]productos" => ["detalles_venta.producto_id" => "idproducto"] // Unión con la tabla de productos
+		], [
+			"venta_cliente_descuentos.idventaclientedescuento",
+			"venta_cliente_descuentos.detalle_venta_id",
+			"venta_cliente_descuentos.cliente_descuento_id",
+			"venta_cliente_descuentos.descuento_id",
+			"venta_cliente_descuentos.cantidad",
+			"venta_cliente_descuentos.total",
+			"venta_cliente_descuentos.created_at",
+			"venta_cliente_descuentos.updated_at",
+			
+			"clientes_descuento.nombre AS nombre_cliente",
+			"clientes_descuento.giro",
+			"clientes_descuento.calle",
+			"clientes_descuento.numero",
+			"clientes_descuento.colonia",
+			"clientes_descuento.municipio",
+			"clientes_descuento.zona_id",
+			"clientes_descuento.descuento_id AS cliente_descuento_id_descuento",
+			"clientes_descuento.estatus",
+			"clientes_descuento.created_at AS cliente_created_at",
+			"clientes_descuento.updated_at AS cliente_updated_at",
+			
+			"detalles_venta.iddetalleventa",
+			"detalles_venta.venta_id",
+			"detalles_venta.cantidad",
+			"productos.nombre(nombre_producto)",	 
+			"detalles_venta.precio",
+			"detalles_venta.total_venta",
+			"detalles_venta.total_venta_credito",
+			"detalles_venta.descuento_total_venta_contado",
+			"detalles_venta.cantidad_venta_contado",
+			"detalles_venta.created_at AS detalle_created_at",
+			"detalles_venta.updated_at AS detalle_updated_at",
+			
+			"ventas.idventa",
+			"ventas.zona_id AS venta_zona_id",
+			"ventas.ruta_id",
+			"ventas.fecha",
+			"ventas.hora",
+			"ventas.total AS venta_total",
+			"ventas.created_at AS venta_created_at",
+			"ventas.updated_at AS venta_updated_at"
+		], [
+			"cliente_descuento_id" => $clienteId
+		]);
+	}
+	
+	public function obtenerVentasPorClienteYFechas($clienteId, $fechaInicial, $fechaFinal) {
+		return $this->base_datos->select("venta_cliente_descuentos", [
+			"[>]detalles_venta" => ["detalle_venta_id" => "iddetalleventa"], // JOIN con la tabla detalles_venta
+			"[>]clientes_descuento" => ["cliente_descuento_id" => "idclientedescuento"] // JOIN con la tabla clientes_descuento
+		], [
+			"venta_cliente_descuentos.idventaclientedescuento", // Obtener el ID de la venta
+			"detalles_venta.cantidad", // Obtener la cantidad de detalles de la venta
+			"venta_cliente_descuentos.total", // Total de la venta con descuento
+			"venta_cliente_descuentos.created_at" // Fecha de creación de la venta
+		], [
+			"AND" => [
+				"cliente_descuento_id" => $clienteId, // Filtrar por cliente
+				"venta_cliente_descuentos.created_at[<>]" => [$fechaInicial, $fechaFinal] // Filtrar por rango de fechas
+			]
+		]);
+	}
+	
 
 
 	function actualizarFechaVenta($ventaId, $fecha)
