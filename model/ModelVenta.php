@@ -492,33 +492,35 @@ class ModelVenta
 		]);
 	}
 	
-	function obtenerVentasPorCliente($clienteId) {
+	function obtenerVentasPorCliente($clienteId, $fechaInicial = null, $fechaFinal = null) {
+		// Arreglo para las condiciones de la consulta
+		$condiciones = [
+			"cliente_descuento_id" => $clienteId
+		];
+	
+		// Verificamos si se proporcionan fechas para agregarlas al filtro
+		if (!empty($fechaInicial) && !empty($fechaFinal)) {
+			// Agregamos la condición para filtrar por fechas dentro del rango
+			$condiciones["ventas.fecha[<>]"] = [$fechaInicial, $fechaFinal];
+		}
+	
+		// Realizamos la consulta con las condiciones proporcionadas
 		return $this->base_datos->select("venta_cliente_descuentos", [
 			"[>]clientes_descuento" => ["cliente_descuento_id" => "idclientedescuento"],
 			"[>]detalles_venta" => ["detalle_venta_id" => "iddetalleventa"],
 			"[>]ventas" => ["detalles_venta.venta_id" => "idventa"],
 			"[>]productos" => ["detalles_venta.producto_id" => "idproducto"] // Unión con la tabla de productos
 		], [
-			"venta_cliente_descuentos.idventaclientedescuento",
+			
 			"venta_cliente_descuentos.detalle_venta_id",
 			"venta_cliente_descuentos.cliente_descuento_id",
 			"venta_cliente_descuentos.descuento_id",
 			"venta_cliente_descuentos.cantidad",
 			"venta_cliente_descuentos.total",
-			"venta_cliente_descuentos.created_at",
-			"venta_cliente_descuentos.updated_at",
+		
 			
 			"clientes_descuento.nombre AS nombre_cliente",
-			"clientes_descuento.giro",
-			"clientes_descuento.calle",
-			"clientes_descuento.numero",
-			"clientes_descuento.colonia",
-			"clientes_descuento.municipio",
-			"clientes_descuento.zona_id",
-			"clientes_descuento.descuento_id AS cliente_descuento_id_descuento",
-			"clientes_descuento.estatus",
-			"clientes_descuento.created_at AS cliente_created_at",
-			"clientes_descuento.updated_at AS cliente_updated_at",
+			
 			
 			"detalles_venta.iddetalleventa",
 			"detalles_venta.venta_id",
@@ -526,24 +528,33 @@ class ModelVenta
 			"productos.nombre(nombre_producto)",	 
 			"detalles_venta.precio",
 			"detalles_venta.total_venta",
-			"detalles_venta.total_venta_credito",
-			"detalles_venta.descuento_total_venta_contado",
-			"detalles_venta.cantidad_venta_contado",
-			"detalles_venta.created_at AS detalle_created_at",
-			"detalles_venta.updated_at AS detalle_updated_at",
+			
 			
 			"ventas.idventa",
 			"ventas.zona_id AS venta_zona_id",
-			"ventas.ruta_id",
-			"ventas.fecha",
 			"ventas.hora",
 			"ventas.total AS venta_total",
-			"ventas.created_at AS venta_created_at",
-			"ventas.updated_at AS venta_updated_at"
-		], [
-			"cliente_descuento_id" => $clienteId
-		]);
+			
+		], $condiciones);
 	}
+	public function obtenerClientesPorZona($zonaId) {
+        // Arreglo para las condiciones de la consulta
+        $condiciones = [
+            "zona_id" => $zonaId // Se filtra por la zona seleccionada
+        ];
+
+        // Realizamos la consulta con las condiciones proporcionadas
+        return $this->base_datos->select("clientes_descuento", [
+            "idclientedescuento", // Asegúrate de incluir el ID del cliente
+            "nombre", // Nombre del cliente
+            "giro", // Otros campos que desees incluir
+            "calle",
+            "numero",
+            "colonia",
+            "municipio",
+            "estatus" // Otros campos que consideres necesarios
+        ], $condiciones);
+    }
 	
 	public function obtenerVentasPorClienteYFechas($clienteId, $fechaInicial, $fechaFinal) {
 		return $this->base_datos->select("venta_cliente_descuentos", [
