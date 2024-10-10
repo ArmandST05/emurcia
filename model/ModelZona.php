@@ -116,4 +116,14 @@ class ModelZona
 		AND (SELECT municipio_id FROM localidades WHERE localidades.id = $this->tablaLocalidades.localidad_id) = '$municipioId' ")->fetchAll(PDO::FETCH_ASSOC);
 		return $sql;
 	}
+
+
+	function obtenerZonaPorId($idZona) {
+		// Obtener la zona basada en el ID proporcionado usando Medoo
+		return $this->baseDatos->get($this->tabla, "*", [
+			"idzona" => $idZona
+		]);
+	}
+	
+		
 }
