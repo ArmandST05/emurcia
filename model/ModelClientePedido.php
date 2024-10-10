@@ -121,7 +121,16 @@ class ModelClientePedido
 		);
 		return $sql;
 	}
-
+	public function buscarClientesPorZona($zonaId) {
+		return $this->baseDatos->select("clientes_pedidos", [
+			"zona_id",
+			"nombre"
+		], [
+			"zona_id" => $zonaId // Filtrar únicamente por zona
+		]);
+	}
+	
+	
 	function insertar($nombre, $direccion, $colonia, $telefono, $zonaId, $referencias = NULL)
 	{
 		$sql = $this->baseDatos->insert("clientes_pedidos", [

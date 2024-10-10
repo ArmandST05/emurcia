@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <?php
 // Crear la instancia de ModelVenta y ModelZona
 $modelVenta = new ModelVenta();
