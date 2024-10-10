@@ -477,12 +477,20 @@ class ModelVenta
 
 		], ["iddetalleventa[=]" => $detalleVtaId]);
 	}
-	function obtenerClientes() {
-		return $this->base_datos->select("clientes_descuento", [
-			"idclientedescuento",
-			"nombre"
-		]);
-	}
+// Obtener clientes de la tabla clientes_descuento (ventas)
+function obtenerClientesVentas($zonaId) {
+    return $this->base_datos->select("clientes_descuento", "*", [
+        "zona_id" => $zonaId
+    ]);
+}
+
+// Obtener clientes de la tabla clientes_pedidos (pedidos)
+function obtenerClientesPedidos($zonaId) {
+    return $this->base_datos->select("clientes_pedidos", "*", [
+        "zona_id" => $zonaId
+    ]);
+}
+	
 	
 	function obtenerProductosPorTipo() {
 		return $this->base_datos->select("detalles_venta", [
@@ -544,6 +552,38 @@ class ModelVenta
 			"cliente_descuento_id" => $clienteId
 		]);
 	}
+	function obtenerPedidosPorCliente($clienteId, $fechaInicial, $fechaFinal) {
+		// Agregar la condición de fechas solo si se proporcionan
+		$sql = "
+		SELECT
+			p.idpedido,
+			p.fecha_pedido,
+			p.cliente_id,
+			p.cliente_nombre,
+			z.nombre AS nombre_zona,
+			p.total_kg_lts,
+			pr.nombre AS nombre_producto
+		FROM
+			pedidos p
+		INNER JOIN
+			zonas z ON p.zona_id = z.idzona
+		INNER JOIN
+			productos pr ON p.producto_id = pr.idproducto
+		WHERE
+			p.cliente_id = '$clienteId'
+		";
+	
+		// Si ambas fechas están definidas, agregar la condición de rango de fechas
+		if (!empty($fechaInicial) && !empty($fechaFinal)) {
+			$sql .= " AND p.fecha_pedido BETWEEN '$fechaInicial' AND '$fechaFinal'";
+		}
+	
+		// Ejecutar la consulta
+		$result = $this->base_datos->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+		
+		return $result;
+	}
+	
 	
 	public function obtenerVentasPorClienteYFechas($clienteId, $fechaInicial, $fechaFinal) {
 		return $this->base_datos->select("venta_cliente_descuentos", [
