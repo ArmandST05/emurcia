@@ -1,11 +1,13 @@
-<<<<<<< HEAD
 <?php
 // Crear la instancia de ModelVenta y ModelZona
 $modelVenta = new ModelVenta();
 $ModelZonas = new ModelZona();
 
-// Obtener la lista de zonas
-$zonas = $ModelZonas->obtenerZonasTodas();
+// Obtener la lista de zonas solo para el administrador
+$zonas = [];
+if ($_SESSION['tipoUsuario'] == 'su') {
+    $zonas = $ModelZonas->obtenerZonasTodas();
+}
 
 // Definir fechas: si no se proporcionan, las dejamos vacías
 $fechaInicial = isset($_POST["fechaInicial"]) ? $_POST["fechaInicial"] : "";
@@ -14,18 +16,37 @@ $fechaFinal = isset($_POST["fechaFinal"]) ? $_POST["fechaFinal"] : "";
 // Manejar la selección de una zona, cliente y tipo de consulta (Ventas o Pedidos)
 $ventas = [];
 $pedidos = [];
-$zonaId = isset($_POST['zona']) ? $_POST['zona'] : null; // Guardar el ID de la zona seleccionada
+$zonaId = null;  // Variable para la zona seleccionada o del usuario
 $clienteId = isset($_POST['cliente_id']) && is_numeric($_POST['cliente_id']) ? $_POST['cliente_id'] : null;
 $tipoConsulta = isset($_POST['tipo_consulta']) ? $_POST['tipo_consulta'] : 'ventas'; // Por defecto, "Ventas"
 
-// Si se seleccionó una zona, obtener los clientes de esa zona según el tipo de consulta
+// Debug: Verificar tipo de usuario
+echo "<pre>";
+echo "Tipo de Usuario: " . $_SESSION['tipoUsuario'] . "\n";
+
+// Si el usuario es un administrador, usar la zona seleccionada en el formulario
+if ($_SESSION['tipoUsuario'] == 'su') {
+    $zonaId = isset($_POST['zona']) ? $_POST['zona'] : null;
+    echo "Administrador: Zona seleccionada: " . $zonaId . "\n";
+} 
+// Si el usuario es normal (u), usar la zona almacenada en la sesión
+else if ($_SESSION['tipoUsuario'] == 'u') {
+    $zonaId = $_SESSION['zona']; // La zona está en la sesión
+    echo "Usuario normal: Zona de la sesión: " . $zonaId . "\n";
+}
+
+// Si se seleccionó una zona o ya se tiene la zona del usuario, obtener los clientes
 $clientesVentas = [];
 $clientesPedidos = [];
-
-// Si se seleccionó una zona, obtener los clientes de ventas y pedidos de esa zona
 if ($zonaId) {
     $clientesVentas = $modelVenta->obtenerClientesVentas($zonaId); // Clientes de ventas
     $clientesPedidos = $modelVenta->obtenerClientesPedidos($zonaId); // Clientes de pedidos
+    
+    // Debug: Verificar que se obtuvieron clientes
+    echo "Clientes de Ventas: " . print_r($clientesVentas, true) . "\n";
+    echo "Clientes de Pedidos: " . print_r($clientesPedidos, true) . "\n";
+} else {
+    echo "No se encontró una zona válida.\n";
 }
 
 // Si se seleccionó un cliente, obtener las ventas o pedidos según la opción seleccionada
@@ -37,10 +58,15 @@ if ($clienteId) {
     } else if ($tipoConsulta == 'pedidos') {
         // Obtener pedidos del cliente
         $pedidos = $modelVenta->obtenerPedidosPorCliente($clienteId, $fechaInicial, $fechaFinal);
-       
     }
+
+    // Debug: Verificar ventas o pedidos obtenidos
+    echo "Ventas obtenidas: " . print_r($ventas, true) . "\n";
+    echo "Pedidos obtenidos: " . print_r($pedidos, true) . "\n";
 }
+echo "</pre>";
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">
@@ -83,53 +109,102 @@ if ($clienteId) {
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <?php if ($_SESSION['tipoUsuario'] == "su"): ?>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Zona:</label>
+                                <select class="form-control form-control-sm" name="zona" id="zona" required onchange="this.form.submit();">
+                                    <option value="">--Selecciona una zona--</option>
+                                    <?php foreach ($zonas as $zona): ?>
+                                        <option value="<?php echo $zona['idzona']?>" 
+                                            <?php echo isset($zonaId) && $zonaId == $zona['idzona'] ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($zona['nombre']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Cliente:</label>
+                            <select class="form-control form-control-sm" name="cliente_id" id="cliente" required <?php echo $zonaId ? '' : 'disabled'; ?>>
+                        <option value="">--Selecciona un cliente--</option>
+                        <?php 
+                        // Mostrar clientes dependiendo del tipo de consulta
+                        if ($tipoConsulta == 'ventas') {
+                            foreach ($clientesVentas as $cliente): 
+                                ?>
+                                <option value="<?php echo htmlspecialchars($cliente['idclientedescuento']); ?>" 
+                                    <?php echo isset($clienteId) && $clienteId == $cliente['idclientedescuento'] ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($cliente['nombre']); ?>
+                                </option>
+                                <?php 
+                            endforeach; 
+                        } else if ($tipoConsulta == 'pedidos') {
+                            foreach ($clientesPedidos as $cliente): 
+                                ?>
+                                <option value="<?php echo htmlspecialchars($cliente['idclientepedido']); ?>" 
+                                    <?php echo isset($clienteId) && $clienteId == $cliente['idclientepedido'] ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($cliente['nombre']); ?>
+                                </option>
+                                <?php 
+                            endforeach;
+                        }
+                        ?>
+                    </select>
+
+                        </div>
+                    </div>
+
+                </div>
+                        <?php elseif ($_SESSION['tipoUsuario'] == "u"): ?>
+                            <div class="col-md-4">
                         <div class="form-group">
                             <label>Zona:</label>
-                            <select class="form-control form-control-sm" name="zona" id="zona" required onchange="this.form.submit();">
-                                <option value="">--Selecciona una zona--</option>
-                                <?php foreach ($zonas as $zona): ?>
-                                    <option value="<?php echo $zona['idzona']?>" 
-                                        <?php echo isset($zonaId) && $zonaId == $zona['idzona'] ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($zona['nombre']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                            <label class="form-control form-control-sm"><?php echo htmlspecialchars($_SESSION['zona']); ?></label>
+                            <input type="hidden" name="zona" value="<?php echo htmlspecialchars($_SESSION['zona']); ?>">
                         </div>
                     </div>
                     <div class="col-md-4">
-    <div class="form-group">
-        <label>Cliente:</label>
-        <select class="form-control form-control-sm" name="cliente_id" id="cliente" required <?php echo $zonaId ? '' : 'disabled'; ?>>
-    <option value="">--Selecciona un cliente--</option>
-    <?php 
-    // Mostrar clientes dependiendo del tipo de consulta
-    if ($tipoConsulta == 'ventas') {
-        foreach ($clientesVentas as $cliente): 
-            ?>
-            <option value="<?php echo htmlspecialchars($cliente['idclientedescuento']); ?>" 
-                <?php echo isset($clienteId) && $clienteId == $cliente['idclientedescuento'] ? 'selected' : ''; ?>>
-                <?php echo htmlspecialchars($cliente['nombre']); ?>
-            </option>
-            <?php 
-        endforeach; 
-    } else if ($tipoConsulta == 'pedidos') {
-        foreach ($clientesPedidos as $cliente): 
-            ?>
-            <option value="<?php echo htmlspecialchars($cliente['idclientepedido']); ?>" 
-                <?php echo isset($clienteId) && $clienteId == $cliente['idclientepedido'] ? 'selected' : ''; ?>>
-                <?php echo htmlspecialchars($cliente['nombre']); ?>
-            </option>
-            <?php 
-        endforeach;
-    }
-    ?>
-</select>
+                        <div class="form-group">
+                            <label>Cliente:</label>
+                            <?php 
+                            $zonaUsuario = $_SESSION['zona'];
+                            $zonaIdUsuario = isset($_POST['zona']) ? $_POST['zona'] : null; 
+                            ?>
+                            <select class="form-control form-control-sm" name="cliente_id" id="cliente" required <?php echo $zonaIdUsuario; ?>>
+                        <option value="">--Selecciona un cliente--</option>
+                        <?php 
+                        // Mostrar clientes dependiendo del tipo de consulta
+                        if ($tipoConsulta == 'ventas') {
+                            foreach ($clientesVentas as $cliente): 
+                                ?>
+                                <option value="<?php echo htmlspecialchars($cliente['idclientedescuento']); ?>" 
+                                    <?php echo isset($clienteId) && $clienteId == $cliente['idclientedescuento'] ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($cliente['nombre']); ?>
+                                </option>
+                                <?php 
+                            endforeach; 
+                        } else if ($tipoConsulta == 'pedidos') {
+                            foreach ($clientesPedidos as $cliente): 
+                                ?>
+                                <option value="<?php echo htmlspecialchars($cliente['idclientepedido']); ?>" 
+                                    <?php echo isset($clienteId) && $clienteId == $cliente['idclientepedido'] ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($cliente['nombre']); ?>
+                                </option>
+                                <?php 
+                            endforeach;
+                        }
+                        ?>
+                    </select>
 
-    </div>
-</div>
+                        </div>
+                    </div>
 
                 </div>
+                    <?php endif; ?>   
+
+                    
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">

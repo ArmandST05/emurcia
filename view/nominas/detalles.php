@@ -731,7 +731,7 @@ $metasGerente = [];
     let empleadoId = trEmpleado.data('empleado-id');
     let tipoEmpleadoId = trEmpleado.data('tipo-empleado-id');
 
-<<<<<<< HEAD
+
     if (tipoEmpleadoId != 2) {
         let tipoGananciaId = trEmpleado.data('tipo-ganancia-id');
         let rutaId = trEmpleado.data('ruta-id');
@@ -784,7 +784,7 @@ $metasGerente = [];
         let total = extras + sueldoBaseTotal + comisionNormal + comisionDescuento - faltas - infonavit;
         if (totalOriginal != total) {
             actualizarValorEmpleado(empleadoId, "total", total); // Actualizar valor en la tabla
-=======
+
     if(tipoEmpleadoId != 2){
       let tipoGananciaId = trEmpleado.data('tipo-ganancia-id');
       let rutaId = trEmpleado.data('ruta-id');
@@ -801,7 +801,7 @@ $metasGerente = [];
         sueldoBaseTotal = sueldoBaseDiario * diasTrabajados;
         if (sueldoBaseTotalOriginal != sueldoBaseTotal) {
           actualizarValorEmpleado(empleadoId, "sueldo_base_total", sueldoBaseTotal); //Actualizar valor en la tabla
->>>>>>> cf6be52e9d65348d30c665f1c2dc758c938eb16e
+
         }
       }
       //Recalcular comisiones
@@ -812,7 +812,7 @@ $metasGerente = [];
       let comisionNormalOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="comisiones"]').text().replace(/,/g, '')) || 0;
       let comisionNormal = calcularComisionEmpleado(tipoEmpleadoId, tipoGananciaId, 0, rutaId, cantidadNormal);
 
-<<<<<<< HEAD
+
         // Calcular efectivo (Total - Banco - Fondo)
         let banco = parseFloat(trEmpleado.find('td[data-columna-nombre="banco"]').text().replace(/,/g, '')) || 0;
         let efectivoOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="efectivo"]').text().replace(/,/g, '')) || 0;
@@ -842,7 +842,6 @@ document.getElementById('fondoSelect').addEventListener('change', function() {
 
 
 
-=======
       if (comisionNormalOriginal != comisionNormal) {
         actualizarValorEmpleado(empleadoId, "comisiones", comisionNormal); //Actualizar valor en la tabla
       }
@@ -881,7 +880,7 @@ document.getElementById('fondoSelect').addEventListener('change', function() {
 
     calcularTotalGerente();
   }
->>>>>>> cf6be52e9d65348d30c665f1c2dc758c938eb16e
+
 
   function calcularTotalGerente() {
     let tipoEmpleadoId = 2;
@@ -965,7 +964,6 @@ document.getElementById('fondoSelect').addEventListener('change', function() {
   function calcularTotalesNomina() {
     let observaciones = null;
     let totalGral = 0;
-<<<<<<< HEAD
     let totalBanco = 0;
     let totalEfectivo = 0;
 
@@ -1005,7 +1003,7 @@ document.getElementById('fondoSelect').addEventListener('change', function() {
 }
 
 
-=======
+
     $('.empleado-total').each(function(index) {
       totalGral = totalGral + parseFloat($(this).text().replace(/,/g, ''));
     });
@@ -1054,5 +1052,5 @@ document.getElementById('fondoSelect').addEventListener('change', function() {
       }
     });
   }
->>>>>>> cf6be52e9d65348d30c665f1c2dc758c938eb16e
+
 </script>

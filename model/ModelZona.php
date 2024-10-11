@@ -100,6 +100,22 @@ class ModelZona
 		], ["idzona[=]" => $zonaId]);
 	}
 
+	public function obtenerNombreZona($zonaId)
+{
+    // Ejecutar la consulta para obtener el nombre de la zona por su ID
+    $sql = $this->baseDatos->query("SELECT nombre 
+            FROM zonas 
+            WHERE idzona = '$zonaId' 
+            LIMIT 1")->fetchAll(PDO::FETCH_ASSOC);
+
+    // Verificar si la consulta tiene resultados
+    if ($sql) {
+        return $sql[0]['nombre'];  // Retornar el nombre de la zona
+    } else {
+        return null;  // Si no hay resultados, retornar null
+    }
+}
+
 	/*LOCALIDADES POR ZONA */
 	function insertarZonaLocalidad($zonaId,$localidadId)
 	{

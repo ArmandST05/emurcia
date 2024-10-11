@@ -685,6 +685,7 @@ function obtenerClientesPedidos($zonaId) {
 			return null;
 		}
 	}
+	
 
 	/*-------------------INVENTARIO TEÓRICO-------------------- */
 	function obtenerVentasKgZonaFecha($zonaId,$fechaInicial,$fechaFinal)
