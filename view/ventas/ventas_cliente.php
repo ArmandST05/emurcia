@@ -3,68 +3,40 @@
 $modelVenta = new ModelVenta();
 $ModelZonas = new ModelZona();
 
-// Obtener la lista de zonas solo para el administrador
-$zonas = [];
-if ($_SESSION['tipoUsuario'] == 'su') {
-    $zonas = $ModelZonas->obtenerZonasTodas();
+// Obtener el ID de la zona a partir del nombre de la zona en la sesión para usuarios tipo "u"
+if ($_SESSION['tipoUsuario'] == 'u') {
+    $nombreZona = $_SESSION['zona'];  // La zona almacenada en la sesión es el nombre
+    $zonaId = $modelVenta->obtenerIdZonaPorNombre($nombreZona);  // Ahora tenemos el ID de la zona
+} else if ($_SESSION['tipoUsuario'] == 'su') {
+    // Para los administradores, seguimos obteniendo la zona seleccionada desde el formulario
+    $zonaId = isset($_POST['zona']) ? $_POST['zona'] : null;
 }
 
-// Definir fechas: si no se proporcionan, las dejamos vacías
+// Verificar si hay un ID de zona
+if ($zonaId) {
+    $clientesVentas = $modelVenta->obtenerClientesVentas($zonaId); // Obtener clientes de ventas
+    $clientesPedidos = $modelVenta->obtenerClientesPedidos($zonaId); // Obtener clientes de pedidos
+}
+
+// Definir fechas
 $fechaInicial = isset($_POST["fechaInicial"]) ? $_POST["fechaInicial"] : "";
 $fechaFinal = isset($_POST["fechaFinal"]) ? $_POST["fechaFinal"] : "";
 
-// Manejar la selección de una zona, cliente y tipo de consulta (Ventas o Pedidos)
+// Obtener el tipo de consulta
+$tipoConsulta = isset($_POST['tipo_consulta']) ? $_POST['tipo_consulta'] : 'ventas'; // Por defecto "ventas"
+
+// Si hay un cliente seleccionado, obtener las ventas o pedidos
+$clienteId = isset($_POST['cliente_id']) ? $_POST['cliente_id'] : null;
 $ventas = [];
 $pedidos = [];
-$zonaId = null;  // Variable para la zona seleccionada o del usuario
-$clienteId = isset($_POST['cliente_id']) && is_numeric($_POST['cliente_id']) ? $_POST['cliente_id'] : null;
-$tipoConsulta = isset($_POST['tipo_consulta']) ? $_POST['tipo_consulta'] : 'ventas'; // Por defecto, "Ventas"
 
-// Debug: Verificar tipo de usuario
-echo "<pre>";
-echo "Tipo de Usuario: " . $_SESSION['tipoUsuario'] . "\n";
-
-// Si el usuario es un administrador, usar la zona seleccionada en el formulario
-if ($_SESSION['tipoUsuario'] == 'su') {
-    $zonaId = isset($_POST['zona']) ? $_POST['zona'] : null;
-    echo "Administrador: Zona seleccionada: " . $zonaId . "\n";
-} 
-// Si el usuario es normal (u), usar la zona almacenada en la sesión
-else if ($_SESSION['tipoUsuario'] == 'u') {
-    $zonaId = $_SESSION['zona']; // La zona está en la sesión
-    echo "Usuario normal: Zona de la sesión: " . $zonaId . "\n";
-}
-
-// Si se seleccionó una zona o ya se tiene la zona del usuario, obtener los clientes
-$clientesVentas = [];
-$clientesPedidos = [];
-if ($zonaId) {
-    $clientesVentas = $modelVenta->obtenerClientesVentas($zonaId); // Clientes de ventas
-    $clientesPedidos = $modelVenta->obtenerClientesPedidos($zonaId); // Clientes de pedidos
-    
-    // Debug: Verificar que se obtuvieron clientes
-    echo "Clientes de Ventas: " . print_r($clientesVentas, true) . "\n";
-    echo "Clientes de Pedidos: " . print_r($clientesPedidos, true) . "\n";
-} else {
-    echo "No se encontró una zona válida.\n";
-}
-
-// Si se seleccionó un cliente, obtener las ventas o pedidos según la opción seleccionada
 if ($clienteId) {
     if ($tipoConsulta == 'ventas') {
-        // Obtener ventas del cliente
         $ventas = $modelVenta->obtenerVentasPorCliente($clienteId, $fechaInicial, $fechaFinal);
-        
     } else if ($tipoConsulta == 'pedidos') {
-        // Obtener pedidos del cliente
         $pedidos = $modelVenta->obtenerPedidosPorCliente($clienteId, $fechaInicial, $fechaFinal);
     }
-
-    // Debug: Verificar ventas o pedidos obtenidos
-    echo "Ventas obtenidas: " . print_r($ventas, true) . "\n";
-    echo "Pedidos obtenidos: " . print_r($pedidos, true) . "\n";
 }
-echo "</pre>";
 ?>
 
 

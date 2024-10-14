@@ -20,20 +20,57 @@ class ModelAutoconsumo
     $this->base_datos = new Medoo();
   }
 
-  function insertar($rutaId, $combustible, $litros, $costo_litro, $kmi, $kmf, $fechaInicio, $fechaFin)
-  {
-    $sql = $this->base_datos->insert("autoconsumos", [
-      "fechai" => $fechaInicio,
-      "fechaf" => $fechaFin,
-      "litros" => $litros,
-      "costo" => $costo_litro,
-      "km_ini" => $kmi,
-      "km_fin" => $kmf,
-      "ruta_id" => $rutaId,
-      "combustible" => $combustible
-    ]);
-    return $this->base_datos->id();
-  }
+  function insertar($rutaId, $combustible, $litros, $costo_litro, $kmi, $kmf, $fechaInicio, $fechaFin, $comprobante)
+{
+    // Verificar si se subió un archivo de comprobante
+    if (isset($comprobante) && $comprobante['error'] == UPLOAD_ERR_OK) {
+        // Directorio donde se guardará el archivo
+        $target_dir = "../view/autoconsumos/comprobantes/";
+        
+        // Verificar que el directorio exista
+        if (!is_dir($target_dir)) {
+            mkdir($target_dir, 0777, true); // Crear el directorio si no existe
+        }
+
+        // Nombre del archivo (se puede renombrar para evitar colisiones)
+        $target_file = $target_dir . basename($comprobante["name"]);
+
+        // Validar el tamaño del archivo (ejemplo: máximo 2MB)
+        if ($comprobante["size"] > 2000000) {
+            throw new Exception("El archivo es demasiado grande. Tamaño máximo: 2MB.");
+        }
+
+        // Validar el tipo de archivo (ejemplo: solo imágenes)
+        $allowed_types = ['image/jpeg', 'image/png', 'application/pdf'];
+        if (!in_array($comprobante["type"], $allowed_types)) {
+            throw new Exception("Solo se permiten archivos JPEG, PNG o PDF.");
+        }
+
+        // Mover el archivo al directorio de destino
+        if (move_uploaded_file($comprobante["tmp_name"], $target_file)) {
+            // Si se subió correctamente, insertar los datos en la base de datos
+            $sql = $this->base_datos->insert("autoconsumos", [
+                "fechai" => $fechaInicio,
+                "fechaf" => $fechaFin,
+                "litros" => $litros,
+                "costo" => $costo_litro,
+                "km_ini" => $kmi,
+                "km_fin" => $kmf,
+                "ruta_id" => $rutaId,
+                "combustible" => $combustible,
+                "comprobante_autoconsumo" => $target_file // Guardar la ruta del comprobante
+            ]);
+            return $this->base_datos->id(); // Retornar el ID de la inserción
+        } else {
+            // Manejar el error si no se pudo mover el archivo
+            throw new Exception("Error al subir el comprobante.");
+        }
+    } else {
+        // Manejar el caso en que no se subió un archivo
+        throw new Exception("Debes subir un comprobante.");
+    }
+}
+
 
   function obtenerAutoconsumosCompaniaFecha($companiaId, $fechaInicial, $fechaFinal)
   {
