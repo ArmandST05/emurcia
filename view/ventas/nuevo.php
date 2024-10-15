@@ -63,6 +63,12 @@ $clientesDescuento = $modelClienteDescuento->listaZonaEstatus($zonaId, 1);
             </div>
           </div>
           <div class="row">
+            <div class="col-md-4">
+            <label for="comprobante">Subir Comprobante:</label>
+            <input type="file" name="comprobante" id="comprobante" required>
+            </div>
+          </div>
+          <div class="row">
             <div class="col-md-2">
               <div class="row">
                 <div class="form-group">

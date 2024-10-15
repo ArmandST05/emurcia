@@ -33,7 +33,15 @@ $aniof = date("Y");
       <!-- Card Body -->
       <div class="card-body">
         <form action="../controller/Autoconsumos/InsertarAutoconsumo.php" method="POST">
-
+          <div class="row">
+            <div class="col-md-4">
+               
+    <label for="comprobante">Subir Comprobante de Autoconsumo:</label>
+    <input type="file" name="comprobante" id="comprobante" required>
+    
+    
+            </div>
+          </div>
           <div class="row">
             <div class="col">
               <div class="form-group">

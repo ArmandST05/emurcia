@@ -351,6 +351,7 @@ include_once('../model/ModelNomina.php');
                     </a>
                     <div id="collapseVentas" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
                         <div class="bg-transparent py-2 collapse-inner rounded">
+                            
                             <a class="collapse-item" href="index.php?action=ventas/index.php">Ventas</a>
                             <a class="collapse-item" href="index.php?action=descuentosdeposito/index.php">Descuentos Depósito</a>
                             <a class="collapse-item" href="index.php?action=ventas/reporte_f.php">Reporte F</a>
@@ -544,7 +545,6 @@ include_once('../model/ModelNomina.php');
                     </a>
                     <div id="collapseVentas" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
                         <div class="bg-transparent py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="index.php?action=ventas/ventas_cliente.php">Ventas por Cliente</a>
                             <a class="collapse-item" href="index.php?action=ventas/index.php">Ventas</a>
                             <a class="collapse-item" href="index.php?action=descuentosdeposito/index.php">Descuentos Depósito</a>
                             <a class="collapse-item" href="index.php?action=ventas/reporte_f.php">Reporte F</a>

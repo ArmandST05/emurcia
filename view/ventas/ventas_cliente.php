@@ -21,7 +21,11 @@ if ($tipoUsuario == 'su') {
 $fechaInicial = isset($_POST["fechaInicial"]) ? $_POST["fechaInicial"] : "";
 $fechaFinal = isset($_POST["fechaFinal"]) ? $_POST["fechaFinal"] : "";
 
-// Manejar la selección de una zona, cliente y tipo de consulta (Ventas o Pedidos)
+// Obtener el tipo de consulta
+$tipoConsulta = isset($_POST['tipo_consulta']) ? $_POST['tipo_consulta'] : 'ventas'; // Por defecto "ventas"
+
+// Si hay un cliente seleccionado, obtener las ventas o pedidos
+$clienteId = isset($_POST['cliente_id']) ? $_POST['cliente_id'] : null;
 $ventas = [];
 $pedidos = [];
 $zonaId = ($tipoUsuario == 'u') ? $zonaUsuario : (isset($_POST['zona']) ? $_POST['zona'] : null); // Si es gerente, usar su zona asignada; si es admin, usar la seleccionada
@@ -46,6 +50,7 @@ if ($clienteId) {
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">

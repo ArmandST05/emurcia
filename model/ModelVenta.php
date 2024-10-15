@@ -348,7 +348,7 @@ class ModelVenta
 		WHERE fecha = '$fecha' AND zona_id = $zonaId ORDER BY idventa DESC LIMIT 1")->fetchAll(PDO::FETCH_ASSOC);
 		return $sql;
 	}
-
+	
 	function insertarVenta($fecha, $hora, $zonaVta, $rutaVta)
 	{
 		$this->base_datos->insert("ventas", [
@@ -584,6 +584,21 @@ function obtenerClientesPedidos($zonaId) {
 		
 		return $result;
 	}
+	public function obtenerIdZonaPorNombre($nombreZona)
+	{
+		// Ejecutar la consulta para obtener el ID de la zona basado en el nombre
+		$sql = $this->base_datos->query("SELECT idzona 
+				FROM zonas 
+				WHERE nombre = '$nombreZona' 
+				LIMIT 1")->fetchAll(PDO::FETCH_ASSOC);
+		
+		// Si la consulta retorna un resultado, devolvemos el primer elemento (el idzona)
+		if ($sql) {
+			return $sql[0]['idzona'];
+		} else {
+			return null; // Retornamos null si no se encuentra ninguna coincidencia
+		}
+	}
 	
 	
 	public function obtenerVentasPorClienteYFechas($clienteId, $fechaInicial, $fechaFinal) {
@@ -685,6 +700,7 @@ function obtenerClientesPedidos($zonaId) {
 			return null;
 		}
 	}
+	
 
 	/*-------------------INVENTARIO TEÓRICO-------------------- */
 	function obtenerVentasKgZonaFecha($zonaId,$fechaInicial,$fechaFinal)
