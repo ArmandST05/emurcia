@@ -24,7 +24,7 @@ $aniof = date("Y");
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
   <h1 class="h3 mb-0 text-gray-800">Nuevo Autoconsumo</h1>
 </div>
-  
+
 <!-- Content Row -->
 <div class="row">
   <!-- Nuevo Pedido -->
@@ -32,13 +32,13 @@ $aniof = date("Y");
     <div class="card shadow mb-4">
       <!-- Card Body -->
       <div class="card-body">
-        <form action="../controller/Autoconsumos/InsertarAutoconsumo.php" method="POST">
+        <form action="../controller/Autoconsumos/InsertarAutoconsumo.php" method="POST" enctype="multipart/form-data">
           <div class="row">
-            <div class="col-md-4">
+           <div class="col-md-4">
                
-    <label for="comprobante">Subir Comprobante de Autoconsumo:</label>
-    <input type="file" name="comprobante" id="comprobante" required>
-    
+            <label for="comprobante">Subir Comprobante de Autoconsumo:</label>
+            <input type="file" name="comprobante" id="comprobante" accept="image/*" required>
+            
     
             </div>
           </div>
