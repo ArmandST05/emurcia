@@ -33,8 +33,8 @@
 			window.location.href = '../../view/index.php?action=autoconsumos/nuevo.php';
 		</script>";
 		exit();
-	}
-	else {
+	} 
+	 else {
         // Llamar al método insertar pasando el comprobante
         try {
             $autoconsumo = $modelAutoconsumo->insertar($rutaId, $combustible, $litros, $costo_litro, $kmi, $kmf, $fechaInicio, $fechaFin, $comprobante);

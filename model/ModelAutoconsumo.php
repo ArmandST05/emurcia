@@ -45,7 +45,7 @@ class ModelAutoconsumo
         if (!in_array($comprobante["type"], $allowed_types)) {
             throw new Exception("Solo se permiten archivos JPEG, PNG o PDF.");
         }
-
+   
         // Mover el archivo al directorio de destino
         if (move_uploaded_file($comprobante["tmp_name"], $target_file)) {
             // Si se subió correctamente, insertar los datos en la base de datos
