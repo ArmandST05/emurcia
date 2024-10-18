@@ -55,113 +55,170 @@ class ModelAutoconsumo
                                     ORDER BY a.fechai")->fetchAll(PDO::FETCH_ASSOC);
     return $sql;
   }
-
   function obtenerAutoconsumosCompaniaProductoFecha($companiaId, $productoNombre, $fechaInicial, $fechaFinal)
   {
-    $sql = $this->base_datos->query("SELECT companias.idcompania AS compania_id,UPPER(companias.nombre) AS compania_nombre,
-                                    zonas.idzona AS zona_id, UPPER(zonas.nombre) AS zona_nombre, 
-                                    r.clave_ruta AS ruta_nombre, r.idruta AS ruta_id,
-                                    a.idautoconsumo,a.fechai,a.fechaf,a.combustible,a.litros,
-                                    a.costo,(a.litros*a.costo)total,a.km_ini,a.km_fin,
-                                    FORMAT(((a.km_fin-a.km_ini)/a.litros),2)rendimiento
-                                    FROM autoconsumos a,rutas r,zonas,companias
-                                    WHERE a.ruta_id=r.idruta 
-                                    AND r.zona_id = zonas.idzona
-                                    AND zonas.compania_id = companias.idcompania
-                                    AND companias.idcompania ='$companiaId' 
-                                    AND a.combustible ='$productoNombre'
-                                    AND (a.fechai between '$fechaInicial' and '$fechaFinal') 
-                                    ORDER BY a.fechai")->fetchAll(PDO::FETCH_ASSOC);
-    return $sql;
+      $sql = $this->base_datos->query("SELECT 
+                                      companias.idcompania AS compania_id,
+                                      UPPER(companias.nombre) AS compania_nombre,
+                                      zonas.idzona AS zona_id, 
+                                      UPPER(zonas.nombre) AS zona_nombre, 
+                                      r.clave_ruta AS ruta_nombre, 
+                                      r.idruta AS ruta_id,
+                                      a.idautoconsumo,
+                                      a.fechai,
+                                      a.fechaf,
+                                      a.combustible,
+                                      a.litros,
+                                      a.costo,
+                                      (a.litros * a.costo) AS total,
+                                      a.km_ini,
+                                      a.km_fin,
+                                      FORMAT(((a.km_fin - a.km_ini) / a.litros), 2) AS rendimiento,
+                                      a.comprobante_autoconsumo  -- Agregado aquí
+                                      FROM autoconsumos a, rutas r, zonas, companias
+                                      WHERE a.ruta_id = r.idruta 
+                                      AND r.zona_id = zonas.idzona
+                                      AND zonas.compania_id = companias.idcompania
+                                      AND companias.idcompania = '$companiaId' 
+                                      AND a.combustible = '$productoNombre'
+                                      AND (a.fechai BETWEEN '$fechaInicial' AND '$fechaFinal') 
+                                      ORDER BY a.fechai")->fetchAll(PDO::FETCH_ASSOC);
+      return $sql;
   }
-
   function obtenerAutoconsumosZonaFecha($zonaId, $fechaInicial, $fechaFinal)
-  {
-    $sql = $this->base_datos->query("SELECT companias.idcompania AS compania_id,UPPER(companias.nombre) AS compania_nombre,
-                                    zonas.idzona AS zona_id, UPPER(zonas.nombre) AS zona_nombre, 
-                                    r.clave_ruta AS ruta_nombre, r.idruta AS ruta_id,
-                                    a.idautoconsumo,a.fechai,a.fechaf,a.combustible,a.litros,
-                                    a.costo,(a.litros*a.costo)total,a.km_ini,a.km_fin,
-                                    FORMAT(((a.km_fin-a.km_ini)/a.litros),2)rendimiento
-                                    FROM autoconsumos a,rutas r,zonas,companias
-                                    WHERE a.ruta_id=r.idruta 
+{
+    $sql = $this->base_datos->query("SELECT 
+                                    companias.idcompania AS compania_id,
+                                    UPPER(companias.nombre) AS compania_nombre,
+                                    zonas.idzona AS zona_id, 
+                                    UPPER(zonas.nombre) AS zona_nombre, 
+                                    r.clave_ruta AS ruta_nombre, 
+                                    r.idruta AS ruta_id,
+                                    a.idautoconsumo,
+                                    a.fechai,
+                                    a.fechaf,
+                                    a.combustible,
+                                    a.litros,
+                                    a.costo,
+                                    (a.litros * a.costo) AS total,
+                                    a.km_ini,
+                                    a.km_fin,
+                                    FORMAT(((a.km_fin - a.km_ini) / a.litros), 2) AS rendimiento,
+                                    a.comprobante_autoconsumo  -- Agregado aquí
+                                    FROM autoconsumos a, rutas r, zonas, companias
+                                    WHERE a.ruta_id = r.idruta 
                                     AND r.zona_id = zonas.idzona
                                     AND zonas.compania_id = companias.idcompania
-                                    AND zonas.idzona ='$zonaId' 
-                                    AND (a.fechai between '$fechaInicial' and '$fechaFinal') 
+                                    AND zonas.idzona = '$zonaId' 
+                                    AND (a.fechai BETWEEN '$fechaInicial' AND '$fechaFinal') 
                                     ORDER BY a.fechai")->fetchAll(PDO::FETCH_ASSOC);
     return $sql;
-  }
+}
 
-  function obtenerAutoconsumosZonaProductoFecha($zonaId, $productoNombre, $fechaInicial, $fechaFinal)
-  {
-    $sql = $this->base_datos->query("SELECT companias.idcompania AS compania_id,UPPER(companias.nombre) AS compania_nombre,
-                                    zonas.idzona AS zona_id, UPPER(zonas.nombre) AS zona_nombre, 
-                                    r.clave_ruta AS ruta_nombre, r.idruta AS ruta_id,
-                                    a.idautoconsumo,a.fechai,a.fechaf,a.combustible,a.litros,
-                                    a.costo,(a.litros*a.costo)total,a.km_ini,a.km_fin,
-                                    FORMAT(((a.km_fin-a.km_ini)/a.litros),2)rendimiento
-                                    FROM autoconsumos a,rutas r,zonas,companias
-                                    WHERE a.ruta_id=r.idruta 
+function obtenerAutoconsumosZonaProductoFecha($zonaId, $productoNombre, $fechaInicial, $fechaFinal)
+{
+    $sql = $this->base_datos->query("SELECT 
+                                    companias.idcompania AS compania_id,
+                                    UPPER(companias.nombre) AS compania_nombre,
+                                    zonas.idzona AS zona_id, 
+                                    UPPER(zonas.nombre) AS zona_nombre, 
+                                    r.clave_ruta AS ruta_nombre, 
+                                    r.idruta AS ruta_id,
+                                    a.idautoconsumo,
+                                    a.fechai,
+                                    a.fechaf,
+                                    a.combustible,
+                                    a.litros,
+                                    a.costo,
+                                    (a.litros * a.costo) AS total,
+                                    a.km_ini,
+                                    a.km_fin,
+                                    FORMAT(((a.km_fin - a.km_ini) / a.litros), 2) AS rendimiento,
+                                    a.comprobante_autoconsumo  -- Agregado aquí
+                                    FROM autoconsumos a, rutas r, zonas, companias
+                                    WHERE a.ruta_id = r.idruta 
                                     AND r.zona_id = zonas.idzona
                                     AND zonas.compania_id = companias.idcompania
-                                    AND zonas.idzona ='$zonaId' 
-                                    AND a.combustible ='$productoNombre'
-                                    AND (a.fechai between '$fechaInicial' and '$fechaFinal') 
+                                    AND zonas.idzona = '$zonaId' 
+                                    AND a.combustible = '$productoNombre'
+                                    AND (a.fechai BETWEEN '$fechaInicial' AND '$fechaFinal') 
                                     ORDER BY a.fechai")->fetchAll(PDO::FETCH_ASSOC);
     return $sql;
-  }
+}
 
-  function obtenerTotalAutoconsumosZonaProductoFecha($zonaId, $productoNombre, $fechaInicial, $fechaFinal)
-  {
+function obtenerTotalAutoconsumosZonaProductoFecha($zonaId, $productoNombre, $fechaInicial, $fechaFinal)
+{
     $sql = $this->base_datos->query("SELECT SUM(a.litros) AS total
-                                    FROM autoconsumos a,rutas r,zonas,companias
-                                    WHERE a.ruta_id=r.idruta 
+                                    FROM autoconsumos a, rutas r, zonas, companias
+                                    WHERE a.ruta_id = r.idruta 
                                     AND r.zona_id = zonas.idzona
                                     AND zonas.compania_id = companias.idcompania
-                                    AND zonas.idzona ='$zonaId' 
-                                    AND a.combustible ='$productoNombre'
-                                    AND (a.fechai between '$fechaInicial' and '$fechaFinal') 
+                                    AND zonas.idzona = '$zonaId' 
+                                    AND a.combustible = '$productoNombre'
+                                    AND (a.fechai BETWEEN '$fechaInicial' AND '$fechaFinal')")->fetchAll(PDO::FETCH_ASSOC);
+    return $sql;
+}
+function obtenerAutoconsumosRutaFecha($rutaId, $fechaInicial, $fechaFinal)
+{
+    $sql = $this->base_datos->query("SELECT 
+                                    companias.idcompania AS compania_id,
+                                    UPPER(companias.nombre) AS compania_nombre,
+                                    zonas.idzona AS zona_id, 
+                                    UPPER(zonas.nombre) AS zona_nombre, 
+                                    r.clave_ruta AS ruta_nombre, 
+                                    r.idruta AS ruta_id,
+                                    a.idautoconsumo,
+                                    a.fechai,
+                                    a.fechaf,
+                                    a.combustible,
+                                    a.litros,
+                                    a.costo,
+                                    (a.litros * a.costo) AS total,
+                                    a.km_ini,
+                                    a.km_fin,
+                                    FORMAT(((a.km_fin - a.km_ini) / a.litros), 2) AS rendimiento,
+                                    a.comprobante_autoconsumo  -- Agregado aquí
+                                    FROM autoconsumos a, rutas r, zonas, companias
+                                    WHERE a.ruta_id = r.idruta 
+                                    AND r.zona_id = zonas.idzona
+                                    AND zonas.compania_id = companias.idcompania
+                                    AND r.idruta = '$rutaId' 
+                                    AND (a.fechai BETWEEN '$fechaInicial' AND '$fechaFinal') 
                                     ORDER BY a.fechai")->fetchAll(PDO::FETCH_ASSOC);
     return $sql;
-  }
+}
 
-  function obtenerAutoconsumosRutaFecha($rutaId, $fechaInicial, $fechaFinal)
-  {
-    $sql = $this->base_datos->query("SELECT companias.idcompania AS compania_id,UPPER(companias.nombre) AS compania_nombre,
-                                    zonas.idzona AS zona_id, UPPER(zonas.nombre) AS zona_nombre, 
-                                    r.clave_ruta AS ruta_nombre, r.idruta AS ruta_id,
-                                    a.idautoconsumo,a.fechai,a.fechaf,a.combustible,a.litros,
-                                    a.costo,(a.litros*a.costo)total,a.km_ini,a.km_fin,
-                                    FORMAT(((a.km_fin-a.km_ini)/a.litros),2)rendimiento
-                                    FROM autoconsumos a,rutas r,zonas,companias
-                                    WHERE a.ruta_id=r.idruta 
+function obtenerAutoconsumosRutaProductoFecha($rutaId, $productoNombre, $fechaInicial, $fechaFinal)
+{
+    $sql = $this->base_datos->query("SELECT 
+                                    companias.idcompania AS compania_id,
+                                    UPPER(companias.nombre) AS compania_nombre,
+                                    zonas.idzona AS zona_id, 
+                                    UPPER(zonas.nombre) AS zona_nombre, 
+                                    r.clave_ruta AS ruta_nombre, 
+                                    r.idruta AS ruta_id,
+                                    a.idautoconsumo,
+                                    a.fechai,
+                                    a.fechaf,
+                                    a.combustible,
+                                    a.litros,
+                                    a.costo,
+                                    (a.litros * a.costo) AS total,
+                                    a.km_ini,
+                                    a.km_fin,
+                                    FORMAT(((a.km_fin - a.km_ini) / a.litros), 2) AS rendimiento,
+                                    a.comprobante_autoconsumo  -- Agregado aquí
+                                    FROM autoconsumos a, rutas r, zonas, companias
+                                    WHERE a.ruta_id = r.idruta 
                                     AND r.zona_id = zonas.idzona
                                     AND zonas.compania_id = companias.idcompania
-                                    AND r.idruta ='$rutaId' 
-                                    AND (a.fechai between '$fechaInicial' and '$fechaFinal') 
+                                    AND r.idruta = '$rutaId' 
+                                    AND a.combustible = '$productoNombre'
+                                    AND (a.fechai BETWEEN '$fechaInicial' AND '$fechaFinal') 
                                     ORDER BY a.fechai")->fetchAll(PDO::FETCH_ASSOC);
     return $sql;
-  }
+}
 
-  function obtenerAutoconsumosRutaProductoFecha($rutaId, $productoNombre, $fechaInicial, $fechaFinal)
-  {
-    $sql = $this->base_datos->query("SELECT companias.idcompania AS compania_id,UPPER(companias.nombre) AS compania_nombre,
-                                    zonas.idzona AS zona_id, UPPER(zonas.nombre) AS zona_nombre, 
-                                    r.clave_ruta AS ruta_nombre, r.idruta AS ruta_id,
-                                    a.idautoconsumo,a.fechai,a.fechaf,a.combustible,a.litros,
-                                    a.costo,(a.litros*a.costo)total,a.km_ini,a.km_fin,
-                                    FORMAT(((a.km_fin-a.km_ini)/a.litros),2)rendimiento
-                                    FROM autoconsumos a,rutas r,zonas,companias
-                                    WHERE a.ruta_id=r.idruta 
-                                    AND r.zona_id = zonas.idzona
-                                    AND zonas.compania_id = companias.idcompania
-                                    AND r.idruta ='$rutaId' 
-                                    AND a.combustible ='$productoNombre'
-                                    AND (a.fechai between '$fechaInicial' and '$fechaFinal') 
-                                    ORDER BY a.fechai")->fetchAll(PDO::FETCH_ASSOC);
-    return $sql;
-  }
 
   function eliminar($id)
   {

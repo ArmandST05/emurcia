@@ -199,6 +199,7 @@ foreach ($autoconsumos as $autoconsumo) {
                   <th>Km inicial</th>
                   <th>Km final</th>
                   <th>Rendimiento</th>
+                  <th>Comprobante</th>
                   <th>Acción</th>
                 </tr>
               </thead>
@@ -215,7 +216,7 @@ foreach ($autoconsumos as $autoconsumo) {
                   $totalCompaniaRendimiento=0;
                 ?>
                   <tr class="bg-light">
-                    <td colspan="11"><b><?php echo $companiaNombre[0]['compania_nombre'] ?>
+                    <td colspan="12"><b><?php echo $companiaNombre[0]['compania_nombre'] ?>
                       </b></td>
                   </tr>
                   <?php foreach ($companiaDatos as $claveZona => $zonaDatos) :
@@ -226,7 +227,7 @@ foreach ($autoconsumos as $autoconsumo) {
                     $zonaNombre = reset($zonaDatos);
                   ?>
                     <tr data-tt-id="<?php echo $claveZona; ?>" class="bg-light">
-                      <td colspan="11"><b>
+                      <td colspan="12"><b>
                           <?php echo $zonaNombre['zona_nombre'] ?>
                         </b></td>
                     </tr>
@@ -252,10 +253,15 @@ foreach ($autoconsumos as $autoconsumo) {
                         <td><?php echo $autoconsumoDatos["km_fin"]; ?></td>
                         <td><?php echo $autoconsumoDatos["rendimiento"]; ?></td>
                         <td>
+                            <a href="<?php echo '/emurcia/view/autoconsumos/comprobantes/' . basename($autoconsumoDatos['comprobante_autoconsumo']); ?>" download>
+                                Descargar comprobante
+                            </a>
+                        </td>                        <td>
                           <?php if($_SESSION["tipoUsuario"] == "su" || $_SESSION["tipoUsuario"] == "u"): ?>
                           <button class='btn btn-sm btn-primary' type='button' onclick="eliminar('<?php echo $autoconsumoDatos['idautoconsumo']; ?>');"><i class='fas fa-trash fa-sm'></i></button>
                           <?php endif; ?>
                         </td>
+                        
                       </tr>
                     <?php endforeach;
                     //SUMAR TOTALES ZONA 
