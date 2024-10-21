@@ -57,8 +57,9 @@ class ModelCredito{
 	}
 
 	//====================== Credito otorgado =============================
-	function addcredit($idcliente,$fecha,$nombre,$domicilio,$colonia,$notafac,$foliofisc,$precio,$litros,$importe,$vencimiento,$vendedor,$zonaId,$dia,$mes,$anio,$descuento){
-		$this->base_datos->insert("creditos_gas",[
+	function addcredit($idcliente, $fecha, $nombre, $domicilio, $colonia, $notafac, $foliofisc, $precio, $litros, $importe, $vencimiento, $vendedor, $zonaId, $dia, $mes, $anio, $descuento, $comprobanteCreditoGas) {
+		// Insertar los datos en la base de datos
+		$this->base_datos->insert("creditos_gas", [
 			"fecha" => $fecha,
 			"id_cliente" => $idcliente,
 			"nombre" => $nombre,
@@ -78,10 +79,13 @@ class ModelCredito{
 			"anio" => $anio,
 			"tipo" => "0",
 			"status" => "0",
-			"importe_pagado" => "0"
-			]);
+			"importe_pagado" => "0",
+			"comprobante_credito_gas" => $comprobanteCreditoGas // Guardar la ruta del comprobante
+		]);
+	
 		return $this->base_datos->id();
 	}
+	
 	function addcreditgasolina($idcliente,$fecha,$nombre,$domicilio,$colonia,$notafac,$foliofisc,$precio,$litros,$importe,$vencimiento,$vendedor,$zonaId,$dia,$mes,$anio,$tipo,$ieps,$iva,$venta_full,$ivaimpsinieps,$impsinieps,$id_bomba,$aceite){
 		$this->base_datos->insert("creditos_gasolina",[
 			"fecha" => $fecha,
