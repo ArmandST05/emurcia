@@ -96,13 +96,23 @@ if (!empty($idCliente)) {
           <h6 class="m-0 font-weight-bold text-primary">Indicar los datos</h6>
         </div>
         <!-- Card Body -->
-        <form action="../controller/Creditos/InsertarCreditoOtorgado.php" method="POST" name="form1">
+        <form action="../controller/Creditos/InsertarCreditoOtorgado.php" method="POST" name="form1" enctype="multipart/form-data">
           <div class="card-body">
             <div class="row">
               <div class="col-md-8">
                 <div class="alert alert-secondary" role="alert">
                   *Nota: Los datos del cliente se cargan automaticamente
                 </div>
+
+                <div class="row">
+           <div class="col-md-8">
+               
+            <label for="comprobante">Subir Comprobante Credito Otorgado:</label>
+            <input type="file" name="comprobante" id="comprobante" accept="image/*" required>
+            
+      <br>
+            </div>
+          </div>
                 <div class="row">
                   <div class="col-md-2">
                     <label>Fecha</label>

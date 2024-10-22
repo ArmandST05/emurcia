@@ -96,6 +96,7 @@ if (!empty($idCliente)) {
                 <th>Vencimiento</th>
                 <th>Tipo de crédito</th>
                 <th>Vendedor</th>
+                <th>Comprobante</th>
               </tr>
             </thead>
             <tbody>
@@ -112,7 +113,22 @@ if (!empty($idCliente)) {
                       else if ($datos["tipo"] == 1) echo "Recuperado";
                       ?>
                   </td>
-                  <td><?php echo $datos["vendedor"] ?>
+                  <td><?php echo $datos["vendedor"] ?></td>
+                  <td>
+    <?php if (!empty($datos['comprobante_credito_gas'])): ?>
+        <a href="<?php echo 'https://cgtest.v2technoconsulting.com/view/creditos/comprobantes/' . basename($datos['comprobante_credito_gas']); ?>" download>
+            Descargar comprobante
+        </a>    
+    <?php else: ?>   
+        <p>No hay comprobante</p>
+    <?php endif; ?>
+</td>
+
+
+
+
+
+
                 </tr>
               <?php endforeach; ?>
             </tbody>
