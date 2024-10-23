@@ -21,7 +21,15 @@ $fecha = date("Y-m-d");
     <div class="card shadow mb-4">
       <!-- Card Body -->
       <div class="card-body">
-        <form action="../controller/Donaciones/InsertarDonacion.php" method="post">
+        <form action="../controller/Donaciones/InsertarDonacion.php" method="post" enctype="multipart/form-data">
+
+          <div class="row">
+           <div class="col-md-4">  
+                <label for="comprobante">Subir Comprobante de la Donación:</label>
+                <input type="file" name="comprobante" id="comprobante" accept="image/*" required>  
+            </div>
+          </div>
+
           <div class="row">
             <div class="col">
               <div class="form-group">

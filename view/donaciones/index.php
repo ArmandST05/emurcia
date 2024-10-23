@@ -133,6 +133,7 @@ $totalKg = 0;
               <th>Kilogramos</th>
               <th>Zona</th>
               <th>Comentario</th>
+              <th>Comprobante</th>
               <th>Acción</th>
             </tr>
           </thead>
@@ -144,8 +145,15 @@ $totalKg = 0;
               <tr>
                 <td><?php echo $donacion["fecha"] ?></td>
                 <td class="text-right"><?php echo $donacion["kilogramos"] ?></td>
-                <td><?php echo strtoupper($donacion["zona"]) ?></td>
+                <td><?php echo $zonaNombre; ?></td>
                 <td><?php echo $donacion["comentarios"] ?></td>
+                <td>
+                    <a href="<?php echo 'https://cgtest.v2technoconsulting.com/view/donaciones/comprobantes/' . basename($donacion['comprobante_donaciones']); ?>" download>
+                        Descargar comprobante
+                     </a>
+                </td>
+
+
                 <td>
                   <?php if ($_SESSION['tipoUsuario'] == "u" || $_SESSION["tipoUsuario"] == "su") : ?>
                     <button class='btn btn-sm btn-primary' type='button' onclick='eliminarDonacion("<?php echo $donacion['iddonacion'] ?>");'><i class='fas fa-trash'></i></button>

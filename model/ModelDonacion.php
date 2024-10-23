@@ -35,13 +35,14 @@ class ModelDonacion
     return $sql;
   }
 
-  function insertar($fecha, $cantidad, $zonaId, $comentario)
+  function insertar($fecha, $cantidad, $zonaId, $comentario, $comprobanteDonacion)
   {
     $this->base_datos->insert("donaciones", [
       "fecha" => $fecha,
       "kilogramos" => $cantidad,
       "zona_id" => $zonaId,
-      "comentarios" => $comentario
+      "comentarios" => $comentario,
+      "comprobante_donaciones" => $comprobanteDonacion
     ]);
     return $this->base_datos->id();
   }
