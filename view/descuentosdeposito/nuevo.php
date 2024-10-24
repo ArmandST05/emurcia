@@ -43,7 +43,16 @@ $fecha = date('Y-m-d');
     <div class="card shadow mb-4">
       <!-- Card Body -->
       <div class="card-body">
-        <form action="../controller/DescuentosDeposito/Insertar.php" method="POST" id="formNuevoDescuento">
+        <form action="../controller/DescuentosDeposito/Insertar.php" method="POST" id="formNuevoDescuento" enctype="multipart/form-data">
+        <div class="row">
+           <div class="col-md-4">
+               
+            <label for="comprobante">Subir Comprobante de Autoconsumo:</label>
+            <input type="file" name="comprobante" id="comprobante" accept="image/*" required>
+            
+    
+            </div>
+          </div>
           <div class="row">
             <div class="col-md-5">
               <div class="form-group">

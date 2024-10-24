@@ -37,7 +37,7 @@ class ModelDescuentoDeposito {
 		return $sql;
 	}
 
-	function insertar($fecha,$zonaId,$pagoElectronico,$valeRetiro,$descripcionValeRetiro,$gastos,$cheque,$otrasSalidas)
+	function insertar($fecha,$zonaId,$pagoElectronico,$valeRetiro,$descripcionValeRetiro,$gastos,$cheque,$otrasSalidas, $comprobanteDescuento)
 	{
 		$this->base_datos->insert("descuentos_deposito", [
 			"fecha" => $fecha,
@@ -47,7 +47,8 @@ class ModelDescuentoDeposito {
 			"descripcion_vale_retiro" => $descripcionValeRetiro,
 			"gastos" => $gastos,
 			"cheque" => $cheque,
-			"otras_salidas" => $otrasSalidas
+			"otras_salidas" => $otrasSalidas,
+			"comprobante_descuentos" => $comprobanteDescuento
 		]);
 		
 		return $this->base_datos->id();

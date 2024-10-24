@@ -141,128 +141,140 @@ $totalGralO = 0;
         </div>
         <div class="row">
           <table class="table table-bordered table-sm table-responsive" id="listaTabla" name="listaTabla">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Ventas</th>
-                <th>PE</th><!-- Pago Electrónico -->
-                <th>VR</th><!-- Vale de Retiro (Váucher) -->
-                <th>Descripción VR</th><!-- Descripción Vale de Retiro (Váucher) -->
-                <th>GT</th><!-- Gastos -->
-                <th>CH</th><!-- Cheque -->
-                <th>T (Transferencias)</th><!-- Otras Salidas -->
-                <th>Total Descuentos</th><!-- Total Descuentos -->
-                <th>Efectivo</th><!-- Efectivo -->
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php
-              foreach ($fechasVentasContado as $fechaVentaContado) :
-                $totalPE = 0;
-                $totalVR = 0;
-                $totalGT = 0;
-                $totalCH = 0;
-                $totalO = 0;
-                $totalEfectivo = 0;
-                $totalDescuentosFecha = 0;
-              ?>
-                <tr class="bg-light text-right" data-tt-id="<?php echo $fechaVentaContado["fecha"] ?>">
-                  <td><b><?php echo $fechaVentaContado["fecha"] ?></b></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                </tr>
-                <?php
-                if ($fechaVentaContado["cantidad_descuentos_deposito"] > 0) :
-                  $descuentosDespositos = $modelDescuentoDeposito->listaZonaFecha($zonaId, $fechaVentaContado["fecha"]);
-                  foreach ($descuentosDespositos as $claveDescuento => $descuento) :
-                    $totalPE += $descuento["pago_electronico"];
-                    $totalVR += $descuento["vale_retiro"];
-                    $totalGT += $descuento["gastos"];
-                    $totalCH += $descuento["cheque"];
-                    $totalO += $descuento["otras_salidas"];
-                    $totalDescuento = $descuento["pago_electronico"] +  $descuento["vale_retiro"] + $descuento["gastos"] + $descuento["cheque"] + $descuento["otras_salidas"];
-                    $totalDescuentosFecha += $totalDescuento;
-                ?>
-                    <tr class="text-right" data-tt-id="<?php echo $claveDescuento ?>" data-tt-parent-id="<?php echo $fechaVentaContado["fecha"] ?>">
-                      <td><?php echo $descuento["fecha"] ?></td>
-                      <td></td>
-                      <td>$<?php echo number_format($descuento["pago_electronico"], 2) ?></td>
-                      <td>$<?php echo number_format($descuento["vale_retiro"], 2) ?></td>
-                      <td class="text-justify"><?php echo $descuento["descripcion_vale_retiro"] ?></td>
-                      <td>$<?php echo number_format($descuento["gastos"], 2) ?></td>
-                      <td>$<?php echo number_format($descuento["cheque"], 2) ?></td>
-                      <td>$<?php echo number_format($descuento["otras_salidas"], 2) ?></td>
-                      <td>$<?php echo number_format($totalDescuento, 2) ?></td>
-                      <td></td>
-                      <td class="text-center">
-                        <?php if ($_SESSION["tipoUsuario"] == "u" || $_SESSION["tipoUsuario"] == "mv") : ?>
-                          <button class='btn btn-sm btn-primary' type='button' onclick="eliminar('<?php echo $descuento['iddescuentodeposito']; ?>');"><i class='fas fa-trash fa-sm'></i></button>
-                        <?php endif; ?>
-                      </td>
-                    </tr>
-                  <?php
-                  endforeach;
-                  $totalEfectivo += ($fechaVentaContado["total_venta_contado"] - $totalDescuentosFecha);
-                  //Sumatoria Totales Finales
-                  $totalGralPE += $totalPE;
-                  $totalGralVR += $totalVR;
-                  $totalGralGT += $totalGT;
-                  $totalGralCH += $totalCH;
-                  $totalGralO += $totalO;
-                  $totalGralDescuentos += $totalDescuentosFecha;
-                  $totalGralEfectivo += $totalEfectivo;
-                  ?>
+          <thead>
+  <tr>
+    <th>Fecha</th>
+    <th>Ventas</th>
+    <th>PE</th><!-- Pago Electrónico -->
+    <th>VR</th><!-- Vale de Retiro (Váucher) -->
+    <th>Descripción VR</th><!-- Descripción Vale de Retiro (Váucher) -->
+    <th>GT</th><!-- Gastos -->
+    <th>CH</th><!-- Cheque -->
+    <th>T (Transferencias)</th><!-- Otras Salidas -->
+    <th>Total Descuentos</th><!-- Total Descuentos -->
+    <th>Efectivo</th><!-- Efectivo -->
+    <th>Comprobante</th><!-- Comprobante -->
+    <th>Acciones</th>
+  </tr>
+</thead>
+<tbody>
+  <?php
+  foreach ($fechasVentasContado as $fechaVentaContado) :
+    $totalPE = 0;
+    $totalVR = 0;
+    $totalGT = 0;
+    $totalCH = 0;
+    $totalO = 0;
+    $totalEfectivo = 0;
+    $totalDescuentosFecha = 0;
+  ?>
+    <tr class="bg-light text-right" data-tt-id="<?php echo $fechaVentaContado["fecha"] ?>">
+      <td><b><?php echo $fechaVentaContado["fecha"] ?></b></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <?php
+    if ($fechaVentaContado["cantidad_descuentos_deposito"] > 0) :
+      $descuentosDespositos = $modelDescuentoDeposito->listaZonaFecha($zonaId, $fechaVentaContado["fecha"]);
+      foreach ($descuentosDespositos as $claveDescuento => $descuento) :
+        $totalPE += $descuento["pago_electronico"];
+        $totalVR += $descuento["vale_retiro"];
+        $totalGT += $descuento["gastos"];
+        $totalCH += $descuento["cheque"];
+        $totalO += $descuento["otras_salidas"];
+        $totalDescuento = $descuento["pago_electronico"] +  $descuento["vale_retiro"] + $descuento["gastos"] + $descuento["cheque"] + $descuento["otras_salidas"];
+        $totalDescuentosFecha += $totalDescuento;
+    ?>
+        <tr class="text-right" data-tt-id="<?php echo $claveDescuento ?>" data-tt-parent-id="<?php echo $fechaVentaContado["fecha"] ?>">
+          <td><?php echo $descuento["fecha"] ?></td>
+          <td></td>
+          <td>$<?php echo number_format($descuento["pago_electronico"], 2) ?></td>
+          <td>$<?php echo number_format($descuento["vale_retiro"], 2) ?></td>
+          <td class="text-justify"><?php echo $descuento["descripcion_vale_retiro"] ?></td>
+          <td>$<?php echo number_format($descuento["gastos"], 2) ?></td>
+          <td>$<?php echo number_format($descuento["cheque"], 2) ?></td>
+          <td>$<?php echo number_format($descuento["otras_salidas"], 2) ?></td>
+          <td>$<?php echo number_format($totalDescuento, 2) ?></td>
+          <td></td>
+          <td class="text-center">
+            <?php if (!empty($descuento['comprobante_descuento'])) : ?>
+              <a href="<?php echo 'https://cgtest.v2technoconsulting.com/view/creditos/comprobantes/' . basename($descuento['comprobante_descuento']); ?>" download>
+                Descargar comprobante
+              </a>
+            <?php else : ?>
+              <p>No hay comprobante</p>
+            <?php endif; ?>
+          </td>
+          <td class="text-center">
+            <?php if ($_SESSION["tipoUsuario"] == "u" || $_SESSION["tipoUsuario"] == "mv") : ?>
+              <button class='btn btn-sm btn-primary' type='button' onclick="eliminar('<?php echo $descuento['iddescuentodeposito']; ?>');"><i class='fas fa-trash fa-sm'></i></button>
+            <?php endif; ?>
+          </td>
+        </tr>
+    <?php
+      endforeach;
+      $totalEfectivo += ($fechaVentaContado["total_venta_contado"] - $totalDescuentosFecha);
+      //Sumatoria Totales Finales
+      $totalGralPE += $totalPE;
+      $totalGralVR += $totalVR;
+      $totalGralGT += $totalGT;
+      $totalGralCH += $totalCH;
+      $totalGralO += $totalO;
+      $totalGralDescuentos += $totalDescuentosFecha;
+      $totalGralEfectivo += $totalEfectivo;
+      ?>
 
-                <?php else :
-                  //Si no hay descuentos depósito ese día, de todos modos mostrar el total de las ventas.
-                  $totalEfectivo += $fechaVentaContado["total_venta_contado"];
-                  $totalGralEfectivo += $totalEfectivo;
-                ?>
-                  <tr data-tt-id="0" data-tt-parent-id="<?php echo $fechaVentaContado["fecha"] ?>">
-                    <td></td>
-                    <td colspan="10">No se registraron descuentos depósitos en esta fecha.</td>
-                  </tr>
-                <?php endif; ?>
-                <tr class="text-right">
-                  <td><b></b></td>
-                  <td><b>$<?php echo number_format($fechaVentaContado["total_venta_contado"], 2) ?></b></td>
-                  <td><b>$<?php echo number_format($totalPE, 2) ?></b></td>
-                  <td><b>$<?php echo number_format($totalVR, 2) ?></b></td>
-                  <td></td>
-                  <td><b>$<?php echo number_format($totalGT, 2) ?></b></td>
-                  <td><b>$<?php echo number_format($totalCH, 2) ?></b></td>
-                  <td><b>$<?php echo number_format($totalO, 2) ?></b></td>
-                  <td><b>$<?php echo number_format($totalDescuentosFecha, 2) ?></b></td>
-                  <td><b>$<?php echo number_format($totalEfectivo, 2) ?></b></td>
-                  <td></td>
-                </tr>
-              <?php
-                $totalGralVentasContado += $fechaVentaContado["total_venta_contado"];
-              endforeach;
-              ?>
-              <tr class="text-right bg-light">
-                <td><b>TOTAL</b></td>
-                <td><b>$<?php echo number_format($totalGralVentasContado, 2) ?></b></td>
-                <td><b>$<?php echo number_format($totalGralPE, 2) ?></b></td>
-                <td><b>$<?php echo number_format($totalGralVR, 2) ?></b></td>
-                <td></td>
-                <td><b>$<?php echo number_format($totalGralGT, 2) ?></b></td>
-                <td><b>$<?php echo number_format($totalGralCH, 2) ?></b></td>
-                <td><b>$<?php echo number_format($totalGralO, 2) ?></b></td>
-                <td><b>$<?php echo number_format($totalGralDescuentos, 2) ?></b></td>
-                <td><b>$<?php echo number_format($totalGralEfectivo, 2) ?></b></td>
-                <td></td>
-              </tr>
-            </tbody>
+    <?php else :
+      //Si no hay descuentos depósito ese día, de todos modos mostrar el total de las ventas.
+      $totalEfectivo += $fechaVentaContado["total_venta_contado"];
+      $totalGralEfectivo += $totalEfectivo;
+    ?>
+      <tr data-tt-id="0" data-tt-parent-id="<?php echo $fechaVentaContado["fecha"] ?>">
+        <td></td>
+        <td colspan="11">No se registraron descuentos depósitos en esta fecha.</td>
+      </tr>
+    <?php endif; ?>
+    <tr class="text-right">
+      <td><b></b></td>
+      <td><b>$<?php echo number_format($fechaVentaContado["total_venta_contado"], 2) ?></b></td>
+      <td><b>$<?php echo number_format($totalPE, 2) ?></b></td>
+      <td><b>$<?php echo number_format($totalVR, 2) ?></b></td>
+      <td></td>
+      <td><b>$<?php echo number_format($totalGT, 2) ?></b></td>
+      <td><b>$<?php echo number_format($totalCH, 2) ?></b></td>
+      <td><b>$<?php echo number_format($totalO, 2) ?></b></td>
+      <td><b>$<?php echo number_format($totalDescuentosFecha, 2) ?></b></td>
+      <td><b>$<?php echo number_format($totalEfectivo, 2) ?></b></td>
+      <td></td>
+    </tr>
+  <?php
+    $totalGralVentasContado += $fechaVentaContado["total_venta_contado"];
+  endforeach;
+  ?>
+  <tr class="text-right bg-light">
+    <td><b>TOTAL</b></td>
+    <td><b>$<?php echo number_format($totalGralVentasContado, 2) ?></b></td>
+    <td><b>$<?php echo number_format($totalGralPE, 2) ?></b></td>
+    <td><b>$<?php echo number_format($totalGralVR, 2) ?></b></td>
+    <td></td>
+    <td><b>$<?php echo number_format($totalGralGT, 2) ?></b></td>
+    <td><b>$<?php echo number_format($totalGralCH, 2) ?></b></td>
+    <td><b>$<?php echo number_format($totalGralO, 2) ?></b></td>
+    <td><b>$<?php echo number_format($totalGralDescuentos, 2) ?></b></td>
+    <td><b>$<?php echo number_format($totalGralEfectivo, 2) ?></b></td>
+    <td></td>
+  </tr>
+</tbody>
+
           </table>
         </div>
       </div>
