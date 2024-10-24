@@ -22,7 +22,16 @@ $zonas = ($_SESSION["tipoZona"] == 1) ? $modelZona->obtenerZonasGas() : $modelZo
     <div class="card shadow mb-4">
       <!-- Card Body -->
       <div class="card-body">
-        <form action="../controller/Traspasos/InsertarTraspaso.php" method="POST">
+        <form action="../controller/Traspasos/InsertarTraspaso.php" method="POST"  enctype="multipart/form-data">
+        <div class="row">
+           <div class="col-md-4">
+               
+            <label for="comprobante">Subir Comprobante de Traspaso:</label>
+            <input type="file" name="comprobante" id="comprobante" accept="image/*" required>
+            
+    
+            </div>
+          </div>
           <div class="row">
             <div class="col">
               <div class="form-group">

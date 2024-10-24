@@ -86,14 +86,15 @@ class ModelTraspaso
 		return $sql;
 	}
 
-	function insertar($fecha, $zonaOrigen, $zonaDestino, $cantidad)
+	function insertar($fecha, $zonaOrigen, $zonaDestino, $cantidad, $comprobanteTraspaso)
 	{
 		$this->base_datos->insert("traspasos", [
 			"fecha" => $fecha,
 			"zona_origen_id" => $zonaOrigen,
 			"zona_destino_id" => $zonaDestino,
 			"cantidad" => $cantidad,
-			"estatus_traspaso_id" => 2
+			"estatus_traspaso_id" => 2,
+			"comprobante_traspaso" => $comprobanteTraspaso
 		]);
 		return $this->base_datos->id();
 	}
