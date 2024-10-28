@@ -18,67 +18,103 @@ class ModelTraspaso
 		$this->base_datos = new Medoo();
 	}
 
-	function obtenerEnviadosZonaIdEntreFechas($zonaId,$fechaInicio,$fechaFin)
-	{
-		$resultado = $this->base_datos->query("SELECT traspasos.idtraspaso,traspasos.fecha,
-			zona_origen.nombre AS zona_origen,zona_destino.nombre AS zona_destino,
-			traspasos.cantidad,traspasos.estatus_traspaso_id AS estatus_id,
-			estatus_traspaso.nombre AS estatus_nombre 
-			FROM traspasos,zonas AS zona_origen, zonas AS zona_destino, estatus_traspaso
-			WHERE zona_origen.idzona = traspasos.zona_origen_id 
-			AND zona_destino.idzona = traspasos.zona_destino_id 
-			AND estatus_traspaso.idestatustraspaso = traspasos.estatus_traspaso_id
-			AND zona_origen_id ='$zonaId' 
-			AND fecha >= '$fechaInicio'
-			AND fecha <= '$fechaFin'")->fetchAll(PDO::FETCH_ASSOC);
-		return $resultado;
-		}
+	function obtenerEnviadosZonaIdEntreFechas($zonaId, $fechaInicio, $fechaFin)
+{
+    $resultado = $this->base_datos->query("SELECT 
+            traspasos.idtraspaso,
+            traspasos.fecha,
+            zona_origen.nombre AS zona_origen,
+            zona_destino.nombre AS zona_destino,
+            traspasos.cantidad,
+            traspasos.estatus_traspaso_id AS estatus_id,
+            estatus_traspaso.nombre AS estatus_nombre,
+            traspasos.comprobante_traspaso  -- Agregando el campo comprobante_traspaso
+        FROM 
+            traspasos,
+            zonas AS zona_origen,
+            zonas AS zona_destino,
+            estatus_traspaso
+        WHERE 
+            zona_origen.idzona = traspasos.zona_origen_id 
+            AND zona_destino.idzona = traspasos.zona_destino_id 
+            AND estatus_traspaso.idestatustraspaso = traspasos.estatus_traspaso_id
+            AND zona_origen_id = '$zonaId' 
+            AND fecha >= '$fechaInicio'
+            AND fecha <= '$fechaFin'")->fetchAll(PDO::FETCH_ASSOC);
+    return $resultado;
+}
 
-	function obtenerRecibidosZonaIdEntreFechas($zonaId,$fechaInicio,$fechaFin)
-	{
-		$resultado = $this->base_datos->query("SELECT traspasos.idtraspaso,traspasos.fecha,
-			zona_origen.nombre AS zona_origen,zona_destino.nombre AS zona_destino,
-			traspasos.cantidad,traspasos.estatus_traspaso_id AS estatus_id,
-			estatus_traspaso.nombre AS estatus_nombre
-			FROM traspasos,zonas AS zona_origen, zonas AS zona_destino, estatus_traspaso
-			WHERE zona_origen.idzona = traspasos.zona_origen_id 
-			AND zona_destino.idzona = traspasos.zona_destino_id 
-			AND estatus_traspaso.idestatustraspaso = traspasos.estatus_traspaso_id
-			AND zona_destino_id ='" . $zonaId . "' 
-			AND fecha >='$fechaInicio'
-			AND fecha <='$fechaFin'
-			")->fetchAll(PDO::FETCH_ASSOC);
-		return $resultado;
-	}
+function obtenerRecibidosZonaIdEntreFechas($zonaId, $fechaInicio, $fechaFin)
+{
+    $resultado = $this->base_datos->query("SELECT 
+            traspasos.idtraspaso,
+            traspasos.fecha,
+            zona_origen.nombre AS zona_origen,
+            zona_destino.nombre AS zona_destino,
+            traspasos.cantidad,
+            traspasos.estatus_traspaso_id AS estatus_id,
+            estatus_traspaso.nombre AS estatus_nombre,
+            traspasos.comprobante_traspaso  -- Agregado el campo comprobante_traspaso
+        FROM 
+            traspasos,
+            zonas AS zona_origen,
+            zonas AS zona_destino,
+            estatus_traspaso
+        WHERE 
+            zona_origen.idzona = traspasos.zona_origen_id 
+            AND zona_destino.idzona = traspasos.zona_destino_id 
+            AND estatus_traspaso.idestatustraspaso = traspasos.estatus_traspaso_id
+            AND zona_destino_id ='" . $zonaId . "' 
+            AND fecha >= '$fechaInicio'
+            AND fecha <= '$fechaFin'
+            ")->fetchAll(PDO::FETCH_ASSOC);
+    return $resultado;
+}
 
-	function obtenerTotalRecibidosZonaIdEntreFechas($zonaId,$fechaInicio,$fechaFin)
-	{
-		//Solo aceptados
-		$resultado = $this->base_datos->query("SELECT SUM(cantidad) AS total
-			FROM traspasos,zonas AS zona_origen, zonas AS zona_destino, estatus_traspaso
-			WHERE zona_origen.idzona = traspasos.zona_origen_id 
-			AND zona_destino.idzona = traspasos.zona_destino_id 
-			AND estatus_traspaso.idestatustraspaso = traspasos.estatus_traspaso_id
-			AND zona_destino_id ='" . $zonaId . "' 
-			AND fecha >='$fechaInicio'
-			AND fecha <='$fechaFin'
-			AND traspasos.estatus_traspaso_id = 1")->fetchAll(PDO::FETCH_ASSOC);
-		return $resultado;
-	}
 
-	function obtenerTotalEnviadosZonaIdEntreFechas($zonaId,$fechaInicio,$fechaFin)
-	{
-		$resultado = $this->base_datos->query("SELECT SUM(cantidad) AS total
-			FROM traspasos,zonas AS zona_origen, zonas AS zona_destino, estatus_traspaso
-			WHERE zona_origen.idzona = traspasos.zona_origen_id 
-			AND zona_destino.idzona = traspasos.zona_destino_id 
-			AND estatus_traspaso.idestatustraspaso = traspasos.estatus_traspaso_id
-			AND zona_origen_id ='" . $zonaId . "' 
-			AND fecha >='$fechaInicio'
-			AND fecha <='$fechaFin'
-			")->fetchAll(PDO::FETCH_ASSOC);
-		return $resultado;
-	}
+function obtenerTotalRecibidosZonaIdEntreFechas($zonaId, $fechaInicio, $fechaFin)
+{
+    // Solo aceptados
+    $resultado = $this->base_datos->query("SELECT SUM(cantidad) AS total
+        FROM 
+            traspasos,
+            zonas AS zona_origen, 
+            zonas AS zona_destino, 
+            estatus_traspaso
+        WHERE 
+            zona_origen.idzona = traspasos.zona_origen_id 
+            AND zona_destino.idzona = traspasos.zona_destino_id 
+            AND estatus_traspaso.idestatustraspaso = traspasos.estatus_traspaso_id
+            AND zona_destino_id ='" . $zonaId . "' 
+            AND fecha >= '$fechaInicio'
+            AND fecha <= '$fechaFin'
+            AND traspasos.estatus_traspaso_id = 1
+    ")->fetchAll(PDO::FETCH_ASSOC);
+    
+    return $resultado;
+}
+
+
+function obtenerTotalEnviadosZonaIdEntreFechas($zonaId, $fechaInicio, $fechaFin)
+{
+    $resultado = $this->base_datos->query("SELECT SUM(cantidad) AS total
+        FROM 
+            traspasos,
+            zonas AS zona_origen, 
+            zonas AS zona_destino, 
+            estatus_traspaso
+        WHERE 
+            zona_origen.idzona = traspasos.zona_origen_id 
+            AND zona_destino.idzona = traspasos.zona_destino_id 
+            AND estatus_traspaso.idestatustraspaso = traspasos.estatus_traspaso_id
+            AND zona_origen_id ='" . $zonaId . "' 
+            AND fecha >= '$fechaInicio'
+            AND fecha <= '$fechaFin'
+    ")->fetchAll(PDO::FETCH_ASSOC);
+    
+    return $resultado;
+}
+
 
 	function obtenerId($id)
 	{

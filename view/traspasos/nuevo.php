@@ -26,8 +26,8 @@ $zonas = ($_SESSION["tipoZona"] == 1) ? $modelZona->obtenerZonasGas() : $modelZo
         <div class="row">
            <div class="col-md-4">
                
-            <label for="comprobante">Subir Comprobante de Traspaso:</label>
-            <input type="file" name="comprobante" id="comprobante" accept="image/*" required>
+            <label for="comprobante_traspaso">Subir Comprobante de Traspaso:</label>
+            <input type="file" name="comprobante_traspaso" id="comprobante_traspaso" accept="image/*" required>
             
     
             </div>

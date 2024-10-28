@@ -186,6 +186,9 @@ $totalGralO = 0;
     if ($fechaVentaContado["cantidad_descuentos_deposito"] > 0) :
       $descuentosDespositos = $modelDescuentoDeposito->listaZonaFecha($zonaId, $fechaVentaContado["fecha"]);
       foreach ($descuentosDespositos as $claveDescuento => $descuento) :
+        echo "<pre>";
+        print_r($descuento);
+        echo "</pre>";
         $totalPE += $descuento["pago_electronico"];
         $totalVR += $descuento["vale_retiro"];
         $totalGT += $descuento["gastos"];
@@ -207,7 +210,7 @@ $totalGralO = 0;
           <td></td>
           <td class="text-center">
             <?php if (!empty($descuento['comprobante_descuento'])) : ?>
-              <a href="<?php echo 'https://cgtest.v2technoconsulting.com/view/creditos/comprobantes/' . basename($descuento['comprobante_descuento']); ?>" download>
+              <a href="<?php echo 'https://cgtest.v2technoconsulting.com/view/descuentosdeposito/comprobantes/' . basename($descuento['comprobante_descuento']); ?>" download>
                 Descargar comprobante
               </a>
             <?php else : ?>

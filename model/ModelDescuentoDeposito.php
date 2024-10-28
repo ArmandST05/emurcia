@@ -48,7 +48,7 @@ class ModelDescuentoDeposito {
 			"gastos" => $gastos,
 			"cheque" => $cheque,
 			"otras_salidas" => $otrasSalidas,
-			"comprobante_descuentos" => $comprobanteDescuento
+			"comprobantes_descuentos" => $comprobanteDescuento
 		]);
 		
 		return $this->base_datos->id();
