@@ -51,7 +51,7 @@ $clientesDescuento = $modelClienteDescuento->listaZonaEstatus($zonaId, 1);
   <div class="col-xl-12 col-lg-12">
     <div class="card shadow mb-4">
       <div class="card-body">
-        <form action="../controller/Ventas/Insertar.php" method="POST" id="formNuevaVenta">
+        <form action="../controller/Ventas/Insertar.php" method="POST" id="formNuevaVenta" enctype="multipart/form-data">
           <div class="row">
             <div class="col-md-12">
               <label class="bg-danger text-white text-bold">Verifica que el vendedor y ayudante sean los correctos para la venta. Si los nombres no coinciden o el vendedor/ayudante faltó ese día informa el administrador para que haga el cambio y puedas capturar tu venta correctamente. </label>
@@ -64,8 +64,8 @@ $clientesDescuento = $modelClienteDescuento->listaZonaEstatus($zonaId, 1);
           </div>
           <div class="row">
             <div class="col-md-4">
-            <label for="comprobante">Subir Comprobante:</label>
-            <input type="file" name="comprobante" id="comprobante" required>
+            <label for="comprobante_venta">Subir Comprobante:</label>
+            <input type="file" name="comprobante_venta" id="comprobante_venta" required>
             </div>
           </div>
           <div class="row">
@@ -566,7 +566,15 @@ $clientesDescuento = $modelClienteDescuento->listaZonaEstatus($zonaId, 1);
         cantidadDescuentosCliente = parseFloat(cantidadDescuentosCliente).toFixed(2);
         let cantidadCapturadaDescuentosCliente = parseFloat(parseFloat($("#cantidadLPVtaContado").val()) + parseFloat($("#cantidadLPVtaCredito").val())).toFixed(2);
        
-        if(totalDescuentosCliente != totalCapturadoDescuentosCliente){
+
+
+
+
+
+
+
+
+       /* if(totalDescuentosCliente != totalCapturadoDescuentosCliente){
           event.preventDefault();
           alertify.error("Coloca correctamente el desglose de los descuentos que otorgaste.");
         }
@@ -574,7 +582,7 @@ $clientesDescuento = $modelClienteDescuento->listaZonaEstatus($zonaId, 1);
           event.preventDefault();
           alertify.error("Coloca correctamente el desglose de las cantidades (litros) de descuentos que otorgaste. Separadas por contado y crédito.");
         }
-        else if(cantidadVta <= 0 && totalSalidasVta <= 0){
+        else */if(cantidadVta <= 0 && totalSalidasVta <= 0){
           event.preventDefault();
           alertify.error("Ingresa una cantidad válida");
         }

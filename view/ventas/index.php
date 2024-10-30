@@ -209,6 +209,7 @@ if ($_SESSION["tipoUsuario"] == "su" && $zonaId == "all") { //Obtener total de t
                   <th>Desc. Contado</th>
                   <th>Total Venta</th>
                   <th>Precio Lleno</th>
+                  <th>Comp.</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -285,6 +286,7 @@ if ($_SESSION["tipoUsuario"] == "su" && $zonaId == "all") { //Obtener total de t
                         foreach($empleados as $empleado){
                           $empleadosString .= $empleado["nombre"]."/ ";
                         }
+                        
                     ?>
                         <tr data-tt-id="f<?php echo $claveFecha ?>" data-tt-parent-id="r<?php echo $claveRuta ?>" class="text-right">
                           <td><?php echo $venta["fecha"]."<br>".$empleadosString; ?></td>
@@ -303,6 +305,19 @@ if ($_SESSION["tipoUsuario"] == "su" && $zonaId == "all") { //Obtener total de t
                           <td>$<?php echo number_format($venta["descuento_total_venta_contado"], 2); ?></td>
                           <td>$<?php echo number_format(($venta["total_venta"] - $venta["descuento_total_venta_credito"] - $venta["descuento_total_venta_contado"]), 2); ?></td>
                           <td>$<?php echo number_format($venta["total_venta"], 2); ?></td>
+                          <td>
+                              <?php 
+                                $comprobante = $modelVenta->obtenerComprobanteVenta($venta["idventa"]);
+                                
+                              ?>
+                               <?php if ($comprobante && !empty($comprobante)): ?>
+                                      <a href="<?php echo 'https://cgtest.v2technoconsulting.com/view/ventas/comprobantes/' . basename($comprobante['comprobante_venta']); ?>" download style="margin-right: 25px;">
+                                          <i class="fas fa-download" aria-hidden="true" ></i> <!-- Icono de descarga -->
+                                      </a>
+                                  <?php else: ?>
+                                      No disponible
+                                  <?php endif; ?>
+                          </td>
                           <td>
                             <?php if (($fecha == $fechaActual && ($_SESSION["tipoUsuario"] == "u"  || $_SESSION['tipoUsuario'] == "mv")) || ($_SESSION["tipoUsuario"] == "su" && $venta["total_ventas_posteriores"] == 0)) : ?>
                               <button class='btn btn-sm btn-primary' type='button' onclick="eliminar('<?php echo $venta['idventa']; ?>');"><i class='fas fa-trash fa-sm'></i></button>

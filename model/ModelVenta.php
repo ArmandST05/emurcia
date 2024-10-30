@@ -349,7 +349,7 @@ class ModelVenta
 		return $sql;
 	}
 	
-	function insertarVenta($fecha, $hora, $zonaVta, $rutaVta)
+	function insertarVenta($fecha, $hora, $zonaVta, $rutaVta, $comprobanteVenta)
 	{
 		$this->base_datos->insert("ventas", [
 			"fecha" => $fecha,
@@ -357,6 +357,7 @@ class ModelVenta
 			"zona_id" => $zonaVta,
 			"ruta_id" => $rutaVta,
 			"total" => 0,
+			"comprobante_venta" => $comprobanteVenta
 		]);
 		return $this->base_datos->id();
 	}
@@ -685,6 +686,16 @@ function obtenerClientesPedidos($zonaId) {
 			ORDER BY ve.ayudante ASC")->fetchAll(PDO::FETCH_ASSOC);
 		return $sql;
 	}
+	function obtenerComprobanteVenta($ventaId)
+{
+    // Cambia "ventas" por el nombre real de tu tabla de ventas si es diferente
+    $sql = $this->base_datos->query("SELECT comprobante_venta 
+        FROM ventas 
+        WHERE idventa = '$ventaId'")->fetch(PDO::FETCH_ASSOC);
+    
+    return $sql; // Devuelve el comprobante o null si no existe
+}
+
 
 	function obtenerVentaEmpleadoPorTipo($ventaId, $ayudante)
 	{

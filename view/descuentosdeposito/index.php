@@ -186,9 +186,7 @@ $totalGralO = 0;
     if ($fechaVentaContado["cantidad_descuentos_deposito"] > 0) :
       $descuentosDespositos = $modelDescuentoDeposito->listaZonaFecha($zonaId, $fechaVentaContado["fecha"]);
       foreach ($descuentosDespositos as $claveDescuento => $descuento) :
-        echo "<pre>";
-        print_r($descuento);
-        echo "</pre>";
+        
         $totalPE += $descuento["pago_electronico"];
         $totalVR += $descuento["vale_retiro"];
         $totalGT += $descuento["gastos"];
@@ -208,15 +206,17 @@ $totalGralO = 0;
           <td>$<?php echo number_format($descuento["otras_salidas"], 2) ?></td>
           <td>$<?php echo number_format($totalDescuento, 2) ?></td>
           <td></td>
-          <td class="text-center">
-            <?php if (!empty($descuento['comprobante_descuento'])) : ?>
-              <a href="<?php echo 'https://cgtest.v2technoconsulting.com/view/descuentosdeposito/comprobantes/' . basename($descuento['comprobante_descuento']); ?>" download>
-                Descargar comprobante
-              </a>
-            <?php else : ?>
-              <p>No hay comprobante</p>
-            <?php endif; ?>
-          </td>
+          <td>
+    <?php if (!empty($descuento['comprobante_descuentos'])): ?>
+        <a href="<?php echo 'https://cgtest.v2technoconsulting.com/view/descuentosdeposito/comprobantes/' . basename($descuento['comprobante_descuentos']); ?>" download>
+            Descargar comprobante
+        </a>
+    <?php else: ?>
+        No disponible
+    <?php endif; ?>
+</td>
+
+
           <td class="text-center">
             <?php if ($_SESSION["tipoUsuario"] == "u" || $_SESSION["tipoUsuario"] == "mv") : ?>
               <button class='btn btn-sm btn-primary' type='button' onclick="eliminar('<?php echo $descuento['iddescuentodeposito']; ?>');"><i class='fas fa-trash fa-sm'></i></button>
