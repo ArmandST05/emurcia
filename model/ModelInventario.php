@@ -103,6 +103,62 @@ class ModelInventario
 		ORDER BY calendar.fecha_inventario,rutas.clave_ruta, productos.nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
 		return $sql;
 	}
+	function obtenerReporteInventarioFechasEstaciones($fechaInicial, $fechaFinal, $zonaId)
+{
+    // Consultar rutas que son estaciones
+    $sqlRutasEstaciones = $this->base_datos->query("SELECT idruta FROM rutas WHERE 
+        clave_ruta LIKE '%est.%' 
+        OR clave_ruta LIKE '%Est%' 
+        OR clave_ruta LIKE '%Estacion%' 
+        OR clave_ruta LIKE '%Estación%'")->fetchAll(PDO::FETCH_COLUMN);
+
+    // Convertir las rutas a un string para el IN clause
+    $rutasEstaciones = implode(',', array_map('intval', $sqlRutasEstaciones));
+
+    $sql = $this->base_datos->query("SELECT calendar.fecha_inventario, rutas.idruta AS ruta_id, 
+        rutas.clave_ruta AS ruta_nombre,
+        rutas.capacidad as ruta_capacidad, 
+        productos.nombre AS producto_nombre, productos.idproducto AS producto_id, 
+        productos.capacidad as producto_capacidad,
+        IFNULL((SELECT SUM(cantidad) FROM inventario WHERE ruta_id = rutas.idruta 
+            AND producto_id = productos.idproducto 
+            AND tipo_transaccion_inventario_id = 1
+            AND inventario.fecha <= calendar.fecha_inventario), 0) AS total_entradas,
+        IFNULL((SELECT SUM(cantidad) FROM inventario WHERE ruta_id = rutas.idruta 
+            AND producto_id = productos.idproducto 
+            AND tipo_transaccion_inventario_id = 2
+            AND inventario.fecha <= calendar.fecha_inventario), 0) AS total_salidas,
+        IFNULL(((SELECT SUM(cantidad) FROM inventario WHERE ruta_id = rutas.idruta 
+            AND producto_id = productos.idproducto 
+            AND tipo_transaccion_inventario_id = 1
+            AND inventario.fecha <= calendar.fecha_inventario) - 
+        (SELECT SUM(cantidad) FROM inventario WHERE ruta_id = rutas.idruta 
+            AND producto_id = productos.idproducto 
+            AND tipo_transaccion_inventario_id = 2
+            AND inventario.fecha <= calendar.fecha_inventario)), 0) AS inventario_actual
+    FROM rutas
+    CROSS JOIN (
+        SELECT fecha_inventario FROM (
+            SELECT ADDDATE('1970-01-010', t4.i * 10000 + t3.i * 1000 + t2.i * 100 + t1.i * 10 + t0.i) fecha_inventario 
+            FROM            
+                (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t0,
+                (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t1,
+                (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t2,
+                (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t3,
+                (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t4
+        ) v
+        WHERE fecha_inventario BETWEEN '$fechaInicial' AND '$fechaFinal'
+    ) calendar
+    LEFT JOIN tipo_ruta_productos ON rutas.tipo_ruta_id = tipo_ruta_productos.tipo_ruta_id 
+    INNER JOIN productos ON tipo_ruta_productos.producto_id = productos.idproducto 
+    WHERE rutas.zona_id = '$zonaId'
+    AND rutas.estatus = 1
+    AND rutas.idruta IN ($rutasEstaciones)  -- Filtrar por las rutas que son estaciones
+    ORDER BY calendar.fecha_inventario, rutas.clave_ruta, productos.nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
+
+    return $sql;
+}
+
 
 	function obtenerReporteInventarioGasolinaFechas($fechaInicial, $fechaFinal, $mes, $anio, $zonaId)
 	{
@@ -415,6 +471,62 @@ class ModelInventario
 		return $data;
 		
 	}
+	function obtenerTotalInventarioGasKgZonaFechaEstaciones($zonaId, $fecha)
+{
+    $datosInventario = $this->obtenerReporteInventarioFechasEstaciones($fecha, $fecha, $zonaId);
+    $inventarios = array();
+    
+    foreach ($datosInventario as $dato) {
+        $inventarios[$dato["fecha_inventario"]][] = $dato;
+    }
+
+    $totalKgZona = 0;
+    $totalLtsZona = 0;
+
+    foreach ($inventarios as $claveInventario => $inventarioFecha) {
+        $totalLitrosFecha = 0;
+        $totalKilosFecha = 0;
+
+        foreach ($inventarioFecha as $claveRuta => $ruta) {
+            $productoId = $ruta["producto_id"];
+            $inventarioActual = number_format($ruta["inventario_actual"], 2);
+
+            $totalEntradas = $ruta["total_entradas"];
+            $totalSalidas = $ruta["total_salidas"];
+
+            if (number_format($totalSalidas, 2) == 0) {
+                $inventarioActual = number_format($totalEntradas, 2);
+            } else {
+                $inventarioActual = number_format(($totalEntradas - $totalSalidas), 2);
+            }
+
+            // Si el producto es Lts, realizar cálculo de inventario en base a inventario actual y capacidad de Pipa
+            if ($productoId == 4) {
+                $litros = (($inventarioActual * $ruta["ruta_capacidad"]) / 100);
+                $kilos = ($litros * .524);
+            } elseif ($productoId == 6 || $productoId == 7 || $productoId == 8) {
+                // Tanques Gasolina
+                $litros = $inventarioActual;
+                $kilos = ($litros * .524);
+            } else {
+                // Se calcula los litros vendidos por el cilindro
+                $kilos = ($inventarioActual * $ruta["producto_capacidad"]);
+                $litros = ($kilos / .524);
+            }
+
+            $totalLitrosFecha += $litros;
+            $totalKilosFecha += $kilos;
+        }
+
+        $totalKgZona += $totalKilosFecha;
+        $totalLtsZona += $totalLitrosFecha;
+    }
+
+    $data["totalKgZona"] = $totalKgZona; // Cambiado a totalKgZona
+    $data["totalLtsZona"] = $totalLtsZona; // Cambiado a totalLtsZona
+
+    return $data;
+}
 
 	function obtenerTotalComprasTraspasosGasKgZonaFecha($zonaId, $fechaInicial,$fechaFinal)
 	{
@@ -434,9 +546,42 @@ class ModelInventario
 			
 			$total = $totalData[0]["total"]*.524;
 		}
-		$data["totalKgCompras"] = $total;
+		$data["totalKgCompras"] = $total; 	
 		return $data;
 	}
+	function obtenerTotalComprasTraspasosGasKgEstacionFecha($zonaId, $fechaInicial, $fechaFinal)
+{
+    $modelCompra = new ModelCompra();
+    $modelTraspaso = new ModelTraspaso();
+    $modelZona = new ModelZona();
+    $total = 0;
+
+    $zona = $modelZona->obtenerZonaId($zonaId);
+
+    // Obtener las estaciones de la zona
+    $estaciones = $this->obtenerEstacionesPorZona($zonaId);
+    $estacionIds = implode(',', array_column($estaciones, 'idruta'));
+
+    if ($zona["tipo_zona_planta_id"] == 2) { // Planta
+        $totalData = $modelCompra->obtenerTotalComprasGasEstacionesFechas($estacionIds, $fechaInicial, $fechaFinal);
+        $total = $totalData[0]["total"];
+    } else if ($zona["tipo_zona_planta_id"] == 3) { // Sucursal *.524
+        $totalData = $modelTraspaso->obtenerTotalRecibidosEstacionesEntreFechas($estacionIds, $fechaInicial, $fechaFinal);
+        $total = $totalData[0]["total"] * .524;
+    }
+
+    $data["totalKgCompras"] = $total;
+    return $data;
+}
+
+// Función para obtener las estaciones de acuerdo a la zona
+function obtenerEstacionesPorZona($zonaId)
+{
+    return $this->base_datos->query("SELECT * FROM rutas WHERE (clave_ruta LIKE '%est.%' 
+        OR clave_ruta LIKE '%Est%' 
+        OR clave_ruta LIKE '%Estacion%' 
+        OR clave_ruta LIKE '%Estación%') AND zona_id = '$zonaId'")->fetchAll(PDO::FETCH_ASSOC);
+}
 
 	function obtenerCompaniasInventarioTeorico()
 	{
@@ -447,6 +592,29 @@ class ModelInventario
 				ORDER BY c.nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
 		return $sql;
 	}
+		function obtenerEstacionesInventarioTeorico()
+	{
+		$sql = $this->base_datos->query("SELECT r.* 
+				FROM rutas AS r
+				WHERE r.clave_ruta LIKE '%est.%'
+				OR r.clave_ruta LIKE '%Est%' 
+				OR r.clave_ruta LIKE '%Estacion%' 
+				OR r.clave_ruta LIKE '%Estación%'
+				ORDER BY r.nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
+		return $sql;
+	}
+	function obtenerEstacionesPorZonaTeorico($zonaId)
+{
+    $sql = $this->base_datos->query("SELECT r.*, UPPER(r.nombre) AS nombre
+            FROM rutas AS r
+            WHERE (r.clave_ruta LIKE '%est.%' 
+                OR r.clave_ruta LIKE '%Est%' 
+                OR r.clave_ruta LIKE '%Estacion%' 
+                OR r.clave_ruta LIKE '%Estación%')
+              AND r.zona_id = $zonaId
+            ORDER BY r.nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
+    return $sql;
+}
 
 	function obtenerZonasInventarioTeorico($companiaId)
 	{

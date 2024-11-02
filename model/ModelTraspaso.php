@@ -93,6 +93,32 @@ function obtenerTotalRecibidosZonaIdEntreFechas($zonaId, $fechaInicio, $fechaFin
     
     return $resultado;
 }
+function obtenerTotalRecibidosEstacionesEntreFechas($zonaId, $fechaInicio, $fechaFin)
+{
+    // Solo aceptados
+    $resultado = $this->base_datos->query("SELECT SUM(cantidad) AS total
+        FROM 
+            traspasos,
+            zonas AS zona_origen, 
+            zonas AS zona_destino, 
+            estatus_traspaso
+        WHERE 
+            zona_origen.idzona = traspasos.zona_origen_id 
+            AND zona_destino.idzona = traspasos.zona_destino_id 
+            AND estatus_traspaso.idestatustraspaso = traspasos.estatus_traspaso_id
+            AND zona_destino_id = '" . $zonaId . "' 
+            AND fecha >= '$fechaInicio'
+            AND fecha <= '$fechaFin'
+            AND traspasos.estatus_traspaso_id = 1
+            AND zona_destino.clave_ruta LIKE '%est.%' 
+            OR zona_destino.clave_ruta LIKE '%Est%' 
+            OR zona_destino.clave_ruta LIKE '%Estacion%' 
+            OR zona_destino.clave_ruta LIKE '%Estación%'
+    ")->fetchAll(PDO::FETCH_ASSOC);
+    
+    return $resultado;
+}
+
 
 
 function obtenerTotalEnviadosZonaIdEntreFechas($zonaId, $fechaInicio, $fechaFin)

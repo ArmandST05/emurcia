@@ -89,4 +89,14 @@ class ModelCompra
 			AND cg.fechaembarque BETWEEN '$fechaInicial' AND '$fechaFinal' ")->fetchAll(PDO::FETCH_ASSOC);
 			return $resultado;
 	}
+	function obtenerTotalComprasGasEstacionesFechas($zonaId, $fechaInicial, $fechaFinal)
+{
+    $resultado = $this->base_datos->query("SELECT SUM(kilogramos) AS total
+        FROM compras_gas cg
+        INNER JOIN rutas r ON r.idruta = cg.ruta_id
+        WHERE r.idruta IN ($zonaId)
+        AND cg.fechaembarque BETWEEN '$fechaInicial' AND '$fechaFinal'")->fetchAll(PDO::FETCH_ASSOC);
+    return $resultado;
+}
+
 }

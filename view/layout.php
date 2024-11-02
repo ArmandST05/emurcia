@@ -214,6 +214,7 @@ include_once('../model/ModelNomina.php');
                             <a class="collapse-item" href="index.php?action=inventario/index_rutas.php">Inventario Gas</a>
                             <a class="collapse-item" href="index.php?action=inventario/index_gasolina.php">Inventario Gasolina</a>
                             <a class="collapse-item" href="index.php?action=inventario/index_teorico.php">Inventario Teórico</a>
+                            <a class="collapse-item" href="index.php?action=inventario/index_estaciones.php">Inventario Estaciones</a>
                             <a class="collapse-item" href="index.php?action=autoconsumos/index.php">Autoconsumos</a>
                             <a class="collapse-item" href="index.php?action=donaciones/index.php">Donaciones</a>
                             <a class="collapse-item" href="index.php?action=desviacionvolumen/index.php">Gestión de Medición</a>
