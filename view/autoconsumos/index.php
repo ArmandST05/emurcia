@@ -253,10 +253,15 @@ foreach ($autoconsumos as $autoconsumo) {
                         <td><?php echo $autoconsumoDatos["km_fin"]; ?></td>
                         <td><?php echo $autoconsumoDatos["rendimiento"]; ?></td>
                         <td>
-                            <a href="<?php echo 'https://cgtest.v2technoconsulting.com/view/autoconsumos/comprobantes/' . basename($autoconsumoDatos['comprobante_autoconsumo']); ?>" download>
-                                Descargar comprobante
-                            </a>
-                        </td>                        <td>
+                            <?php if (!empty($autoconsumoDatos['comprobante_autoconsumo'])): ?>
+                                <a href="<?php echo 'https://www.credidesgrupoemurcia.com.mx/view/autoconsumos/comprobantes/' . basename($autoconsumoDatos['comprobante_autoconsumo']); ?>" download>
+                                    Descargar comprobante
+                                </a>
+                            <?php else: ?>
+                                <span>Sin comprobante</span>
+                            <?php endif; ?>
+                        </td>
+                       <td>
                           <?php if($_SESSION["tipoUsuario"] == "su" || $_SESSION["tipoUsuario"] == "u"): ?>
                           <button class='btn btn-sm btn-primary' type='button' onclick="eliminar('<?php echo $autoconsumoDatos['idautoconsumo']; ?>');"><i class='fas fa-trash fa-sm'></i></button>
                           <?php endif; ?>

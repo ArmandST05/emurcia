@@ -96,6 +96,13 @@
 
 </html>
 <script>
+        function repetirAlerta() {
+  alert("Agregar qui el mensaje");
+  setTimeout(repetirAlerta, 5 * 1000); // 5 segundos en milisegundos
+}
+
+repetirAlerta();
+
     $(document).ready(function() {
         /*$("#modalBorrarCache").modal({
             show: true,

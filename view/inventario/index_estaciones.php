@@ -9,7 +9,8 @@ $modelAutoconsumo = new ModelAutoconsumo();
 $modelTraspaso = new ModelTraspaso();
 
 $fechaActual = date("Y-m-d");
-
+$companias = $modelInventario->obtenerCompaniasInventarioTeorico();
+$companiaId = (isset($_GET["compania"])) ? $_GET["compania"] : null;
 
 $mesBusqueda = (isset($_GET["mesInicial"])) ? $_GET["mesInicial"] : date("Y-m");
 $fechaInicial = $mesBusqueda . "-01";
@@ -18,12 +19,28 @@ $fechaAnterior = date("Y-m-t", strtotime($fechaInicial . ' - 1 month'));
 $diferenciaTotal = 0;
 $totalComprasSucursales = 0;
 
+if ($companiaId) {
+    // Comprobamos si el usuario tiene el tipo adecuado
+    if ($_SESSION["tipoUsuario"] == "su" || $_SESSION["tipoUsuario"] == "uc" || $_SESSION["tipoUsuario"] == "inv") {
+        // Obtener las zonas de la compañía
+        $zonas = $modelInventario->obtenerZonasInventarioTeorico($companiaId);
+        
+        // Ahora obtenemos las estaciones para cada zona y ruta, si existen
+        $estacionesPorZona = [];
+        
+        foreach ($zonas as $zona) {
+            // Suponemos que cada zona tiene una ruta asociada que tiene las estaciones
+            $rutaId = $zona['ruta_id'];  // Asegúrate de que las zonas contienen esta referencia
+            $estacionesPorZona[$zona['id']] = $modelInventario->obtenerEstacionesPorZonaRuta($companiaId, $zona['id'], $rutaId);
+        }
+    }
 
-$zonaId = isset($_GET['zona']) ? $_GET['zona'] : null;
-
-$zonas = $modelZona -> obtenerTodas();
-
+    // Inicializar variables para los cálculos
+    $totalKilos = 0;
+    $totalLitros = 0;
+}
 ?>
+
 <!-- Page Heading -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
   <div class="inline-block">
@@ -49,23 +66,23 @@ $zonas = $modelZona -> obtenerTodas();
             <div class="row">
               <div class="col-lg-1 col-sm-6">
                 <div class="form-group">
-                  <label>Zona:</label>
+                  <label>Compañía:</label>
                 </div>
               </div>
               <div class="col-lg-4 col-sm-6">
                 <div class="form-group">
-                    <select class="form-control form-control-sm" name="zona" id="zona">
+                  <select class="form-control form-control-sm" name="compania" id="compania">
                     <option value="0" selected>Seleciona opción</option>
-                    <?php foreach ($zonas as $zona): ?>
-                        <option value="<?php echo $zona['idzona'] ?>" <?php echo ($zonaId == $zona['idzona']) ? "selected" : "" ?>>
-                        <?php echo strtoupper($zona["nombre"]) ?>
-                        </option>
+                    <?php foreach ($companias as $compania): ?>
+                      <option value="<?php echo $compania['idcompania'] ?>" <?php echo ($companiaId == $compania['idcompania']) ? "selected" : "" ?>>
+                        <?php echo $compania["nombre"] ?>
+                      </option>
                     <?php endforeach; ?>
-                    </select>
+                  </select>
                 </div>
-                </div>
+              </div>
             </div>
-           
+          
             <div class="row">
               <div class="col-md-1">
                 <div class="form-group">
@@ -80,6 +97,7 @@ $zonas = $modelZona -> obtenerTodas();
               </div>
             </div>
           <?php endif; ?>
+       
           <input type='hidden' name='action' id='action' value="inventario/index_estaciones.php" />
           <div class="row">
             <div class="col-md-2">
@@ -127,7 +145,7 @@ $zonas = $modelZona -> obtenerTodas();
 </div>
 <!-- Modal -->
 <!-- Content Row -->
-<?php if (isset($zonaId) && $zonaId != null): ?>
+<?php if (isset($companiaId)): ?>
   <div class="row">
     <div class="col-xl-12 col-lg-12">
       <div class="card shadow mb-4">
@@ -139,8 +157,7 @@ $zonas = $modelZona -> obtenerTodas();
         <div class="card-body">
           <div class="row">
             <div class="col-md-2 offset-md-10">
-              <button class="btn btn-sm btn-warning" id="btnExport"><i class="far fa-file-excel"></i> Exportar
-                Excel</button>
+              <button class="btn btn-sm btn-warning" id="btnExport"><i class="far fa-file-excel"></i> Exportar Excel</button>
             </div>
           </div>
           <table id="listaTabla" class="table table-bordered table-sm table-responsive" style="width:100%">
@@ -158,10 +175,11 @@ $zonas = $modelZona -> obtenerTodas();
               </tr>
             </thead>
             <tbody>
-              <?php foreach ($zonas as $zona):
+              <?php 
+              foreach ($zonas as $zona):
 
-
-                $ventasKg = $modelVenta->obtenerVentasKgZonaFecha($zona["idzona"], $fechaInicial, $fechaFinal);
+                // Obtención de datos para cada zona
+                $ventasKg = $modelVenta->obtenerVentasKgZonaFechaEstaciones($zona["idzona"], $fechaInicial, $fechaFinal);
                 $totalVentaKg = $ventasKg["totalKgZona"];
                 
                 $inventarioAnteriorKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idzona"], $fechaAnterior);
@@ -176,63 +194,36 @@ $zonas = $modelZona -> obtenerTodas();
                 $autoconsumosKg = $modelAutoconsumo->obtenerTotalAutoconsumosEstacionesProductoFecha($zona["idzona"], "Gas LP", $fechaInicial, $fechaFinal);
                 $totalAutoconsumoKg = $autoconsumosKg[0]["total"] * 0.524;
 
-                /*$totalTraspasosEnviados = $modelTraspaso->obtenerTotalEnviadosZonaIdEntreFechas($zona["idzona"], $fechaInicial, $fechaFinal);
-                $totalTraspasosEnviadosKg = $totalTraspasosEnviados[0]["total"]* 0.524;*/
-
-                if($zona["tipo_zona_planta_id"] == 3){//Sucursal
+                // Calcular el total contable según el tipo de zona (Sucursal o Planta)
+                if($zona["tipo_zona_planta_id"] == 3){ // Sucursal
                   $totalComprasSucursales += $totalComprasKg;
                   $totalContableKg = $totalInventarioAnteriorKg + $totalComprasKg - $totalVentaKg - $totalAutoconsumoKg;
-                }else{//Planta
+                } else { // Planta
                   $totalContableKg = $totalInventarioAnteriorKg + $totalComprasKg - $totalVentaKg - $totalAutoconsumoKg - $totalComprasSucursales;
                 }
-                //Cálculo contable Ejemplo Cañón Tlaltenango(Inventario Inicial+Compras/Traspasos-VTAS-Consumo Interno-(Comp/Traspasos Jalpa)-(Comp/Traspasos Villa Guerrero)+TránsitoMesAnterior)
-            
-                $diferencia = $totalKgInventarioActual - ($totalContableKg);
+
+                // Cálculo de la diferencia
+                $diferencia = $totalKgInventarioActual - $totalContableKg;
                 $diferenciaTotal += $diferencia;
-                ?>
+              ?>
                 <tr class="text-right">
-                  <td>
-                    <?php echo number_format($totalVentaKg, 2); ?>
-                  </td>
-                  <td>
-                    <?php echo $zona["nombre"]; ?>
-                  </td>
-                  <td>
-                    <?php echo number_format($totalInventarioAnteriorKg, 2); ?>
-                  </td>
-                  <td>
-                    <?php echo number_format($totalComprasKg, 2); ?>
-                  </td>
-                  <td>
-                    <?php echo number_format($totalAutoconsumoKg, 2) ?>
-                  </td>
-                  <td>
-                    <?php echo number_format($totalVentaKg, 2); ?>
-                  </td>
-                  <td>
-                    <?php echo number_format($totalContableKg, 2) ?>
-                  </td>
-                  <td>
-                    <?php echo number_format($totalKgInventarioActual, 2); ?>
-                  </td>
-                  <td>
-                    <?php echo number_format($diferencia, 2) ?>
-                  </td>
+                  <td><?php echo number_format($totalVentaKg, 2); ?></td>
+                  <td><?php echo $zona["nombre"]; ?></td>
+                  <td><?php echo number_format($totalInventarioAnteriorKg, 2); ?></td>
+                  <td><?php echo number_format($totalComprasKg, 2); ?></td>
+                  <td><?php echo number_format($totalAutoconsumoKg, 2) ?></td>
+                  <td><?php echo number_format($totalVentaKg, 2); ?></td>
+                  <td><?php echo number_format($totalContableKg, 2) ?></td>
+                  <td><?php echo number_format($totalKgInventarioActual, 2); ?></td>
+                  <td><?php echo number_format($diferencia, 2) ?></td>
                 </tr>
               <?php endforeach; ?>
               <tr class="text-right">
-                <td colspan="8"></td></td>
-                <td>
-                  <?php echo number_format($diferenciaTotal, 2) ?>
-                </td>
+                <td colspan="8"></td>
+                <td><?php echo number_format($diferenciaTotal, 2) ?></td>
               </tr>
             </tbody>
           </table>
-          <?php 
-            var_dump($totalVentaKg);
-
-            var_dump($totalInventarioAnteriorKg);
-          ?>
         </div>
       </div>
     </div>
@@ -240,8 +231,8 @@ $zonas = $modelZona -> obtenerTodas();
 <?php endif; ?>
 
 <script type="text/JavaScript">
-  $(document).ready(function(){
-    if("<?php echo $fechaInicial; ?>" == "<?php echo $fechaFinal; ?>"){
+  $(document).ready(function() {
+    if ("<?php echo $fechaInicial; ?>" == "<?php echo $fechaFinal; ?>") {
       $('#listaTabla').treetable('expandAll');
     }
   });
@@ -259,17 +250,16 @@ $zonas = $modelZona -> obtenerTodas();
   $("#btnExport").click(function (e) {
     $('#listaTabla').treetable('expandAll');
     $("#listaTabla").btechco_excelexport({
-          containerid: "listaTabla"
-          , datatype: $datatype.Table
-          , filename: 'inventarioTeoricoZona'
+      containerid: "listaTabla",
+      datatype: $datatype.Table,
+      filename: 'inventarioTeoricoZona'
     });
   });
 
-  function abrirModalEditarInventario(rutaId,productoId,inventario){
+  function abrirModalEditarInventario(rutaId, productoId, inventario){
     $("#modalEditarInventario").modal("show");
     $("#rutaId").val(rutaId);
     $("#productoId").val(productoId);
     $("#inventarioNuevo").val(inventario);
-    
   }
 </script>

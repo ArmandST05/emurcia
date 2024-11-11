@@ -107,57 +107,81 @@ class ModelInventario
 {
     // Consultar rutas que son estaciones
     $sqlRutasEstaciones = $this->base_datos->query("SELECT idruta FROM rutas WHERE 
-        clave_ruta LIKE '%est.%' 
-        OR clave_ruta LIKE '%Est%' 
-        OR clave_ruta LIKE '%Estacion%' 
-        OR clave_ruta LIKE '%Estación%'")->fetchAll(PDO::FETCH_COLUMN);
+        clave_ruta LIKE '%Estación%'")->fetchAll(PDO::FETCH_COLUMN);
 
     // Convertir las rutas a un string para el IN clause
     $rutasEstaciones = implode(',', array_map('intval', $sqlRutasEstaciones));
 
-    $sql = $this->base_datos->query("SELECT calendar.fecha_inventario, rutas.idruta AS ruta_id, 
-        rutas.clave_ruta AS ruta_nombre,
-        rutas.capacidad as ruta_capacidad, 
-        productos.nombre AS producto_nombre, productos.idproducto AS producto_id, 
-        productos.capacidad as producto_capacidad,
-        IFNULL((SELECT SUM(cantidad) FROM inventario WHERE ruta_id = rutas.idruta 
-            AND producto_id = productos.idproducto 
-            AND tipo_transaccion_inventario_id = 1
-            AND inventario.fecha <= calendar.fecha_inventario), 0) AS total_entradas,
-        IFNULL((SELECT SUM(cantidad) FROM inventario WHERE ruta_id = rutas.idruta 
-            AND producto_id = productos.idproducto 
-            AND tipo_transaccion_inventario_id = 2
-            AND inventario.fecha <= calendar.fecha_inventario), 0) AS total_salidas,
-        IFNULL(((SELECT SUM(cantidad) FROM inventario WHERE ruta_id = rutas.idruta 
-            AND producto_id = productos.idproducto 
-            AND tipo_transaccion_inventario_id = 1
-            AND inventario.fecha <= calendar.fecha_inventario) - 
-        (SELECT SUM(cantidad) FROM inventario WHERE ruta_id = rutas.idruta 
-            AND producto_id = productos.idproducto 
-            AND tipo_transaccion_inventario_id = 2
-            AND inventario.fecha <= calendar.fecha_inventario)), 0) AS inventario_actual
-    FROM rutas
-    CROSS JOIN (
-        SELECT fecha_inventario FROM (
-            SELECT ADDDATE('1970-01-010', t4.i * 10000 + t3.i * 1000 + t2.i * 100 + t1.i * 10 + t0.i) fecha_inventario 
-            FROM            
-                (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t0,
-                (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t1,
-                (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t2,
-                (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t3,
-                (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t4
-        ) v
-        WHERE fecha_inventario BETWEEN '$fechaInicial' AND '$fechaFinal'
-    ) calendar
-    LEFT JOIN tipo_ruta_productos ON rutas.tipo_ruta_id = tipo_ruta_productos.tipo_ruta_id 
-    INNER JOIN productos ON tipo_ruta_productos.producto_id = productos.idproducto 
-    WHERE rutas.zona_id = '$zonaId'
-    AND rutas.estatus = 1
-    AND rutas.idruta IN ($rutasEstaciones)  -- Filtrar por las rutas que son estaciones
-    ORDER BY calendar.fecha_inventario, rutas.clave_ruta, productos.nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
+    // Consulta principal
+    $sql = $this->base_datos->query("
+        SELECT 
+            calendar.fecha_inventario, 
+            rutas.idruta AS ruta_id, 
+            rutas.clave_ruta AS ruta_nombre,
+            rutas.capacidad AS ruta_capacidad, 
+            productos.nombre AS producto_nombre, 
+            productos.idproducto AS producto_id, 
+            productos.capacidad AS producto_capacidad,
+            IFNULL((
+                SELECT SUM(cantidad) FROM inventario 
+                WHERE ruta_id = rutas.idruta 
+                    AND producto_id = productos.idproducto 
+                    AND tipo_transaccion_inventario_id = 1
+                    AND inventario.fecha <= calendar.fecha_inventario
+            ), 0) AS total_entradas,
+            IFNULL((
+                SELECT SUM(cantidad) FROM inventario 
+                WHERE ruta_id = rutas.idruta 
+                    AND producto_id = productos.idproducto 
+                    AND tipo_transaccion_inventario_id = 2
+                    AND inventario.fecha <= calendar.fecha_inventario
+            ), 0) AS total_salidas,
+            IFNULL((
+                (SELECT SUM(cantidad) FROM inventario 
+                    WHERE ruta_id = rutas.idruta 
+                        AND producto_id = productos.idproducto 
+                        AND tipo_transaccion_inventario_id = 1
+                        AND inventario.fecha <= calendar.fecha_inventario
+                ) - 
+                (SELECT SUM(cantidad) FROM inventario 
+                    WHERE ruta_id = rutas.idruta 
+                        AND producto_id = productos.idproducto 
+                        AND tipo_transaccion_inventario_id = 2
+                        AND inventario.fecha <= calendar.fecha_inventario
+                )
+            ), 0) AS inventario_actual
+        FROM 
+            rutas
+        CROSS JOIN (
+            SELECT 
+                fecha_inventario 
+            FROM (
+                SELECT 
+                    ADDDATE('1970-01-010', t4.i * 10000 + t3.i * 1000 + t2.i * 100 + t1.i * 10 + t0.i) fecha_inventario 
+                FROM            
+                    (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t0,
+                    (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t1,
+                    (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t2,
+                    (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t3,
+                    (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t4
+            ) v
+            WHERE fecha_inventario BETWEEN '$fechaInicial' AND '$fechaFinal'
+        ) calendar
+        LEFT JOIN 
+            tipo_ruta_productos ON rutas.tipo_ruta_id = tipo_ruta_productos.tipo_ruta_id 
+        INNER JOIN 
+            productos ON tipo_ruta_productos.producto_id = productos.idproducto 
+        WHERE 
+            rutas.zona_id = '$zonaId'
+            AND rutas.estatus = 1
+            AND rutas.idruta IN ($rutasEstaciones)  -- Filtrar por las rutas que son estaciones
+        ORDER BY 
+            calendar.fecha_inventario, rutas.clave_ruta, productos.nombre ASC
+    ")->fetchAll(PDO::FETCH_ASSOC);
 
     return $sql;
 }
+
 
 
 	function obtenerReporteInventarioGasolinaFechas($fechaInicial, $fechaFinal, $mes, $anio, $zonaId)
@@ -603,18 +627,28 @@ function obtenerEstacionesPorZona($zonaId)
 				ORDER BY r.nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
 		return $sql;
 	}
-	function obtenerEstacionesPorZonaTeorico($zonaId)
-{
-    $sql = $this->base_datos->query("SELECT r.*, UPPER(r.nombre) AS nombre
-            FROM rutas AS r
-            WHERE (r.clave_ruta LIKE '%est.%' 
-                OR r.clave_ruta LIKE '%Est%' 
-                OR r.clave_ruta LIKE '%Estacion%' 
-                OR r.clave_ruta LIKE '%Estación%')
-              AND r.zona_id = $zonaId
-            ORDER BY r.nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
-    return $sql;
-}
+	public function obtenerEstacionesPorZonaRuta($companiaId, $zonaId, $rutaId) {
+        // Consulta SQL para obtener las estaciones asociadas a una ruta de una zona de una compañía
+        $sql = "SELECT r.id AS ruta_id, r.nombre AS ruta_nombre, r.estacion AS estacion_nombre
+                FROM rutas r
+                INNER JOIN zonas z ON r.zona_id = z.id
+                WHERE z.compania_id = $companiaId
+                AND z.id = $zonaId
+                AND r.id = $rutaId
+                AND r.estacion IS NOT NULL"; // Filtra solo rutas que tienen estaciones asociadas
+
+        // Ejecutar la consulta directamente en la base de datos
+        $result = $this->base_datos->query($sql);
+
+        // Verificar si la consulta fue exitosa
+        if ($result) {
+            // Obtener y devolver los resultados
+            return $result->fetchAll(PDO::FETCH_ASSOC);
+        } else {
+            // Si la consulta falla, devolver un array vacío
+            return [];
+        }
+    }
 
 	function obtenerZonasInventarioTeorico($companiaId)
 	{

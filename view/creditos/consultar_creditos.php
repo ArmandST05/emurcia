@@ -116,7 +116,7 @@ if (!empty($idCliente)) {
                   <td><?php echo $datos["vendedor"] ?></td>
                   <td>
     <?php if (!empty($datos['comprobante_credito_gas'])): ?>
-        <a href="<?php echo 'https://cgtest.v2technoconsulting.com/view/creditos/comprobantes/' . basename($datos['comprobante_credito_gas']); ?>" download>
+        <a href="<?php echo 'https://www.credidesgrupoemurcia.com.mx/view/creditos/comprobantes/' . basename($datos['comprobante_credito_gas']); ?>" download>
             Descargar comprobante
         </a>    
     <?php else: ?>   

@@ -208,7 +208,7 @@ $totalGralO = 0;
           <td></td>
           <td>
     <?php if (!empty($descuento['comprobante_descuentos'])): ?>
-        <a href="<?php echo 'https://cgtest.v2technoconsulting.com/view/descuentosdeposito/comprobantes/' . basename($descuento['comprobante_descuentos']); ?>" download>
+        <a href="<?php echo 'https://www.credidesgrupoemurcia.com.mx/view/descuentosdeposito/comprobantes/' . basename($descuento['comprobante_descuentos']); ?>" download>
             Descargar comprobante
         </a>
     <?php else: ?>
