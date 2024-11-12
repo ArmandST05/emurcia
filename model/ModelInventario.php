@@ -573,6 +573,9 @@ class ModelInventario
 		$data["totalKgCompras"] = $total; 	
 		return $data;
 	}
+
+
+
 	function obtenerTotalComprasTraspasosGasKgEstacionFecha($zonaId, $fechaInicial, $fechaFinal)
 {
     $modelCompra = new ModelCompra();
@@ -583,7 +586,8 @@ class ModelInventario
     $zona = $modelZona->obtenerZonaId($zonaId);
 
     // Obtener las estaciones de la zona
-    $estaciones = $this->obtenerEstacionesPorZona($zonaId);
+    $estaciones = $this->obtenerEstacionesInventarioTeorico();
+
     $estacionIds = implode(',', array_column($estaciones, 'idruta'));
 
     if ($zona["tipo_zona_planta_id"] == 2) { // Planta
@@ -599,13 +603,23 @@ class ModelInventario
 }
 
 // Función para obtener las estaciones de acuerdo a la zona
-function obtenerEstacionesPorZona($zonaId)
+function obtenerEstacionesPorCompania($companiaId)
 {
-    return $this->base_datos->query("SELECT * FROM rutas WHERE (clave_ruta LIKE '%est.%' 
+    $resultado = $this->base_datos->query("SELECT * FROM rutas 
+        WHERE (clave_ruta LIKE '%est.%' 
         OR clave_ruta LIKE '%Est%' 
         OR clave_ruta LIKE '%Estacion%' 
-        OR clave_ruta LIKE '%Estación%') AND zona_id = '$zonaId'")->fetchAll(PDO::FETCH_ASSOC);
+        OR clave_ruta LIKE '%Estación%') 
+        AND zona_id IN (SELECT idzona FROM zonas WHERE compania_id = '$companiaId')");
+
+    // Verificar si la consulta falló
+    if (!$resultado) {
+        return []; // Retorna un array vacío si la consulta falla
+    }
+
+    return $resultado->fetchAll(PDO::FETCH_ASSOC);
 }
+
 
 	function obtenerCompaniasInventarioTeorico()
 	{
@@ -624,7 +638,7 @@ function obtenerEstacionesPorZona($zonaId)
 				OR r.clave_ruta LIKE '%Est%' 
 				OR r.clave_ruta LIKE '%Estacion%' 
 				OR r.clave_ruta LIKE '%Estación%'
-				ORDER BY r.nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
+				ORDER BY r.clave_ruta ASC")->fetchAll(PDO::FETCH_ASSOC);
 		return $sql;
 	}
 	public function obtenerEstacionesPorZonaRuta($companiaId, $zonaId, $rutaId) {

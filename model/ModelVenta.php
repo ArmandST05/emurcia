@@ -807,7 +807,6 @@ class ModelVenta
 						}
 					}
 				}
-				
 				function obtenerVentasKgZonaFechaEstaciones($zonaId, $fechaInicial, $fechaFinal) {
 					$totalKgZona = 0;
 					// Obtener las rutas de ventas en el rango de fechas, específicamente para estaciones
@@ -830,13 +829,13 @@ class ModelVenta
 						$totalLtsCredito = 0;
 						$totalLtsContado = 0;
 						
-						foreach ($fechas as $claveFecha => $fecha){
+						foreach ($fechas as $claveFecha => $fecha) {
 							$fecha = $fecha["fecha"];
 							
 							$ventas = $this->listaZonaRutaFecha($zonaId, $ruta["idruta"], $fecha);
 							
-							foreach ($ventas as $venta){
-								//Venta de litros en pipas (1)/estación carburación (5)/plantas lts (4)
+							foreach ($ventas as $venta) {
+								// Venta de litros en pipas (1)/estación carburación (5)/plantas lts (4)
 								if ($venta["producto_id"] == 4) {
 									$litros = ($venta["total_rubros_venta"] * $venta["producto_capacidad"]);
 									$totalLitros += $litros;
@@ -844,7 +843,7 @@ class ModelVenta
 									$kilos = ($litros * .524);
 									$totalKilos += $kilos;
 								} else {
-									//Venta de kg en Cilindreras (2)/Planta Cilindros (3)
+									// Venta de kg en Cilindreras (2)/Planta Cilindros (3)
 									$kilos = ($venta["total_rubros_venta"] * $venta["producto_capacidad"]);
 									$totalKilos += $kilos;
 									
@@ -856,14 +855,14 @@ class ModelVenta
 								
 								$totalKgZona += $kilos;
 								
-								//Dividir el total de la venta que fue a crédito entre el precio al que se vendió para obtener los litros a crédito. 
-								//Sacarlo el cálculo en base a lo total $ vendido.
+								// Dividir el total de la venta que fue a crédito entre el precio al que se vendió para obtener los litros a crédito.
+								// Sacar el cálculo en base a lo total $ vendido.
 								$ltsCredito = ($venta["total_venta_credito"] + $venta["descuento_total_venta_credito"]) / $venta["precio"];
 								$ltsContado = ($venta["total_venta_contado"] + $venta["descuento_total_venta_contado"]) / $venta["precio"];
 								
 								$totalCredito += $venta["total_venta_credito"];
 								$totalDescCredito += $venta["descuento_total_venta_credito"];
-								$totalContado += $venta["total_venta_contado"];       
+								$totalContado += $venta["total_venta_contado"];
 								$totalLtsDescContado += $venta["cantidad_venta_contado"];
 								$totalDescContado += $venta["descuento_total_venta_contado"];
 								$totalVenta += ($venta["total_venta"] - $venta["descuento_total_venta_credito"] - $venta["descuento_total_venta_contado"]);
@@ -871,15 +870,12 @@ class ModelVenta
 								
 								$totalLtsCredito += $ltsCredito;
 								$totalLtsContado += $ltsContado;
-								
 							}
-							
-							return ["totalKgZona" => $totalKgZona]; // Devuelve el total de kilos
 						}
-						
-						$data["totalKgZona"] = $totalKgZona;
-						
-						return $data;
-					}	
-			}
+					}
+					
+					// Devuelve el total de kilos acumulado después de todas las iteraciones
+					return ["totalKgZona" => $totalKgZona];
+				}
+				
 }	

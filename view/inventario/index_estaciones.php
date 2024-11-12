@@ -1,5 +1,7 @@
 <?php
 date_default_timezone_set('America/Mexico_City');
+
+// Inicializar modelos
 $modelZona = new ModelZona();
 $modelRuta = new ModelRuta();
 $modelInventario = new ModelInventario();
@@ -8,6 +10,7 @@ $modelVenta = new ModelVenta();
 $modelAutoconsumo = new ModelAutoconsumo();
 $modelTraspaso = new ModelTraspaso();
 
+// Variables de fecha
 $fechaActual = date("Y-m-d");
 $companias = $modelInventario->obtenerCompaniasInventarioTeorico();
 $companiaId = (isset($_GET["compania"])) ? $_GET["compania"] : null;
@@ -16,28 +19,25 @@ $mesBusqueda = (isset($_GET["mesInicial"])) ? $_GET["mesInicial"] : date("Y-m");
 $fechaInicial = $mesBusqueda . "-01";
 $fechaFinal = date("Y-m-t", strtotime($fechaInicial));
 $fechaAnterior = date("Y-m-t", strtotime($fechaInicial . ' - 1 month'));
+
+// Inicializar variables para cálculos
 $diferenciaTotal = 0;
 $totalComprasSucursales = 0;
+$totalKilos = 0;
+$totalLitros = 0;
+$estacionesPorZona = []; // Asegura que la variable esté inicializada
 
 if ($companiaId) {
     // Comprobamos si el usuario tiene el tipo adecuado
     if ($_SESSION["tipoUsuario"] == "su" || $_SESSION["tipoUsuario"] == "uc" || $_SESSION["tipoUsuario"] == "inv") {
-        // Obtener las zonas de la compañía
-        $zonas = $modelInventario->obtenerZonasInventarioTeorico($companiaId);
-        
-        // Ahora obtenemos las estaciones para cada zona y ruta, si existen
-        $estacionesPorZona = [];
-        
-        foreach ($zonas as $zona) {
-            // Suponemos que cada zona tiene una ruta asociada que tiene las estaciones
-            $rutaId = $zona['ruta_id'];  // Asegúrate de que las zonas contienen esta referencia
-            $estacionesPorZona[$zona['id']] = $modelInventario->obtenerEstacionesPorZonaRuta($companiaId, $zona['id'], $rutaId);
-        }
-    }
+        $estacionesPorZona = $modelInventario->obtenerEstacionesPorCompania($companiaId);
 
-    // Inicializar variables para los cálculos
-    $totalKilos = 0;
-    $totalLitros = 0;
+        // Aquí puedes continuar con los cálculos adicionales que necesites
+    } else {
+        echo "No tienes permisos para acceder a este inventario.";
+    }
+} else {
+    echo "No se ha seleccionado ninguna compañía.";
 }
 ?>
 
@@ -164,7 +164,7 @@ if ($companiaId) {
             <thead>
               <tr>
                 <th>VTA TOTAL</th>
-                <th>ZONA</th>
+                <th>ESTACIÓN</th>
                 <th>Inv Inicial</th>
                 <th>Comp/Traspasos</th>
                 <th>C. Interno</th>
@@ -176,22 +176,23 @@ if ($companiaId) {
             </thead>
             <tbody>
               <?php 
-              foreach ($zonas as $zona):
+              foreach ($estacionesPorZona as $zona):
 
                 // Obtención de datos para cada zona
-                $ventasKg = $modelVenta->obtenerVentasKgZonaFechaEstaciones($zona["idzona"], $fechaInicial, $fechaFinal);
+                $ventasKg = $modelVenta->obtenerVentasKgZonaFechaEstaciones($zona["idruta"], $fechaInicial, $fechaFinal);
                 $totalVentaKg = $ventasKg["totalKgZona"];
                 
-                $inventarioAnteriorKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idzona"], $fechaAnterior);
+                
+                $inventarioAnteriorKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idruta"], $fechaAnterior);
                 $totalInventarioAnteriorKg = $inventarioAnteriorKg["totalKgZona"];
                 
-                $inventarioKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idzona"], $fechaFinal);
+                $inventarioKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idruta"], $fechaFinal);
                 $totalKgInventarioActual = $inventarioKg["totalKgZona"];
 
-                $comprasTraspasosKg = $modelInventario->obtenerTotalComprasTraspasosGasKgZonaFecha($zona["idzona"], $fechaInicial, $fechaFinal);
+                $comprasTraspasosKg = $modelInventario->obtenerTotalComprasTraspasosGasKgEstacionFecha($zona["idruta"], $fechaInicial, $fechaFinal);
                 $totalComprasKg = $comprasTraspasosKg["totalKgCompras"];
 
-                $autoconsumosKg = $modelAutoconsumo->obtenerTotalAutoconsumosEstacionesProductoFecha($zona["idzona"], "Gas LP", $fechaInicial, $fechaFinal);
+                $autoconsumosKg = $modelAutoconsumo->obtenerTotalAutoconsumosEstacionesProductoFecha($zona["idruta"], "Gas LP", $fechaInicial, $fechaFinal);
                 $totalAutoconsumoKg = $autoconsumosKg[0]["total"] * 0.524;
 
                 // Calcular el total contable según el tipo de zona (Sucursal o Planta)
@@ -208,7 +209,7 @@ if ($companiaId) {
               ?>
                 <tr class="text-right">
                   <td><?php echo number_format($totalVentaKg, 2); ?></td>
-                  <td><?php echo $zona["nombre"]; ?></td>
+                  <td><?php echo $zona["clave_ruta"]; ?></td>
                   <td><?php echo number_format($totalInventarioAnteriorKg, 2); ?></td>
                   <td><?php echo number_format($totalComprasKg, 2); ?></td>
                   <td><?php echo number_format($totalAutoconsumoKg, 2) ?></td>
