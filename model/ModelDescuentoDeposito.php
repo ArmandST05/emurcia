@@ -48,7 +48,7 @@ class ModelDescuentoDeposito {
 			"gastos" => $gastos,
 			"cheque" => $cheque,
 			"otras_salidas" => $otrasSalidas,
-			"comprobantes_descuentos" => $comprobanteDescuento
+			"comprobante_descuentos" => $comprobanteDescuento
 		]);
 		
 		return $this->base_datos->id();
@@ -58,3 +58,15 @@ class ModelDescuentoDeposito {
 		$this->base_datos->delete("descuentos_deposito",["iddescuentodeposito[=]" => $id]);
 	}
 }
+/*
+
+<td>
+    <?php if (!empty($descuento['comprobante_descuentos'])): ?>
+        <a href="<?php echo 'https://cgtest.v2technoconsulting.com/view/descuentosdeposito/comprobantes/' . basename($descuento['comprobante_descuentos']); ?>" download>
+            Descargar comprobante
+        </a>
+    <?php else: ?>
+        No disponible
+    <?php endif; ?>
+</td>
+*/
