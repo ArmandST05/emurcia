@@ -166,7 +166,7 @@ if ($companiaId) {
                 <th>VTA TOTAL</th>
                 <th>ESTACIÓN</th>
                 <th>Inv Inicial</th>
-                <th>Comp/Traspasos</th>
+                
                 <th>C. Interno</th>
                 <th>VTAS</th>
                 <th>Contable</th>
@@ -181,7 +181,8 @@ if ($companiaId) {
                 // Obtención de datos para cada zona
                 $ventasKg = $modelVenta->obtenerVentasKgZonaFechaEstaciones($zona["idruta"], $fechaInicial, $fechaFinal);
                 $totalVentaKg = $ventasKg["totalKgZona"];
-                
+                var_dump($ventasKg);
+                exit();
                 
                 $inventarioAnteriorKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idruta"], $fechaAnterior);
                 $totalInventarioAnteriorKg = $inventarioAnteriorKg["totalKgZona"];
@@ -189,19 +190,15 @@ if ($companiaId) {
                 $inventarioKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idruta"], $fechaFinal);
                 $totalKgInventarioActual = $inventarioKg["totalKgZona"];
 
-                $comprasTraspasosKg = $modelInventario->obtenerTotalComprasTraspasosGasKgEstacionFecha($zona["idruta"], $fechaInicial, $fechaFinal);
-                $totalComprasKg = $comprasTraspasosKg["totalKgCompras"];
+    
 
                 $autoconsumosKg = $modelAutoconsumo->obtenerTotalAutoconsumosEstacionesProductoFecha($zona["idruta"], "Gas LP", $fechaInicial, $fechaFinal);
                 $totalAutoconsumoKg = $autoconsumosKg[0]["total"] * 0.524;
 
                 // Calcular el total contable según el tipo de zona (Sucursal o Planta)
-                if($zona["tipo_zona_planta_id"] == 3){ // Sucursal
-                  $totalComprasSucursales += $totalComprasKg;
-                  $totalContableKg = $totalInventarioAnteriorKg + $totalComprasKg - $totalVentaKg - $totalAutoconsumoKg;
-                } else { // Planta
-                  $totalContableKg = $totalInventarioAnteriorKg + $totalComprasKg - $totalVentaKg - $totalAutoconsumoKg - $totalComprasSucursales;
-                }
+              
+                $totalContableKg = $totalInventarioAnteriorKg - $totalVentaKg - $totalAutoconsumoKg;
+                
 
                 // Cálculo de la diferencia
                 $diferencia = $totalKgInventarioActual - $totalContableKg;
@@ -211,7 +208,7 @@ if ($companiaId) {
                   <td><?php echo number_format($totalVentaKg, 2); ?></td>
                   <td><?php echo $zona["clave_ruta"]; ?></td>
                   <td><?php echo number_format($totalInventarioAnteriorKg, 2); ?></td>
-                  <td><?php echo number_format($totalComprasKg, 2); ?></td>
+                  
                   <td><?php echo number_format($totalAutoconsumoKg, 2) ?></td>
                   <td><?php echo number_format($totalVentaKg, 2); ?></td>
                   <td><?php echo number_format($totalContableKg, 2) ?></td>

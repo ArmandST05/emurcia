@@ -241,18 +241,15 @@ class ModelVenta
 			GROUP BY rutas.idruta ORDER BY rutas.clave_ruta")->fetchAll(PDO::FETCH_ASSOC);
 		return $sql;
 	}
-	function rutasVentasEntreFechasEstaciones($zonaId, $fechaInicial, $fechaFinal) {
+	function rutasVentasEntreFechasEstaciones($fechaInicial, $fechaFinal) {
 		$sql = $this->base_datos->query("SELECT rutas.clave_ruta, rutas.idruta, rutas.tipo_ruta_id
-			FROM ventas, rutas
-			WHERE rutas.idruta = ventas.ruta_id
-			AND ventas.zona_id = '$zonaId'
-			AND ventas.fecha >= '$fechaInicial' 
-			AND ventas.fecha <= '$fechaFinal'
-			AND (rutas.clave_ruta LIKE '%est.%' 
-				OR rutas.clave_ruta LIKE '%Est%' 
-				OR rutas.clave_ruta LIKE '%Estacion%' 
-				OR rutas.clave_ruta LIKE '%Estación%')
-			GROUP BY rutas.idruta ORDER BY rutas.clave_ruta")->fetchAll(PDO::FETCH_ASSOC);
+    FROM ventas
+    INNER JOIN rutas ON rutas.idruta = ventas.ruta_id
+    WHERE ventas.fecha >= '$fechaInicial' 
+    AND ventas.fecha <= '$fechaFinal'
+    AND rutas.tipo_ruta_id = 5
+    GROUP BY rutas.idruta 
+    ORDER BY rutas.clave_ruta")->fetchAll(PDO::FETCH_ASSOC);
 		return $sql;
 	}
 	
@@ -807,75 +804,110 @@ class ModelVenta
 						}
 					}
 				}
-				function obtenerVentasKgZonaFechaEstaciones($zonaId, $fechaInicial, $fechaFinal) {
-					$totalKgZona = 0;
-					// Obtener las rutas de ventas en el rango de fechas, específicamente para estaciones
-					$rutasVenta = $this->rutasVentasEntreFechasEstaciones($zonaId, $fechaInicial, $fechaFinal);
-					
-					foreach ($rutasVenta as $claveRuta => $ruta) {
-						// Obtener las fechas de ventas para cada ruta
-						$fechas = $this->fechasVentasRutaEstaciones($ruta["idruta"], $fechaInicial, $fechaFinal);
-						
-						$totalLitros = 0;
-						$totalKilos = 0;
-						$totalCil = 0;
-						$totalCredito = 0;
-						$totalDescCredito = 0;
-						$totalContado = 0;
-						$totalLtsDescContado = 0;
-						$totalDescContado = 0;
-						$totalVenta = 0;
-						$totalPrecioLleno = 0;
-						$totalLtsCredito = 0;
-						$totalLtsContado = 0;
-						
-						foreach ($fechas as $claveFecha => $fecha) {
-							$fecha = $fecha["fecha"];
-							
-							$ventas = $this->listaZonaRutaFecha($zonaId, $ruta["idruta"], $fecha);
-							
-							foreach ($ventas as $venta) {
-								// Venta de litros en pipas (1)/estación carburación (5)/plantas lts (4)
-								if ($venta["producto_id"] == 4) {
-									$litros = ($venta["total_rubros_venta"] * $venta["producto_capacidad"]);
-									$totalLitros += $litros;
-									
-									$kilos = ($litros * .524);
-									$totalKilos += $kilos;
-								} else {
-									// Venta de kg en Cilindreras (2)/Planta Cilindros (3)
-									$kilos = ($venta["total_rubros_venta"] * $venta["producto_capacidad"]);
-									$totalKilos += $kilos;
-									
-									$litros = ($kilos / .524);
-									$totalLitros += $litros;
-								}
-								$cilindros = ($venta["tipo_ruta_id"] == 2 || $venta["tipo_ruta_id"] == 3) ? $venta["total_rubros_venta"] : 0;
-								$totalCil += $cilindros;
-								
-								$totalKgZona += $kilos;
-								
-								// Dividir el total de la venta que fue a crédito entre el precio al que se vendió para obtener los litros a crédito.
-								// Sacar el cálculo en base a lo total $ vendido.
-								$ltsCredito = ($venta["total_venta_credito"] + $venta["descuento_total_venta_credito"]) / $venta["precio"];
-								$ltsContado = ($venta["total_venta_contado"] + $venta["descuento_total_venta_contado"]) / $venta["precio"];
-								
-								$totalCredito += $venta["total_venta_credito"];
-								$totalDescCredito += $venta["descuento_total_venta_credito"];
-								$totalContado += $venta["total_venta_contado"];
-								$totalLtsDescContado += $venta["cantidad_venta_contado"];
-								$totalDescContado += $venta["descuento_total_venta_contado"];
-								$totalVenta += ($venta["total_venta"] - $venta["descuento_total_venta_credito"] - $venta["descuento_total_venta_contado"]);
-								$totalPrecioLleno += $venta["total_venta"];
-								
-								$totalLtsCredito += $ltsCredito;
-								$totalLtsContado += $ltsContado;
-							}
-						}
-					}
-					
-					// Devuelve el total de kilos acumulado después de todas las iteraciones
-					return ["totalKgZona" => $totalKgZona];
-				}
+				function obtenerVentasKgZonaFechaEstaciones($fechaInicial, $fechaFinal) {
+    $totalKgZona = 0;
+    
+    // Consulta las ventas de las estaciones en el rango de fechas
+    $sql = "SELECT 
+                ventas.fecha,
+                rutas.idruta,
+                rutas.clave_ruta,
+                detalles_venta.producto_id,
+                detalles_venta.cantidad AS cantidad_vendida,
+                detalles_venta.precio,
+                detalles_venta.total_venta,
+                detalles_venta.total_rubros_venta,
+                detalles_venta.total_venta_credito,
+                detalles_venta.descuento_total_venta_credito,
+                detalles_venta.total_venta_contado,
+                detalles_venta.descuento_total_venta_contado
+            FROM 
+                ventas
+            INNER JOIN 
+                detalles_venta ON detalles_venta.venta_id = ventas.idventa
+            INNER JOIN 
+                rutas ON rutas.idruta = ventas.ruta_id
+            WHERE 
+                rutas.tipo_ruta_id = 5
+                AND ventas.fecha BETWEEN '$fechaInicial' AND '$fechaFinal'";
+
+    // Ejecutar la consulta para obtener las ventas de las estaciones
+    $ventas = $this->base_datos->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+
+    // Variables para los totales
+    $totalLitros = 0;
+    $totalKilos = 0;
+    $totalCil = 0;
+    $totalCredito = 0;
+    $totalDescCredito = 0;
+    $totalContado = 0;
+    $totalLtsDescContado = 0;
+    $totalDescContado = 0;
+    $totalVenta = 0;
+    $totalPrecioLleno = 0;
+    $totalLtsCredito = 0;
+    $totalLtsContado = 0;
+
+    // Iterar sobre las ventas obtenidas
+    foreach ($ventas as $venta) {
+        // Venta de litros en pipas (1)/estación carburación (5)/plantas lts (4)
+        if ($venta["producto_id"] == 4) {
+            $litros = ($venta["total_rubros_venta"] * $venta["producto_capacidad"]);
+            $totalLitros += $litros;
+            
+            $kilos = ($litros * 0.524);
+            $totalKilos += $kilos;
+        } else {
+            // Venta de kg en Cilindreras (2)/Planta Cilindros (3)
+            $kilos = ($venta["total_rubros_venta"] * $venta["producto_capacidad"]);
+            $totalKilos += $kilos;
+            
+            $litros = ($kilos / 0.524);
+            $totalLitros += $litros;
+        }
+
+        // Si la venta fue de estaciones (tipo_ruta_id 5), contar los cilindros
+        $cilindros = ($venta["tipo_ruta_id"] == 5) ? $venta["total_rubros_venta"] : 0;
+        $totalCil += $cilindros;
+
+        // Acumulando kilos en la zona
+        $totalKgZona += $kilos;
+
+        // Cálculos para ventas a crédito y contado
+        $ltsCredito = ($venta["total_venta_credito"] + $venta["descuento_total_venta_credito"]) / $venta["precio"];
+        $ltsContado = ($venta["total_venta_contado"] + $venta["descuento_total_venta_contado"]) / $venta["precio"];
+
+        // Acumulando totales por tipo de venta
+        $totalCredito += $venta["total_venta_credito"];
+        $totalDescCredito += $venta["descuento_total_venta_credito"];
+        $totalContado += $venta["total_venta_contado"];
+        $totalLtsDescContado += $venta["cantidad_venta_contado"];
+        $totalDescContado += $venta["descuento_total_venta_contado"];
+        $totalVenta += ($venta["total_venta"] - $venta["descuento_total_venta_credito"] - $venta["descuento_total_venta_contado"]);
+        $totalPrecioLleno += $venta["total_venta"];
+
+        // Acumulando litros de crédito y contado
+        $totalLtsCredito += $ltsCredito;
+        $totalLtsContado += $ltsContado;
+    }
+
+    // Devuelve el total de kilos acumulado después de todas las iteraciones
+    return [
+        "totalKgZona" => $totalKgZona,
+        "totalLitros" => $totalLitros,
+        "totalKilos" => $totalKilos,
+        "totalCil" => $totalCil,
+        "totalCredito" => $totalCredito,
+        "totalDescCredito" => $totalDescCredito,
+        "totalContado" => $totalContado,
+        "totalLtsDescContado" => $totalLtsDescContado,
+        "totalDescContado" => $totalDescContado,
+        "totalVenta" => $totalVenta,
+        "totalPrecioLleno" => $totalPrecioLleno,
+        "totalLtsCredito" => $totalLtsCredito,
+        "totalLtsContado" => $totalLtsContado
+    ];
+}
+
 				
 }	

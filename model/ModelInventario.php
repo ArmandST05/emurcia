@@ -105,16 +105,8 @@ class ModelInventario
 	}
 	function obtenerReporteInventarioFechasEstaciones($fechaInicial, $fechaFinal, $zonaId)
 {
-    // Consultar rutas que son estaciones
-    $sqlRutasEstaciones = $this->base_datos->query("SELECT idruta FROM rutas WHERE 
-        clave_ruta LIKE '%Estación%'")->fetchAll(PDO::FETCH_COLUMN);
-
-    // Convertir las rutas a un string para el IN clause
-    $rutasEstaciones = implode(',', array_map('intval', $sqlRutasEstaciones));
-
     // Consulta principal
-    $sql = $this->base_datos->query("
-        SELECT 
+    $sql = $this->base_datos->query("SELECT 
             calendar.fecha_inventario, 
             rutas.idruta AS ruta_id, 
             rutas.clave_ruta AS ruta_nombre,
@@ -174,7 +166,7 @@ class ModelInventario
         WHERE 
             rutas.zona_id = '$zonaId'
             AND rutas.estatus = 1
-            AND rutas.idruta IN ($rutasEstaciones)  -- Filtrar por las rutas que son estaciones
+            AND rutas.tipo_ruta_id = 5 -- Filtrar por las rutas que son estaciones
         ORDER BY 
             calendar.fecha_inventario, rutas.clave_ruta, productos.nombre ASC
     ")->fetchAll(PDO::FETCH_ASSOC);
@@ -576,31 +568,7 @@ class ModelInventario
 
 
 
-	function obtenerTotalComprasTraspasosGasKgEstacionFecha($zonaId, $fechaInicial, $fechaFinal)
-{
-    $modelCompra = new ModelCompra();
-    $modelTraspaso = new ModelTraspaso();
-    $modelZona = new ModelZona();
-    $total = 0;
 
-    $zona = $modelZona->obtenerZonaId($zonaId);
-
-    // Obtener las estaciones de la zona
-    $estaciones = $this->obtenerEstacionesInventarioTeorico();
-
-    $estacionIds = implode(',', array_column($estaciones, 'idruta'));
-
-    if ($zona["tipo_zona_planta_id"] == 2) { // Planta
-        $totalData = $modelCompra->obtenerTotalComprasGasEstacionesFechas($estacionIds, $fechaInicial, $fechaFinal);
-        $total = $totalData[0]["total"];
-    } else if ($zona["tipo_zona_planta_id"] == 3) { // Sucursal *.524
-        $totalData = $modelTraspaso->obtenerTotalRecibidosEstacionesEntreFechas($estacionIds, $fechaInicial, $fechaFinal);
-        $total = $totalData[0]["total"] * .524;
-    }
-
-    $data["totalKgCompras"] = $total;
-    return $data;
-}
 
 // Función para obtener las estaciones de acuerdo a la zona
 function obtenerEstacionesPorCompania($companiaId)
