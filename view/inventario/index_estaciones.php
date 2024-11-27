@@ -39,6 +39,86 @@ if ($companiaId) {
 } else {
     echo "No se ha seleccionado ninguna compañía.";
 }
+
+
+
+
+
+
+
+// Obtener las ventas de la función
+$ventas = $modelVenta->obtenerVentasKgZonaFechaEstaciones($fechaInicial, $fechaFinal);
+
+// Variables para los totales
+$totalLitros = 0;
+$totalKilos = 0;
+$totalCil = 0;
+$totalCredito = 0;
+$totalDescCredito = 0;
+$totalContado = 0;
+$totalLtsDescContado = 0;
+$totalDescContado = 0;
+$totalVenta = 0;
+$totalPrecioLleno = 0;
+$totalLtsCredito = 0;
+$totalLtsContado = 0;
+$totalKgZona = 0;
+
+// Agrupar las ventas por fecha
+$ventasPorFecha = [];
+foreach ($ventas as $venta) {
+    $fecha = $venta["fecha"];
+    if (!isset($ventasPorFecha[$fecha])) {
+        $ventasPorFecha[$fecha] = [];
+    }
+    $ventasPorFecha[$fecha][] = $venta;
+}
+$totalKgZona = 0; 
+// Iterar sobre las fechas agrupadas
+foreach ($ventasPorFecha as $fecha => $ventasFecha) {
+    foreach ($ventasFecha as $venta) {
+        // Obtener la capacidad del producto (si no está disponible, se asigna un valor predeterminado)
+        $productoCapacidad = isset($venta["producto_capacidad"]) ? $venta["producto_capacidad"] : 1;
+
+        // Venta de litros en estaciones (producto_id == 4)
+        if ($venta["producto_id"] == 4) {
+            $litros = ($venta["total_rubros_venta"] * $productoCapacidad);
+            $totalLitros += $litros;
+            $kilos = ($litros * 0.524);
+            $totalKilos += $kilos;
+        } else {
+            // Venta de kg en Cilindreras (producto_id diferente a 4)
+            $kilos = ($venta["total_rubros_venta"] * $productoCapacidad);
+            $totalKilos += $kilos;
+            $litros = ($kilos / 0.524);
+            $totalLitros += $litros;
+        }
+
+        // Si la venta fue de estaciones (tipo_ruta_id 5), contar los cilindros
+        $cilindros = ($venta["tipo_ruta_id"] == 5) ? $venta["total_rubros_venta"] : 0;
+        $totalCil += $cilindros;
+
+        // Acumulando kilos en la zona
+        $totalKgZona += $kilos;
+
+        // Cálculos para ventas a crédito y contado
+        $ltsCredito = ($venta["total_venta_credito"] + $venta["descuento_total_venta_credito"]) / $venta["precio"];
+        $ltsContado = ($venta["total_venta_contado"] + $venta["descuento_total_venta_contado"]) / $venta["precio"];
+
+        // Acumulando totales por tipo de venta
+        $totalCredito += $venta["total_venta_credito"];
+        $totalDescCredito += $venta["descuento_total_venta_credito"];
+        $totalContado += $venta["total_venta_contado"];
+        $totalLtsDescContado += isset($venta["cantidad_venta_contado"]) ? $venta["cantidad_venta_contado"] : 0;
+        $totalDescContado += $venta["descuento_total_venta_contado"];
+        $totalVenta += ($venta["total_venta"] - $venta["descuento_total_venta_credito"] - $venta["descuento_total_venta_contado"]);
+        $totalPrecioLleno += $venta["total_venta"];
+
+        // Acumulando litros de crédito y contado
+        $totalLtsCredito += $ltsCredito;
+        $totalLtsContado += $ltsContado;
+    }
+}
 ?>
 
 <!-- Page Heading -->
@@ -178,11 +258,8 @@ if ($companiaId) {
               <?php 
               foreach ($estacionesPorZona as $zona):
 
-                // Obtención de datos para cada zona
-                $ventasKg = $modelVenta->obtenerVentasKgZonaFechaEstaciones($zona["idruta"], $fechaInicial, $fechaFinal);
-                $totalVentaKg = $ventasKg["totalKgZona"];
-                var_dump($ventasKg);
-                exit();
+               
+                
                 
                 $inventarioAnteriorKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idruta"], $fechaAnterior);
                 $totalInventarioAnteriorKg = $inventarioAnteriorKg["totalKgZona"];
