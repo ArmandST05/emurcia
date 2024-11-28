@@ -48,7 +48,6 @@ if ($companiaId) {
 
 // Obtener las ventas de la función
 $ventas = $modelVenta->obtenerVentasKgZonaFechaEstaciones($fechaInicial, $fechaFinal);
-
 // Variables para los totales
 $totalLitros = 0;
 $totalKilos = 0;
@@ -73,7 +72,7 @@ foreach ($ventas as $venta) {
     }
     $ventasPorFecha[$fecha][] = $venta;
 }
-$totalKgZona = 0; 
+
 // Iterar sobre las fechas agrupadas
 foreach ($ventasPorFecha as $fecha => $ventasFecha) {
     foreach ($ventasFecha as $venta) {
@@ -81,6 +80,7 @@ foreach ($ventasPorFecha as $fecha => $ventasFecha) {
         $productoCapacidad = isset($venta["producto_capacidad"]) ? $venta["producto_capacidad"] : 1;
 
         // Venta de litros en estaciones (producto_id == 4)
+       
         if ($venta["producto_id"] == 4) {
             $litros = ($venta["total_rubros_venta"] * $productoCapacidad);
             $totalLitros += $litros;
@@ -274,7 +274,7 @@ foreach ($ventasPorFecha as $fecha => $ventasFecha) {
 
                 // Calcular el total contable según el tipo de zona (Sucursal o Planta)
               
-                $totalContableKg = $totalInventarioAnteriorKg - $totalVentaKg - $totalAutoconsumoKg;
+                $totalContableKg = $totalInventarioAnteriorKg - $totalKgZona - $totalAutoconsumoKg;
                 
 
                 // Cálculo de la diferencia
@@ -282,19 +282,19 @@ foreach ($ventasPorFecha as $fecha => $ventasFecha) {
                 $diferenciaTotal += $diferencia;
               ?>
                 <tr class="text-right">
-                  <td><?php echo number_format($totalVentaKg, 2); ?></td>
+                  <td><?php echo number_format($totalKgZona, 2); ?></td>
                   <td><?php echo $zona["clave_ruta"]; ?></td>
                   <td><?php echo number_format($totalInventarioAnteriorKg, 2); ?></td>
                   
                   <td><?php echo number_format($totalAutoconsumoKg, 2) ?></td>
-                  <td><?php echo number_format($totalVentaKg, 2); ?></td>
+                  <td><?php echo number_format($totalKgZona, 2); ?></td>
                   <td><?php echo number_format($totalContableKg, 2) ?></td>
                   <td><?php echo number_format($totalKgInventarioActual, 2); ?></td>
                   <td><?php echo number_format($diferencia, 2) ?></td>
                 </tr>
               <?php endforeach; ?>
               <tr class="text-right">
-                <td colspan="8"></td>
+                <td colspan="7"></td>
                 <td><?php echo number_format($diferenciaTotal, 2) ?></td>
               </tr>
             </tbody>

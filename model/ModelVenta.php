@@ -830,8 +830,8 @@ class ModelVenta
 							LEFT JOIN 
 								productos ON productos.idproducto = detalles_venta.producto_id
 							WHERE 
-								rutas.tipo_ruta_id = 5
-								AND ventas.fecha BETWEEN '$fechaInicial' AND '$fechaFinal'";
+								
+								 ventas.fecha BETWEEN '$fechaInicial' AND '$fechaFinal'";
 				
 					// Ejecutar la consulta
 					$ventas = $this->base_datos->query($sql)->fetchAll(PDO::FETCH_ASSOC);

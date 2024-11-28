@@ -163,9 +163,7 @@ class ModelInventario
             tipo_ruta_productos ON rutas.tipo_ruta_id = tipo_ruta_productos.tipo_ruta_id 
         INNER JOIN 
             productos ON tipo_ruta_productos.producto_id = productos.idproducto 
-        WHERE 
-            rutas.zona_id = '$zonaId'
-            AND rutas.estatus = 1
+        WHERE rutas.estatus = 1
             AND rutas.tipo_ruta_id = 5 -- Filtrar por las rutas que son estaciones
         ORDER BY 
             calendar.fecha_inventario, rutas.clave_ruta, productos.nombre ASC
