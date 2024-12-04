@@ -241,64 +241,64 @@ foreach ($ventasPorFecha as $fecha => $ventasFecha) {
             </div>
           </div>
           <table id="listaTabla" class="table table-bordered table-sm table-responsive" style="width:100%">
-            <thead>
-              <tr>
-                <th>VTA TOTAL</th>
-                <th>ESTACIÓN</th>
-                <th>Inv Inicial</th>
-                
-                <th>C. Interno</th>
-                <th>VTAS</th>
-                <th>Contable</th>
-                <th>Real</th>
-                <th>Diferencia</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php 
-              foreach ($estacionesPorZona as $zona):
+  <thead>
+    <tr>
+      <th>VTA TOTAL</th>
+      <th>ESTACIÓN</th>
+      <th>Inv Inicial</th>
+      <th>C. Interno</th>
+      <th>VTAS</th>
+      <th>Contable</th>
+      <th>Real</th>
+      <th>Diferencia</th>
+      <th>Traspasos</th> <!-- Nueva columna para traspasos -->
+    </tr>
+  </thead>
+  <tbody>
+    <?php 
+    foreach ($estacionesPorZona as $zona):
 
-               
-                
-                
-                $inventarioAnteriorKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idruta"], $fechaAnterior);
-                $totalInventarioAnteriorKg = $inventarioAnteriorKg["totalKgZona"];
-                
-                $inventarioKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idruta"], $fechaFinal);
-                $totalKgInventarioActual = $inventarioKg["totalKgZona"];
+      // Obtener inventarios anteriores y actuales
+      $inventarioAnteriorKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idruta"], $fechaAnterior);
+      $totalInventarioAnteriorKg = $inventarioAnteriorKg["totalKgZona"];
+      
+      $inventarioKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idruta"], $fechaFinal);
+      $totalKgInventarioActual = $inventarioKg["totalKgZona"];
+      
+      // Obtener autoconsumos
+      $autoconsumosKg = $modelAutoconsumo->obtenerTotalAutoconsumosEstacionesProductoFecha($zona["idruta"], "Gas LP", $fechaInicial, $fechaFinal);
+      $totalAutoconsumoKg = $autoconsumosKg[0]["total"] * 0.524;
 
-    
+      // Obtener los traspasos usando la función obtenerTotalCantidadEntreFechas
+      $traspasosKg = $modelTraspaso->obtenerTotalCantidadEntreFechas($zona["idruta"], $fechaInicial, $fechaFinal);
+      $totalTraspasosKg = $traspasosKg[0]["total_cantidad"] * 0.524; // Ajusta si es necesario según la consulta
 
-                $autoconsumosKg = $modelAutoconsumo->obtenerTotalAutoconsumosEstacionesProductoFecha($zona["idruta"], "Gas LP", $fechaInicial, $fechaFinal);
-                $totalAutoconsumoKg = $autoconsumosKg[0]["total"] * 0.524;
+      // Calcular el total contable
+      $totalContableKg = $totalInventarioAnteriorKg - $totalKgZona - $totalAutoconsumoKg - $totalTraspasosKg;
 
-                // Calcular el total contable según el tipo de zona (Sucursal o Planta)
-              
-                $totalContableKg = $totalInventarioAnteriorKg - $totalKgZona - $totalAutoconsumoKg;
-                
+      // Cálculo de la diferencia
+      $diferencia = $totalKgInventarioActual - $totalContableKg;
+      $diferenciaTotal += $diferencia;
+    ?>
+    <tr class="text-right">
+      <td><?php echo number_format($totalKgZona, 2); ?></td>
+      <td><?php echo $zona["clave_ruta"]; ?></td>
+      <td><?php echo number_format($totalInventarioAnteriorKg, 2); ?></td>
+      <td><?php echo number_format($totalAutoconsumoKg, 2) ?></td>
+      <td><?php echo number_format($totalKgZona, 2); ?></td>
+      <td><?php echo number_format($totalContableKg, 2) ?></td>
+      <td><?php echo number_format($totalKgInventarioActual, 2); ?></td>
+      <td><?php echo number_format($diferencia, 2) ?></td>
+      <td><?php echo number_format($totalTraspasosKg, 2); ?></td> <!-- Mostrar los traspasos -->
+    </tr>
+    <?php endforeach; ?>
+    <tr class="text-right">
+      <td colspan="8"></td>
+      <td><?php echo number_format($diferenciaTotal, 2) ?></td>
+    </tr>
+  </tbody>
+</table>
 
-                // Cálculo de la diferencia
-                $diferencia = $totalKgInventarioActual - $totalContableKg;
-                $diferenciaTotal += $diferencia;
-              ?>
-                <tr class="text-right">
-                  <td><?php echo number_format($totalKgZona, 2); ?></td>
-                  <td><?php echo $zona["clave_ruta"]; ?></td>
-                  <td><?php echo number_format($totalInventarioAnteriorKg, 2); ?></td>
-                  
-                  <td><?php echo number_format($totalAutoconsumoKg, 2) ?></td>
-                  <td><?php echo number_format($totalKgZona, 2); ?></td>
-                  <td><?php echo number_format($totalContableKg, 2) ?></td>
-                  <td><?php echo number_format($totalKgInventarioActual, 2); ?></td>
-                  <td><?php echo number_format($diferencia, 2) ?></td>
-                </tr>
-              <?php endforeach; ?>
-              <tr class="text-right">
-                <td colspan="7"></td>
-                <td><?php echo number_format($diferenciaTotal, 2) ?></td>
-              </tr>
-            </tbody>
-          </table>
         </div>
       </div>
     </div>
