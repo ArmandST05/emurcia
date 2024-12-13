@@ -117,22 +117,20 @@ function obtenerTotalEnviadosZonaIdEntreFechas($zonaId, $fechaInicio, $fechaFin)
     return $resultado;
 }
 
-function obtenerTotalCantidadEntreFechas($zonaId, $fechaInicio, $fechaFin)
+function obtenerTotalCantidadEntreFechas($fechaInicio, $fechaFin)
 {
-    // Conectar a la base de datos y ejecutar la consulta
-    $resultado = $this->base_datos->query("
-        SELECT SUM(traspasos.cantidad) AS total_cantidad
-        FROM traspasos
-        INNER JOIN rutas 
-        ON traspasos.zona_destino_id = rutas.zona_id
+   $resultado = $this->base_datos->query("
+    SELECT SUM(traspasos.cantidad) AS total_cantidad
+    FROM traspasos
+    INNER JOIN rutas 
+        ON rutas.zona_id = traspasos.zona_destino_id
         AND rutas.tipo_ruta_id = 5
-        
-        WHERE traspasos.fecha BETWEEN '$fechaInicio' AND '$fechaFin'
-    ")->fetchAll(PDO::FETCH_ASSOC);
-//WHERE traspasos.zona_destino_id = '" . $zonaId . "'
+    WHERE traspasos.estatus_traspaso_id = 1
+        AND traspasos.fecha BETWEEN '$fechaInicio' AND '$fechaFin'
+")->fetchAll(PDO::FETCH_ASSOC);
+
     return $resultado;
 }
-
 	function obtenerId($id)
 	{
 		$sql = $this->base_datos->query("SELECT * FROM traspasos WHERE idtraspaso='" . $id . "'")->fetchAll(PDO::FETCH_ASSOC);

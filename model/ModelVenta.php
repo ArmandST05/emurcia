@@ -242,14 +242,21 @@ class ModelVenta
 		return $sql;
 	}
 	function rutasVentasEntreFechasEstaciones($fechaInicial, $fechaFinal) {
-		$sql = $this->base_datos->query("SELECT rutas.clave_ruta, rutas.idruta, rutas.tipo_ruta_id
-    FROM ventas
-    INNER JOIN rutas ON rutas.idruta = ventas.ruta_id
-    WHERE ventas.fecha >= '$fechaInicial' 
-    AND ventas.fecha <= '$fechaFinal'
-    AND rutas.tipo_ruta_id = 5
-    GROUP BY rutas.idruta 
-    ORDER BY rutas.clave_ruta")->fetchAll(PDO::FETCH_ASSOC);
+		$sql = $this->base_datos->query("
+			SELECT 
+				rutas.clave_ruta, 
+				rutas.idruta, 
+				rutas.tipo_ruta_id, 
+				SUM(detalles_venta.cantidad) AS total
+			FROM detalles_venta
+			INNER JOIN ventas ON ventas.idventa = detalles_venta.venta_id
+			INNER JOIN rutas ON rutas.idruta = ventas.ruta_id
+			WHERE ventas.fecha >= '$fechaInicial' 
+			AND ventas.fecha <= '$fechaFinal'
+			AND rutas.tipo_ruta_id = 5
+			GROUP BY rutas.idruta 
+			ORDER BY rutas.clave_ruta
+		")->fetchAll(PDO::FETCH_ASSOC);
 		return $sql;
 	}
 	

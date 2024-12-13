@@ -257,7 +257,13 @@ foreach ($ventasPorFecha as $fecha => $ventasFecha) {
   <tbody>
     <?php 
     foreach ($estacionesPorZona as $zona):
-
+      $totalVentaKg = $modelVenta->rutasVentasEntreFechasEstaciones($zona["idruta"], $fechaInicial, $fechaFinal);
+      if (isset($totalVentaKg[0])) {
+        $totalVentasKg = $totalVentaKg[0]["total"]; // Accede al primer elemento del array
+    } else {
+        $totalVentasKg = 0; // Si no hay resultados, asigna 0
+    }
+    
       // Obtener inventarios anteriores y actuales
       $inventarioAnteriorKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idruta"], $fechaAnterior);
       $totalInventarioAnteriorKg = $inventarioAnteriorKg["totalKgZona"];
@@ -279,13 +285,17 @@ foreach ($ventasPorFecha as $fecha => $ventasFecha) {
       // Cálculo de la diferencia
       $diferencia = $totalKgInventarioActual - $totalContableKg;
       $diferenciaTotal += $diferencia;
+      
+      var_dump($zona);
+var_dump($inventarioAnteriorKg, $inventarioKg, $autoconsumosKg, $traspasosKg);
+
     ?>
     <tr class="text-right">
-      <td><?php echo number_format($totalKgZona, 2); ?></td>
+      <td><?php echo number_format($totalVentasKg, 2); ?></td>
       <td><?php echo $zona["clave_ruta"]; ?></td>
       <td><?php echo number_format($totalInventarioAnteriorKg, 2); ?></td>
       <td><?php echo number_format($totalAutoconsumoKg, 2) ?></td>
-      <td><?php echo number_format($totalKgZona, 2); ?></td>
+      <td><?php echo number_format($totalVentasKg, 2); ?></td>
       <td><?php echo number_format($totalContableKg, 2) ?></td>
       <td><?php echo number_format($totalKgInventarioActual, 2); ?></td>
       <td><?php echo number_format($diferencia, 2) ?></td>
