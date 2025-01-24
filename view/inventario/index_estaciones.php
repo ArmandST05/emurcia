@@ -286,8 +286,6 @@ foreach ($ventasPorFecha as $fecha => $ventasFecha) {
       $diferencia = $totalKgInventarioActual - $totalContableKg;
       $diferenciaTotal += $diferencia;
       
-      var_dump($zona);
-var_dump($inventarioAnteriorKg, $inventarioKg, $autoconsumosKg, $traspasosKg);
 
     ?>
     <tr class="text-right">

@@ -208,7 +208,9 @@ if ($companiaId) {
               <?php foreach ($zonas as $zona):
                 $ventasKg = $modelVenta->obtenerVentasKgZonaFecha($zona["idzona"], $fechaInicial, $fechaFinal);
                 $totalVentaKg = $ventasKg["totalKgZona"];
-
+                echo '<pre>';
+                var_dump($totalVentaKg);
+                echo '</pre>';
                 $inventarioAnteriorKg = $modelInventario->obtenerTotalInventarioGasKgZonaFecha($zona["idzona"], $fechaAnterior);
                 $totalInventarioAnteriorKg = $inventarioAnteriorKg["totalKgZona"];
 

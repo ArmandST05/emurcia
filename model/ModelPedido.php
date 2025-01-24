@@ -246,7 +246,7 @@ class ModelPedido
 			cliente_nombre,direccion,comentario,fracc_col,
 			e_vendedor.nombre AS vendedor_nombre,
 			tipos_contacto_pedido.idtipocontactopedido AS tipo_contacto_id,tipos_contacto_pedido.nombre AS tipo_contacto_nombre,
-			pedidos.telefono AS cliente_telefono,pedidos.zona,pedidos.zona_id,
+			pedidos.telefono AS cliente_telefono,pedidos.zona_id,
 			rutas.idruta AS ruta_id, rutas.clave_ruta AS ruta_nombre,rutas.telefono AS ruta_telefono,
 			productos.nombre AS producto_nombre,
 			TIME_FORMAT(fecha_notificacion_unidad,'%h:%i %p') AS fecha_notificacion_unidad,mensajes_enviados,
