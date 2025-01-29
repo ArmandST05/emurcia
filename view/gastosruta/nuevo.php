@@ -66,6 +66,11 @@ $mesActual = date("m");
           <div class="row">
             <div class="col-md-4">
               <div class="form-group">
+              <div class="col-md-4">
+                  <input type="file" name="comprobante" id="comprobante" accept="image/*" required>
+                 </div>
+              </div>
+              <div class="form-group">
                 <label>Mes</label>
                 <select class="form-control form-control-sm" name="mes" id="mes" required>
                   <?php foreach ($meses as $mes) : ?>

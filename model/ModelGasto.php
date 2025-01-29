@@ -143,20 +143,32 @@ class ModelGasto
 		return $this->base_datos->id();
 	}
 
-	function agregarGastoRuta($mes, $anio, $rutaId, $concepto, $cantidad, $observaciones, $zonaId)
-	{
+	public function agregarGastoRuta($mes, $anio, $rutaId, $concepto, $cantidad, $observaciones, $zonaId, $comprobante) {
+		echo "Valores recibidos:<br>";
+		echo "Mes: $mes<br>";
+		echo "Año: $anio<br>";
+		echo "Ruta: $rutaId<br>";
+		echo "Concepto: $concepto<br>";
+		echo "Cantidad: $cantidad<br>";
+		echo "Observaciones: $observaciones<br>";
+		echo "Zona: $zonaId<br>";
+		echo "Comprobante: $comprobante<br>"; // Verificar que no sea "2"
+	
 		$this->base_datos->insert("gastos", [
 			"mes" => $mes,
 			"anio" => $anio,
-			"tipo_gasto_id" => 2,
+			"tipo_gasto_id" => 2, // Aquí no se debe modificar
 			"ruta_id" => $rutaId,
 			"concepto_gasto_id" => $concepto,
 			"cantidad" => $cantidad,
 			"observaciones" => $observaciones,
-			"zona_id" => $zonaId
+			"zona_id" => $zonaId,
+			"comprobante_gasto" => $comprobante
 		]);
+	
 		return $this->base_datos->id();
 	}
+	
 
 	function actualizarGastoAdministrativo($id, $mes, $anio, $origen, $concepto, $cantidad, $observaciones, $zona, $zonaId)
 	{
