@@ -64,41 +64,45 @@ class ModelGasto
 	}
 
 	function obtenerGastosRutasZonaEntreFechas($zonaId, $mesInicial, $anioInicial, $mesFinal, $anioFinal)
-	{
-		$sql = $this->base_datos->query("SELECT gastos.idgasto,gastos.mes,gastos.anio,gastos.fecha,
-			rutas.clave_ruta AS ruta_gasto,conceptos_gasto.nombre AS concepto_gasto,
-			gastos.cantidad,gastos.observaciones,gastos.zona_id,zonas.nombre as zona_nombre
-			FROM gastos,rutas,conceptos_gasto,zonas
-			WHERE gastos.ruta_id = rutas.idruta
-			AND gastos.concepto_gasto_id = conceptos_gasto.idconceptogasto
-			AND zonas.idzona = gastos.zona_id
-			AND tipo_gasto_id = 2 
-			AND gastos.zona_id = '$zonaId' 
-			AND (mes >= '$mesInicial' AND anio >= '$anioInicial')
-			AND (mes <= '$mesFinal' AND anio <= '$anioFinal')
-			ORDER BY anio,mes ASC")
-			->fetchAll(PDO::FETCH_ASSOC);
-		return $sql;
-	}
+{
+    $sql = $this->base_datos->query("SELECT gastos.idgasto,gastos.mes,gastos.anio,gastos.fecha,
+        rutas.clave_ruta AS ruta_gasto,conceptos_gasto.nombre AS concepto_gasto,
+        gastos.cantidad,gastos.observaciones,gastos.zona_id,zonas.nombre as zona_nombre,
+        gastos.comprobante_gasto
+        FROM gastos,rutas,conceptos_gasto,zonas
+        WHERE gastos.ruta_id = rutas.idruta
+        AND gastos.concepto_gasto_id = conceptos_gasto.idconceptogasto
+        AND zonas.idzona = gastos.zona_id
+        AND tipo_gasto_id = 2 
+        AND gastos.zona_id = '$zonaId' 
+        AND (mes >= '$mesInicial' AND anio >= '$anioInicial')
+        AND (mes <= '$mesFinal' AND anio <= '$anioFinal')
+        ORDER BY anio,mes ASC")
+        ->fetchAll(PDO::FETCH_ASSOC);
+    return $sql;
+}
 
-	function obtenerGastosRutasZonaRutaEntreFechas($zonaId,$rutaId, $mesInicial, $anioInicial, $mesFinal, $anioFinal)
-	{
-		$sql = $this->base_datos->query("SELECT gastos.idgasto,gastos.mes,gastos.anio,gastos.fecha,
-			rutas.clave_ruta AS ruta_gasto,conceptos_gasto.nombre AS concepto_gasto,
-			gastos.cantidad,gastos.observaciones,gastos.zona_id,zonas.nombre as zona_nombre
-			FROM gastos,rutas,conceptos_gasto,zonas
-			WHERE gastos.ruta_id = rutas.idruta
-			AND gastos.concepto_gasto_id = conceptos_gasto.idconceptogasto
-			AND zonas.idzona = gastos.zona_id
-			AND tipo_gasto_id = 2 
-			AND gastos.ruta_id = '$rutaId' 
-			AND gastos.zona_id = '$zonaId' 
-			AND (mes >= '$mesInicial' AND anio >= '$anioInicial')
-			AND (mes <= '$mesFinal' AND anio <= '$anioFinal')
-			ORDER BY anio,mes ASC")
-			->fetchAll(PDO::FETCH_ASSOC);
-		return $sql;
-	}
+
+	function obtenerGastosRutasZonaRutaEntreFechas($zonaId, $rutaId, $mesInicial, $anioInicial, $mesFinal, $anioFinal)
+{
+    $sql = $this->base_datos->query("SELECT gastos.idgasto,gastos.mes,gastos.anio,gastos.fecha,
+        rutas.clave_ruta AS ruta_gasto,conceptos_gasto.nombre AS concepto_gasto,
+        gastos.cantidad,gastos.observaciones,gastos.zona_id,zonas.nombre as zona_nombre,
+        gastos.comprobante_gasto
+        FROM gastos,rutas,conceptos_gasto,zonas
+        WHERE gastos.ruta_id = rutas.idruta
+        AND gastos.concepto_gasto_id = conceptos_gasto.idconceptogasto
+        AND zonas.idzona = gastos.zona_id
+        AND tipo_gasto_id = 2 
+        AND gastos.ruta_id = '$rutaId' 
+        AND gastos.zona_id = '$zonaId' 
+        AND (mes >= '$mesInicial' AND anio >= '$anioInicial')
+        AND (mes <= '$mesFinal' AND anio <= '$anioFinal')
+        ORDER BY anio,mes ASC")
+        ->fetchAll(PDO::FETCH_ASSOC);
+    return $sql;
+}
+
 
 	function obtenerGastoAdministrativoId($id)
 	{
@@ -143,20 +147,37 @@ class ModelGasto
 		return $this->base_datos->id();
 	}
 
-	function agregarGastoRuta($mes, $anio, $rutaId, $concepto, $cantidad, $observaciones, $zonaId)
-	{
+	public function agregarGastoRuta($mes, $anio, $rutaId, $concepto, $cantidad, $observaciones, $zonaId, $comprobante) {
+		// Depuración antes de llamar a la función
+echo "<pre>";
+echo "depuracion de la funcion del model";
+echo "Mes: $mes\n";
+echo "Año: $anio\n";
+echo "Ruta: $rutaId\n";
+echo "Concepto: $concepto\n";
+echo "Cantidad: $cantidad\n";
+echo "Observaciones: $observaciones\n";
+echo "Zona: $zonaId\n";
+echo "Comprobante: $comprobante\n"; // Asegúrate de que aquí no sea "2"
+echo "</pre>";
+
+
+	
 		$this->base_datos->insert("gastos", [
 			"mes" => $mes,
 			"anio" => $anio,
-			"tipo_gasto_id" => 2,
+			"tipo_gasto_id" => 2, // Aquí no se debe modificar
 			"ruta_id" => $rutaId,
 			"concepto_gasto_id" => $concepto,
 			"cantidad" => $cantidad,
 			"observaciones" => $observaciones,
-			"zona_id" => $zonaId
+			"zona_id" => $zonaId,
+			"comprobante_gasto" => $comprobante
 		]);
+	
 		return $this->base_datos->id();
 	}
+	
 
 	function actualizarGastoAdministrativo($id, $mes, $anio, $origen, $concepto, $cantidad, $observaciones, $zona, $zonaId)
 	{

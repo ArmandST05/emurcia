@@ -62,9 +62,12 @@ $mesActual = date("m");
   <div class="col-xl-12 col-lg-12">
     <div class="card shadow mb-4">
       <div class="card-body">
-        <form action="../controller/Gastos/InsertarGastoRuta.php" method="POST">
+        <form action="../controller/Gastos/InsertarGastoRuta.php" method="POST" enctype="multipart/form-data">
           <div class="row">
             <div class="col-md-4">
+            <div class="form-group">
+              <input type="file" name="comprobante" id="comprobante" accept="image/*" required>
+            </div>
               <div class="form-group">
                 <label>Mes</label>
                 <select class="form-control form-control-sm" name="mes" id="mes" required>

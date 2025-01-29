@@ -485,7 +485,7 @@ class ModelInventario
 		return $data;
 		
 	}
-	function obtenerTotalInventarioGasKgZonaFechaEstaciones($zonaId, $fecha)
+function obtenerTotalInventarioGasKgZonaFechaEstaciones($zonaId, $fecha)
 {
     $datosInventario = $this->obtenerReporteInventarioFechasEstaciones($fecha, $fecha, $zonaId);
     $inventarios = array();
