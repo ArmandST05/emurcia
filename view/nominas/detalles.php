@@ -45,6 +45,7 @@ $diasTrabajados = $diferencia->days + 1;
 
 $metasEmpleados = []; //Array para guardar todas las metas por tipo de empleado a utilizar
 $metasGerente = [];
+
 ?>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Page Heading -->
@@ -262,6 +263,20 @@ $metasGerente = [];
                             <th>Observaciones</th>
                           </tr>
                         </thead>
+                        <?php
+
+$metaRequerida = $metasPorEmpleados->meta1 / 1000;
+$comisionReducida = $metasPorEmpleados->comision1 / 2;
+
+// Verificar si cantidadNormal es menor que metaRequerida
+if ($cantidadNormal < $metaRequerida) {
+    $mensaje = "No llegó meta";
+    $resultadoFondo = number_format($comisionReducida, 2, '.', ',');
+} else {
+    $mensaje = "";
+    $resultadoFondo = number_format($nominaEmpleado->fondo, 2, '.', ',');
+}
+?>
                         <tbody style="color:#000000;">
                           <?php
                           foreach ($nominaTipoEmpleado as $indice => $nominaEmpleado) :
@@ -284,8 +299,9 @@ $metasGerente = [];
 
                               <?php if ($tipoEmpleadoId != 4) : //Que no sean los empleados de andén/oficina
                               ?>
-                                <td id="e<?php echo $empleadoId ?>cantidad_normal" data-columna-nombre="cantidad_normal" style="color:#000000;"><?php echo number_format($cantidadNormal, 2, '.', ',') ?></td>
-                                <td id="e<?php echo $empleadoId ?>comisiones" data-columna-nombre="comisiones"><?php echo number_format($nominaEmpleado->comisiones, 2, '.', ',') ?></td>
+<td id="e<?php echo $empleadoId ?>cantidad_normal" data-columna-nombre="cantidad_normal" style="color:#000000;">
+    <?php echo number_format($cantidadNormal, 2, '.', ','); ?>
+</td>                                <td id="e<?php echo $empleadoId ?>comisiones" data-columna-nombre="comisiones"><?php echo number_format($nominaEmpleado->comisiones, 2, '.', ',') ?></td>
                                 <?php
                                 // Los vendedores de cilindro no necesitan campo descuento, solo las pipas.
                                 if ($tipoEmpleadoId != 5 && $tipoEmpleadoId != 6) : //No es Cilindro, ni Estación (Las estaciones solamente tienen 1 comisión normal)
@@ -312,8 +328,8 @@ $metasGerente = [];
                               <td id="e<?php echo $empleadoId ?>banco" data-columna-nombre="banco" class="editValueEmployee empleado-banco"><?php echo number_format($nominaEmpleado->banco, 2, '.', ',') ?></td>
                               <td id="e<?php echo $empleadoId ?>efectivo" data-columna-nombre="efectivo" class="empleado-efectivo"><?php echo number_format($nominaEmpleado->efectivo, 2, '.', ',') ?></td>
                               <td id="e<?php echo $empleadoId ?>fondo" data-columna-nombre="fondo" class="gerente-fondo editValueEmployee">
-                                  <?php echo number_format($nominaEmpleado->fondo, 2, '.', ',') ?>
-                              </td>
+    <?php echo $mensaje ?: $resultadoFondo; ?>
+</td>
                               <td id="e<?php echo $empleadoId ?>observaciones" data-columna-nombre="observaciones" class="editValueEmployee"><?php echo $nominaEmpleado->observaciones ?></td>
                             </tr>
                           <?php endforeach; ?>
@@ -363,8 +379,9 @@ $metasGerente = [];
                         <td id="e<?php echo $empleadoId ?>total" data-columna-nombre="total" class="gerente-total empleado-total"><?php echo number_format($datosEmpleadoGerente->total, 2, '.', ',') ?></td>
                         <td id="e<?php echo $empleadoId ?>banco" data-columna-nombre="banco" class="gerente-banco editValueEmployee empleado-banco"><?php echo number_format($datosEmpleadoGerente->banco, 2, '.', ',') ?></td>
                         <td id="e<?php echo $empleadoId ?>efectivo" data-columna-nombre="efectivo" class="gerente-efectivo empleado-efectivo"><?php echo number_format($datosEmpleadoGerente->efectivo, 2, '.', ',') ?></td>
-                        <td id="e<?php echo $empleadoId ?>fondo" data-columna-nombre="fondo" class="gerente-fondo editValueEmployee"><?php echo number_format($datosEmpleadoGerente->fondo, 2, '.', ',') ?></td>
-
+                        <td id="e<?php echo $empleadoId ?>fondo" data-columna-nombre="fondo" class="gerente-fondo editValueEmployee">
+    <?php echo $mensaje ?: $resultadoFondo; ?>
+</td>
                         <td id="e<?php echo $empleadoId ?>observaciones" data-columna-nombre="observaciones" class="gerente-observaciones editValueEmployee"><?php echo $datosEmpleadoGerente->observaciones ?></td>
                       </tr>
                     </tbody>
@@ -402,8 +419,9 @@ $metasGerente = [];
                               <td style="background-color: <?php echo $color4 ?>; color:#000000;"><?php echo ($metaGerente->meta4 / 1000) ?> mil</td>
                               <td style="background-color: <?php echo $color3 ?>; color:#000000;"><?php echo ($metaGerente->meta3 / 1000) ?> mil</td>
                               <td style="background-color: <?php echo $color2 ?>; color:#000000;"><?php echo ($metaGerente->meta2 / 1000) ?> mil</td>
-                              <td style="background-color: <?php echo $color1 ?>; color:#000000;"><?php echo ($metaGerente->meta1 / 1000) ?> mil</td>
-                            <?php endif; ?>
+                              <td style="background-color: <?php echo $color1 ?>; color:#000000;">
+    <?php echo $metaRequerida; ?> mil
+</td>                            <?php endif; ?>
                             <td colspan="9"></td>
                           </tr>
                           <tr>
@@ -478,6 +496,7 @@ $metasGerente = [];
     </div>
   </div>
 <?php endif; ?>
+
 <!-- Fin nómina por tipos de empleado -->
 <script>
 

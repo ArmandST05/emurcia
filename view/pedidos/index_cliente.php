@@ -42,7 +42,7 @@ else {
 }
 
 if ($_SESSION["tipoUsuario"] == "su") {
-  $zonaId = $_GET['zona'];
+ // $zonaId = $_GET['zona'];
   $zonas = $modelZona->obtenerZonasTodas();
 } else {
   $zonaId = $_SESSION['zonaId'];
@@ -56,7 +56,7 @@ $precioKg = 0;
 $productos = [];
 
 //Obtener precio mes actual para los litros de gas
-$mes = $mesesData2[date("m")];
+//$mes = $mesesData2[date("m")];
 ?>
 <!-- Page Heading -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">

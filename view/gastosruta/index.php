@@ -182,6 +182,7 @@ $totalGastos = 0;
               <th>Mes</th>
               <th>Cantidad</th>
               <th>Observaciones</th>
+              <th>Comprobante</th>
               <?php if ($_SESSION["tipoUsuario"] == "su" || $_SESSION["tipoUsuario"] == "u" || $_SESSION["tipoUsuario"] == "ga") : ?>
                 <th>Opciones</th>
               <?php endif; ?>
@@ -191,6 +192,9 @@ $totalGastos = 0;
             <?php foreach ($gastos as $gasto) :
               $totalGastos += $gasto["cantidad"];
             ?>
+            <?php
+var_dump($gasto); // Para ver la estructura del arreglo
+?>
               <tr>
                 <td><?php echo $gasto["zona_nombre"] ?></td>
                 <td><?php echo $gasto["ruta_gasto"] ?></td>
@@ -199,6 +203,17 @@ $totalGastos = 0;
                 <td><?php echo $meses[$gasto["mes"]] ?></td>
                 <td class="text-right">$<?php echo $gasto["cantidad"] ?></td>
                 <td><?php echo $gasto["observaciones"] ?></td>
+                <td>
+                  
+                <?php if (isset($gasto['comprobante_gasto']) && !empty($gasto['comprobante_gasto'])): ?>
+                      <a href="https://cgtest.v2technoconsulting.com/view/gastosruta/comprobantes/<?php echo basename($gasto['comprobante_gasto']); ?>" download>
+                          Descargar comprobante
+                      </a>
+                  <?php else: ?>
+                      <span>Sin comprobante</span>
+                  <?php endif; ?>
+
+                </td>
                 <?php if ($_SESSION["tipoUsuario"] == "su" || $_SESSION["tipoUsuario"] == "u" || $_SESSION["tipoUsuario"] == "ga") : ?>
                   <td>
                     <button class='btn btn-sm btn-light' type='button' onclick="editar('<?php echo $gasto['idgasto']; ?>');"><i class='fas fa-pencil-alt'></i></i></button>
