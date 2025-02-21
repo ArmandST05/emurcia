@@ -256,27 +256,14 @@ $metasGerente = [];
                             <th>Faltas $</th>
                             <th>Sueldo base</th>
                             <th>Extras</th>
+                            <th>Meta</th>
                             <th>Total</th>
                             <th>Banco</th>
                             <th>Efectivo</th>
-                            <th>Fondo</th>
+                            
                             <th>Observaciones</th>
                           </tr>
-                        </thead>
-                        <?php
-
-$metaRequerida = $metasPorEmpleados->meta1 / 1000;
-$comisionReducida = $metasPorEmpleados->comision1 / 2;
-
-// Verificar si cantidadNormal es menor que metaRequerida
-if ($cantidadNormal < $metaRequerida) {
-    $mensaje = "No llegó meta";
-    $resultadoFondo = number_format($comisionReducida, 2, '.', ',');
-} else {
-    $mensaje = "";
-    $resultadoFondo = number_format($nominaEmpleado->fondo, 2, '.', ',');
-}
-?>
+                            </thead>
                         <tbody style="color:#000000;">
                           <?php
                           foreach ($nominaTipoEmpleado as $indice => $nominaEmpleado) :
@@ -292,16 +279,32 @@ if ($cantidadNormal < $metaRequerida) {
                             }else{
                               $cantidadNormal = floatval($datosVentaEmpleado->total_lts_normal);
                             }
-                          ?>
+
+                            // Asegúrate de que metasPorEmpleados tiene datos
+                              // Realiza los cálculos si las metas están disponibles
+                              $metaRequerida = $metasPorEmpleados->meta1;
+                              $comisionReducida = $metasPorEmpleados->comision1 / 2;
+                              // Verificar si cantidadNormal es menor que metaRequerida
+                              if ($cantidadNormal < $metaRequerida) {
+
+                                  $mensaje = "No llegó meta";
+                                  $resultadoTotal = $nominaEmpleado->total;
+                                  $totalNomina = $comisionReducida - $resultadoTotal;
+                              } else {
+                                  $mensaje = "Si llegó meta";
+                                  $resultadoFondo = number_format($nominaEmpleado->fondo, 2, '.', ',');
+                              }
+
+
+                            ?>
                             <tr class="tr-te<?php echo $tipoEmpleadoId ?>" data-empleado-id="<?php echo $empleadoId ?>" data-tipo-empleado-id="<?php echo $tipoEmpleadoId ?>" data-tipo-ganancia-id="<?php echo $tipoGananciaId ?>" data-ruta-id="<?php echo $rutaId ?>">
                               <td><?php echo ($ruta) ? $ruta["clave_ruta"] : "" ?></td>
                               <td><?php echo $nominaEmpleado->nombre ?></td>
 
                               <?php if ($tipoEmpleadoId != 4) : //Que no sean los empleados de andén/oficina
                               ?>
-<td id="e<?php echo $empleadoId ?>cantidad_normal" data-columna-nombre="cantidad_normal" style="color:#000000;">
-    <?php echo number_format($cantidadNormal, 2, '.', ','); ?>
-</td>                                <td id="e<?php echo $empleadoId ?>comisiones" data-columna-nombre="comisiones"><?php echo number_format($nominaEmpleado->comisiones, 2, '.', ',') ?></td>
+                                <td id="e<?php echo $empleadoId ?>cantidad_normal" data-columna-nombre="cantidad_normal" style="color:#000000;"><?php echo number_format($cantidadNormal, 0, '.', ','); ?></td>                                
+                                <td id="e<?php echo $empleadoId ?>comisiones" data-columna-nombre="comisiones"><?php echo number_format($nominaEmpleado->comisiones, 2, '.', ',') ?></td>
                                 <?php
                                 // Los vendedores de cilindro no necesitan campo descuento, solo las pipas.
                                 if ($tipoEmpleadoId != 5 && $tipoEmpleadoId != 6) : //No es Cilindro, ni Estación (Las estaciones solamente tienen 1 comisión normal)
@@ -324,12 +327,12 @@ if ($cantidadNormal < $metaRequerida) {
                               <td id="e<?php echo $empleadoId ?>faltas" data-columna-nombre="faltas" class="editValueEmployee" data-columna-nombre="faltas" class="editValueEmployee"><?php echo number_format($nominaEmpleado->faltas, 2, '.', ',') ?></td>
                               <td id="e<?php echo $empleadoId ?>sueldo_base_total" data-columna-nombre="sueldo_base_total" class="<?php echo ($tipoEmpleadoId == 4) ? 'editValueEmployee' : '' ?>"><?php echo ($tipoEmpleadoId != 4) ? number_format(($nominaEmpleado->sueldo_base_dia * $diasTrabajados), 2, '.', ',') : number_format($nominaEmpleado->sueldo_base_dia, 2, '.', ',') ?></td>
                               <td id="e<?php echo $empleadoId ?>extras" data-columna-nombre="extras" class="editValueEmployee"><?php echo number_format($nominaEmpleado->extras, 2, '.', ',') ?></td>
-                              <td id="e<?php echo $empleadoId ?>total" data-columna-nombre="total" class="empleado-total"><?php echo number_format($nominaEmpleado->total, 2, '.', ',') ?></td>
+                              <td id="e<?php echo $empleadoId ?>fondo" data-columna-nombre="fondo" class="gerente-fondo editValueEmployee"><?php echo $mensaje ?: $resultadoFondo; ?></td>
+
+                              <td id="e<?php echo $empleadoId ?>total" data-columna-nombre="total" class="empleado-total"><?php echo number_format($totalNomina, 2, '.', ',') ?></td>
                               <td id="e<?php echo $empleadoId ?>banco" data-columna-nombre="banco" class="editValueEmployee empleado-banco"><?php echo number_format($nominaEmpleado->banco, 2, '.', ',') ?></td>
                               <td id="e<?php echo $empleadoId ?>efectivo" data-columna-nombre="efectivo" class="empleado-efectivo"><?php echo number_format($nominaEmpleado->efectivo, 2, '.', ',') ?></td>
-                              <td id="e<?php echo $empleadoId ?>fondo" data-columna-nombre="fondo" class="gerente-fondo editValueEmployee">
-    <?php echo $mensaje ?: $resultadoFondo; ?>
-</td>
+
                               <td id="e<?php echo $empleadoId ?>observaciones" data-columna-nombre="observaciones" class="editValueEmployee"><?php echo $nominaEmpleado->observaciones ?></td>
                             </tr>
                           <?php endforeach; ?>
@@ -363,7 +366,7 @@ if ($cantidadNormal < $metaRequerida) {
                         <th>Total</th>
                         <th>Banco</th>
                         <th>Efectivo</th>
-                        <th>Fondo</th>
+                        <th>Meta</th>
                         <th>Observaciones</th>
                       </tr>
                     </thead>
@@ -419,9 +422,8 @@ if ($cantidadNormal < $metaRequerida) {
                               <td style="background-color: <?php echo $color4 ?>; color:#000000;"><?php echo ($metaGerente->meta4 / 1000) ?> mil</td>
                               <td style="background-color: <?php echo $color3 ?>; color:#000000;"><?php echo ($metaGerente->meta3 / 1000) ?> mil</td>
                               <td style="background-color: <?php echo $color2 ?>; color:#000000;"><?php echo ($metaGerente->meta2 / 1000) ?> mil</td>
-                              <td style="background-color: <?php echo $color1 ?>; color:#000000;">
-    <?php echo $metaRequerida; ?> mil
-</td>                            <?php endif; ?>
+                              <td style="background-color: <?php echo $color1 ?>; color:#000000;"><?php echo $metaRequerida; ?> mil</td>
+                              <?php endif; ?>
                             <td colspan="9"></td>
                           </tr>
                           <tr>
@@ -534,7 +536,6 @@ if ($cantidadNormal < $metaRequerida) {
       toast.addEventListener('mouseleave', Swal.resumeTimer)
     }
   });
-
   function calcularComisionEmpleado(tipoEmpleadoId, tipoGananciaId, tipoDescuento, rutaId, valor) {
     //Tipos descuento 0-Normal sin descuento 1 =ConDescuento
     if (metasEmpleados["tipoEmpleado" + tipoEmpleadoId] && metasEmpleados["tipoEmpleado" + tipoEmpleadoId]["tipoGanancia" + tipoGananciaId] &&
