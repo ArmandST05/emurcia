@@ -260,7 +260,6 @@ $metasGerente = [];
                             <th>Total</th>
                             <th>Banco</th>
                             <th>Efectivo</th>
-                            
                             <th>Observaciones</th>
                           </tr>
                             </thead>
@@ -289,10 +288,12 @@ $metasGerente = [];
 
                                   $mensaje = "No llegó meta";
                                   $resultadoTotal = $nominaEmpleado->total;
-                                  $totalNomina = $comisionReducida - $resultadoTotal;
+                                  $totalNomina = $resultadoTotal-$comisionReducida;
                               } else {
-                                  $mensaje = "Si llegó meta";
+                                  $mensaje = "Sí llegó meta";
                                   $resultadoFondo = number_format($nominaEmpleado->fondo, 2, '.', ',');
+                                  $totalNomina = $nominaEmpleado->total + $nominaEmpleado->comisiones; 
+
                               }
 
 
@@ -329,7 +330,9 @@ $metasGerente = [];
                               <td id="e<?php echo $empleadoId ?>extras" data-columna-nombre="extras" class="editValueEmployee"><?php echo number_format($nominaEmpleado->extras, 2, '.', ',') ?></td>
                               <td id="e<?php echo $empleadoId ?>fondo" data-columna-nombre="fondo" class="gerente-fondo editValueEmployee"><?php echo $mensaje ?: $resultadoFondo; ?></td>
 
-                              <td id="e<?php echo $empleadoId ?>total" data-columna-nombre="total" class="empleado-total"><?php echo number_format($totalNomina, 2, '.', ',') ?></td>
+                              <td id="e<?php echo $empleadoId ?>total" data-columna-nombre="total" class="empleado-total">
+    <?php echo number_format($totalNomina, 2, '.', ',') ?>
+</td>
                               <td id="e<?php echo $empleadoId ?>banco" data-columna-nombre="banco" class="editValueEmployee empleado-banco"><?php echo number_format($nominaEmpleado->banco, 2, '.', ',') ?></td>
                               <td id="e<?php echo $empleadoId ?>efectivo" data-columna-nombre="efectivo" class="empleado-efectivo"><?php echo number_format($nominaEmpleado->efectivo, 2, '.', ',') ?></td>
 
