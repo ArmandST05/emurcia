@@ -291,7 +291,7 @@ $metasGerente = [];
                                   $totalNomina = $resultadoTotal-$comisionReducida;
                               } else {
                                   $mensaje = "Sí llegó meta";
-                                  $resultadoFondo = number_format($nominaEmpleado->fondo, 2, '.', ',');
+                                  $resultadoFondo = number_format($nominaEmpleado->fondo, 0, '.', ',');
                                   $totalNomina = $nominaEmpleado->total + $nominaEmpleado->comisiones; 
 
                               }
@@ -305,18 +305,18 @@ $metasGerente = [];
                               <?php if ($tipoEmpleadoId != 4) : //Que no sean los empleados de andén/oficina
                               ?>
                                 <td id="e<?php echo $empleadoId ?>cantidad_normal" data-columna-nombre="cantidad_normal" style="color:#000000;"><?php echo number_format($cantidadNormal, 0, '.', ','); ?></td>                                
-                                <td id="e<?php echo $empleadoId ?>comisiones" data-columna-nombre="comisiones"><?php echo number_format($nominaEmpleado->comisiones, 2, '.', ',') ?></td>
+                                <td id="e<?php echo $empleadoId ?>comisiones" data-columna-nombre="comisiones"><?php echo number_format($nominaEmpleado->comisiones, 0, '.', ',') ?></td>
                                 <?php
                                 // Los vendedores de cilindro no necesitan campo descuento, solo las pipas.
                                 if ($tipoEmpleadoId != 5 && $tipoEmpleadoId != 6) : //No es Cilindro, ni Estación (Las estaciones solamente tienen 1 comisión normal)
                                 ?>
-                                  <td id="e<?php echo $empleadoId ?>cantidad_descuento" data-columna-nombre="cantidad_descuento"><?php echo number_format(floatval($datosVentaEmpleado->lts_descuento_credito), 2, '.', ',') ?></td>
-                                  <td id="e<?php echo $empleadoId ?>comisiones_descuento" data-columna-nombre="comisiones_descuento"><?php echo number_format($nominaEmpleado->comisiones_descuento, 2, '.', ',') ?></td>
+                                  <td id="e<?php echo $empleadoId ?>cantidad_descuento" data-columna-nombre="cantidad_descuento"><?php echo number_format(floatval($datosVentaEmpleado->lts_descuento_credito), 0, '.', ',') ?></td>
+                                  <td id="e<?php echo $empleadoId ?>comisiones_descuento" data-columna-nombre="comisiones_descuento"><?php echo number_format($nominaEmpleado->comisiones_descuento, 0, '.', ',') ?></td>
                                 <?php else : ?>
                                   <td></td>
                                   <td></td>
                                 <?php endif; ?>
-                                <td id="e<?php echo $empleadoId ?>sueldo_base_dia" data-columna-nombre="sueldo_base_dia" class="editValueEmployee"><?php echo number_format($nominaEmpleado->sueldo_base_dia, 2, '.', ',') ?></td>
+                                <td id="e<?php echo $empleadoId ?>sueldo_base_dia" data-columna-nombre="sueldo_base_dia" class="editValueEmployee"><?php echo number_format($nominaEmpleado->sueldo_base_dia, 0, '.', ',') ?></td>
                               <?php else : ?>
                                 <td></td>
                                 <td></td>
@@ -324,17 +324,17 @@ $metasGerente = [];
                                 <td></td>
                                 <td></td>
                               <?php endif; ?>
-                              <td id="e<?php echo $empleadoId ?>infonavit" data-columna-nombre="infonavit" class="editValueEmployee"><?php echo number_format($nominaEmpleado->infonavit, 2, '.', ',') ?></td>
-                              <td id="e<?php echo $empleadoId ?>faltas" data-columna-nombre="faltas" class="editValueEmployee" data-columna-nombre="faltas" class="editValueEmployee"><?php echo number_format($nominaEmpleado->faltas, 2, '.', ',') ?></td>
-                              <td id="e<?php echo $empleadoId ?>sueldo_base_total" data-columna-nombre="sueldo_base_total" class="<?php echo ($tipoEmpleadoId == 4) ? 'editValueEmployee' : '' ?>"><?php echo ($tipoEmpleadoId != 4) ? number_format(($nominaEmpleado->sueldo_base_dia * $diasTrabajados), 2, '.', ',') : number_format($nominaEmpleado->sueldo_base_dia, 2, '.', ',') ?></td>
-                              <td id="e<?php echo $empleadoId ?>extras" data-columna-nombre="extras" class="editValueEmployee"><?php echo number_format($nominaEmpleado->extras, 2, '.', ',') ?></td>
+                              <td id="e<?php echo $empleadoId ?>infonavit" data-columna-nombre="infonavit" class="editValueEmployee"><?php echo number_format($nominaEmpleado->infonavit, 0, '.', ',') ?></td>
+                              <td id="e<?php echo $empleadoId ?>faltas" data-columna-nombre="faltas" class="editValueEmployee" data-columna-nombre="faltas" class="editValueEmployee"><?php echo number_format($nominaEmpleado->faltas, 0, '.', ',') ?></td>
+                              <td id="e<?php echo $empleadoId ?>sueldo_base_total" data-columna-nombre="sueldo_base_total" class="<?php echo ($tipoEmpleadoId == 4) ? 'editValueEmployee' : '' ?>"><?php echo ($tipoEmpleadoId != 4) ? number_format(($nominaEmpleado->sueldo_base_dia * $diasTrabajados), 0, '.', ',') : number_format($nominaEmpleado->sueldo_base_dia, 2, '.', ',') ?></td>
+                              <td id="e<?php echo $empleadoId ?>extras" data-columna-nombre="extras" class="editValueEmployee"><?php echo number_format($nominaEmpleado->extras, 0, '.', ',') ?></td>
                               <td id="e<?php echo $empleadoId ?>fondo" data-columna-nombre="fondo" class="gerente-fondo editValueEmployee"><?php echo $mensaje ?: $resultadoFondo; ?></td>
 
                               <td id="e<?php echo $empleadoId ?>total" data-columna-nombre="total" class="empleado-total">
-    <?php echo number_format($totalNomina, 2, '.', ',') ?>
+    <?php echo number_format($totalNomina, 0, '.', ',') ?>
 </td>
-                              <td id="e<?php echo $empleadoId ?>banco" data-columna-nombre="banco" class="editValueEmployee empleado-banco"><?php echo number_format($nominaEmpleado->banco, 2, '.', ',') ?></td>
-                              <td id="e<?php echo $empleadoId ?>efectivo" data-columna-nombre="efectivo" class="empleado-efectivo"><?php echo number_format($nominaEmpleado->efectivo, 2, '.', ',') ?></td>
+                              <td id="e<?php echo $empleadoId ?>banco" data-columna-nombre="banco" class="editValueEmployee empleado-banco"><?php echo number_format($nominaEmpleado->banco, 0, '.', ',') ?></td>
+                              <td id="e<?php echo $empleadoId ?>efectivo" data-columna-nombre="efectivo" class="empleado-efectivo"><?php echo number_format($nominaEmpleado->efectivo, 0, '.', ',') ?></td>
 
                               <td id="e<?php echo $empleadoId ?>observaciones" data-columna-nombre="observaciones" class="editValueEmployee"><?php echo $nominaEmpleado->observaciones ?></td>
                             </tr>
@@ -378,13 +378,13 @@ $metasGerente = [];
                         <td colspan="2"><?php echo $datosEmpleadoGerente->nombre ?></td>
                         <td colspan="4"></td>
                         <td id="e<?php echo $empleadoId ?>comisiones" data-columna-nombre="comisiones" class="gerente-comisiones editValueEmployee"><?php echo ((isset($datosEmpleadoGerente->comisiones)) ? $datosEmpleadoGerente->comisiones : 0) ?></td>
-                        <td id="e<?php echo $empleadoId ?>infonavit" data-columna-nombre="infonavit" class="gerente-infonavit editValueEmployee"><?php echo number_format($datosEmpleadoGerente->infonavit, 2, '.', ',') ?></td>
-                        <td id="e<?php echo $empleadoId ?>faltas" data-columna-nombre="faltas" class="gerente-faltas editValueEmployee"><?php echo number_format($datosEmpleadoGerente->faltas, 2, '.', ',') ?></td>
+                        <td id="e<?php echo $empleadoId ?>infonavit" data-columna-nombre="infonavit" class="gerente-infonavit editValueEmployee"><?php echo number_format($datosEmpleadoGerente->infonavit, 0, '.', ',') ?></td>
+                        <td id="e<?php echo $empleadoId ?>faltas" data-columna-nombre="faltas" class="gerente-faltas editValueEmployee"><?php echo number_format($datosEmpleadoGerente->faltas, 0, '.', ',') ?></td>
                         <td id="e<?php echo $empleadoId ?>sueldo_base_total" data-columna-nombre="sueldo_base_total" class="gerente-sueldo_base_total editValueEmployee"><?php echo ($datosEmpleadoGerente->sueldo_base_dia) ?></td>
-                        <td id="e<?php echo $empleadoId ?>extras" data-columna-nombre="extras" class="gerente-extras editValueEmployee"><?php echo number_format($datosEmpleadoGerente->extras, 2, '.', ',') ?></td>
-                        <td id="e<?php echo $empleadoId ?>total" data-columna-nombre="total" class="gerente-total empleado-total"><?php echo number_format($datosEmpleadoGerente->total, 2, '.', ',') ?></td>
-                        <td id="e<?php echo $empleadoId ?>banco" data-columna-nombre="banco" class="gerente-banco editValueEmployee empleado-banco"><?php echo number_format($datosEmpleadoGerente->banco, 2, '.', ',') ?></td>
-                        <td id="e<?php echo $empleadoId ?>efectivo" data-columna-nombre="efectivo" class="gerente-efectivo empleado-efectivo"><?php echo number_format($datosEmpleadoGerente->efectivo, 2, '.', ',') ?></td>
+                        <td id="e<?php echo $empleadoId ?>extras" data-columna-nombre="extras" class="gerente-extras editValueEmployee"><?php echo number_format($datosEmpleadoGerente->extras, 0, '.', ',') ?></td>
+                        <td id="e<?php echo $empleadoId ?>total" data-columna-nombre="total" class="gerente-total empleado-total"><?php echo number_format($datosEmpleadoGerente->total, 0, '.', ',') ?></td>
+                        <td id="e<?php echo $empleadoId ?>banco" data-columna-nombre="banco" class="gerente-banco editValueEmployee empleado-banco"><?php echo number_format($datosEmpleadoGerente->banco, 0, '.', ',') ?></td>
+                        <td id="e<?php echo $empleadoId ?>efectivo" data-columna-nombre="efectivo" class="gerente-efectivo empleado-efectivo"><?php echo number_format($datosEmpleadoGerente->efectivo, 0, '.', ',') ?></td>
                         <td id="e<?php echo $empleadoId ?>fondo" data-columna-nombre="fondo" class="gerente-fondo editValueEmployee">
     <?php echo $mensaje ?: $resultadoFondo; ?>
 </td>
@@ -482,9 +482,9 @@ $metasGerente = [];
                 <tbody>
                   <tr>
                     <td colspan="11"></td>
-                    <td id="nominaTotal"><?php echo number_format($nomina->total, 2) ?></td>
-                    <td id="nominaBanco"><?php echo number_format($nomina->banco, 2) ?></td>
-                    <td id="nominaEfectivo"><?php echo number_format($nomina->efectivo, 2) ?></td>
+                    <td id="nominaTotal"><?php echo number_format($nomina->total, 0) ?></td>
+                    <td id="nominaBanco"><?php echo number_format($nomina->banco, 0) ?></td>
+                    <td id="nominaEfectivo"><?php echo number_format($nomina->efectivo, 0) ?></td>
                     <td id="nominaObservaciones"><?php echo $nomina->observaciones ?></td>
                   </tr>
                 </tbody>
