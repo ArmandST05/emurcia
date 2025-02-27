@@ -45,7 +45,6 @@ $diasTrabajados = $diferencia->days + 1;
 
 $metasEmpleados = []; //Array para guardar todas las metas por tipo de empleado a utilizar
 $metasGerente = [];
-
 ?>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Page Heading -->
@@ -262,9 +261,9 @@ $metasGerente = [];
                             <th>Efectivo</th>
                             <th>Observaciones</th>
                           </tr>
-                            </thead>
+                        </thead>
                         <tbody style="color:#000000;">
-                          <?php
+                        <?php
                           foreach ($nominaTipoEmpleado as $indice => $nominaEmpleado) :
                             $empleadoId = $nominaEmpleado->empleado_id;
                             $ruta = $modelRuta->obtenerRutaId($nominaEmpleado->ruta_id);
@@ -298,25 +297,26 @@ $metasGerente = [];
 
 
                             ?>
+
                             <tr class="tr-te<?php echo $tipoEmpleadoId ?>" data-empleado-id="<?php echo $empleadoId ?>" data-tipo-empleado-id="<?php echo $tipoEmpleadoId ?>" data-tipo-ganancia-id="<?php echo $tipoGananciaId ?>" data-ruta-id="<?php echo $rutaId ?>">
                               <td><?php echo ($ruta) ? $ruta["clave_ruta"] : "" ?></td>
                               <td><?php echo $nominaEmpleado->nombre ?></td>
 
                               <?php if ($tipoEmpleadoId != 4) : //Que no sean los empleados de andén/oficina
                               ?>
-                                <td id="e<?php echo $empleadoId ?>cantidad_normal" data-columna-nombre="cantidad_normal" style="color:#000000;"><?php echo number_format($cantidadNormal, 0, '.', ','); ?></td>                                
-                                <td id="e<?php echo $empleadoId ?>comisiones" data-columna-nombre="comisiones"><?php echo number_format($nominaEmpleado->comisiones, 0, '.', ',') ?></td>
+                                <td id="e<?php echo $empleadoId ?>cantidad_normal" data-columna-nombre="cantidad_normal" style="color:#000000;"><?php echo number_format($cantidadNormal, 2, '.', ',') ?></td>
+                                <td id="e<?php echo $empleadoId ?>comisiones" data-columna-nombre="comisiones"><?php echo number_format($nominaEmpleado->comisiones, 2, '.', ',') ?></td>
                                 <?php
                                 // Los vendedores de cilindro no necesitan campo descuento, solo las pipas.
                                 if ($tipoEmpleadoId != 5 && $tipoEmpleadoId != 6) : //No es Cilindro, ni Estación (Las estaciones solamente tienen 1 comisión normal)
                                 ?>
-                                  <td id="e<?php echo $empleadoId ?>cantidad_descuento" data-columna-nombre="cantidad_descuento"><?php echo number_format(floatval($datosVentaEmpleado->lts_descuento_credito), 0, '.', ',') ?></td>
-                                  <td id="e<?php echo $empleadoId ?>comisiones_descuento" data-columna-nombre="comisiones_descuento"><?php echo number_format($nominaEmpleado->comisiones_descuento, 0, '.', ',') ?></td>
+                                  <td id="e<?php echo $empleadoId ?>cantidad_descuento" data-columna-nombre="cantidad_descuento"><?php echo number_format(floatval($datosVentaEmpleado->lts_descuento_credito), 2, '.', ',') ?></td>
+                                  <td id="e<?php echo $empleadoId ?>comisiones_descuento" data-columna-nombre="comisiones_descuento"><?php echo number_format($nominaEmpleado->comisiones_descuento, 2, '.', ',') ?></td>
                                 <?php else : ?>
                                   <td></td>
                                   <td></td>
                                 <?php endif; ?>
-                                <td id="e<?php echo $empleadoId ?>sueldo_base_dia" data-columna-nombre="sueldo_base_dia" class="editValueEmployee"><?php echo number_format($nominaEmpleado->sueldo_base_dia, 0, '.', ',') ?></td>
+                                <td id="e<?php echo $empleadoId ?>sueldo_base_dia" data-columna-nombre="sueldo_base_dia" class="editValueEmployee"><?php echo number_format($nominaEmpleado->sueldo_base_dia, 2, '.', ',') ?></td>
                               <?php else : ?>
                                 <td></td>
                                 <td></td>
@@ -324,18 +324,13 @@ $metasGerente = [];
                                 <td></td>
                                 <td></td>
                               <?php endif; ?>
-                              <td id="e<?php echo $empleadoId ?>infonavit" data-columna-nombre="infonavit" class="editValueEmployee"><?php echo number_format($nominaEmpleado->infonavit, 0, '.', ',') ?></td>
-                              <td id="e<?php echo $empleadoId ?>faltas" data-columna-nombre="faltas" class="editValueEmployee" data-columna-nombre="faltas" class="editValueEmployee"><?php echo number_format($nominaEmpleado->faltas, 0, '.', ',') ?></td>
-                              <td id="e<?php echo $empleadoId ?>sueldo_base_total" data-columna-nombre="sueldo_base_total" class="<?php echo ($tipoEmpleadoId == 4) ? 'editValueEmployee' : '' ?>"><?php echo ($tipoEmpleadoId != 4) ? number_format(($nominaEmpleado->sueldo_base_dia * $diasTrabajados), 0, '.', ',') : number_format($nominaEmpleado->sueldo_base_dia, 2, '.', ',') ?></td>
-                              <td id="e<?php echo $empleadoId ?>extras" data-columna-nombre="extras" class="editValueEmployee"><?php echo number_format($nominaEmpleado->extras, 0, '.', ',') ?></td>
-                              <td id="e<?php echo $empleadoId ?>fondo" data-columna-nombre="fondo" class="gerente-fondo editValueEmployee"><?php echo $mensaje ?: $resultadoFondo; ?></td>
-
-                              <td id="e<?php echo $empleadoId ?>total" data-columna-nombre="total" class="empleado-total">
-    <?php echo number_format($totalNomina, 0, '.', ',') ?>
-</td>
-                              <td id="e<?php echo $empleadoId ?>banco" data-columna-nombre="banco" class="editValueEmployee empleado-banco"><?php echo number_format($nominaEmpleado->banco, 0, '.', ',') ?></td>
-                              <td id="e<?php echo $empleadoId ?>efectivo" data-columna-nombre="efectivo" class="empleado-efectivo"><?php echo number_format($nominaEmpleado->efectivo, 0, '.', ',') ?></td>
-
+                              <td id="e<?php echo $empleadoId ?>infonavit" data-columna-nombre="infonavit" class="editValueEmployee"><?php echo number_format($nominaEmpleado->infonavit, 2, '.', ',') ?></td>
+                              <td id="e<?php echo $empleadoId ?>faltas" data-columna-nombre="faltas" class="editValueEmployee" data-columna-nombre="faltas" class="editValueEmployee"><?php echo number_format($nominaEmpleado->faltas, 2, '.', ',') ?></td>
+                              <td id="e<?php echo $empleadoId ?>sueldo_base_total" data-columna-nombre="sueldo_base_total" class="<?php echo ($tipoEmpleadoId == 4) ? 'editValueEmployee' : '' ?>"><?php echo ($tipoEmpleadoId != 4) ? number_format(($nominaEmpleado->sueldo_base_dia * $diasTrabajados), 2, '.', ',') : number_format($nominaEmpleado->sueldo_base_dia, 2, '.', ',') ?></td>
+                              <td id="e<?php echo $empleadoId ?>extras" data-columna-nombre="extras" class="editValueEmployee"><?php echo number_format($nominaEmpleado->extras, 2, '.', ',') ?></td>
+                              <td id="e<?php echo $empleadoId ?>fondo" data-columna-nombre="fondo" class="gerente-fondo"><?php echo $mensaje ?: $resultadoFondo; ?></td>
+                              <td id="e<?php echo $empleadoId ?>total" data-columna-nombre="total" class="empleado-total"><?php echo number_format($totalNomina, 0, '.', ',') ?></td>                              <td id="e<?php echo $empleadoId ?>banco" data-columna-nombre="banco" class="editValueEmployee empleado-banco"><?php echo number_format($nominaEmpleado->banco, 2, '.', ',') ?></td>
+                              <td id="e<?php echo $empleadoId ?>efectivo" data-columna-nombre="efectivo" class="empleado-efectivo"><?php echo number_format($nominaEmpleado->efectivo, 2, '.', ',') ?></td>
                               <td id="e<?php echo $empleadoId ?>observaciones" data-columna-nombre="observaciones" class="editValueEmployee"><?php echo $nominaEmpleado->observaciones ?></td>
                             </tr>
                           <?php endforeach; ?>
@@ -369,7 +364,7 @@ $metasGerente = [];
                         <th>Total</th>
                         <th>Banco</th>
                         <th>Efectivo</th>
-                        <th>Meta</th>
+                        <th>Fondo</th>
                         <th>Observaciones</th>
                       </tr>
                     </thead>
@@ -378,16 +373,14 @@ $metasGerente = [];
                         <td colspan="2"><?php echo $datosEmpleadoGerente->nombre ?></td>
                         <td colspan="4"></td>
                         <td id="e<?php echo $empleadoId ?>comisiones" data-columna-nombre="comisiones" class="gerente-comisiones editValueEmployee"><?php echo ((isset($datosEmpleadoGerente->comisiones)) ? $datosEmpleadoGerente->comisiones : 0) ?></td>
-                        <td id="e<?php echo $empleadoId ?>infonavit" data-columna-nombre="infonavit" class="gerente-infonavit editValueEmployee"><?php echo number_format($datosEmpleadoGerente->infonavit, 0, '.', ',') ?></td>
-                        <td id="e<?php echo $empleadoId ?>faltas" data-columna-nombre="faltas" class="gerente-faltas editValueEmployee"><?php echo number_format($datosEmpleadoGerente->faltas, 0, '.', ',') ?></td>
+                        <td id="e<?php echo $empleadoId ?>infonavit" data-columna-nombre="infonavit" class="gerente-infonavit editValueEmployee"><?php echo number_format($datosEmpleadoGerente->infonavit, 2, '.', ',') ?></td>
+                        <td id="e<?php echo $empleadoId ?>faltas" data-columna-nombre="faltas" class="gerente-faltas editValueEmployee"><?php echo number_format($datosEmpleadoGerente->faltas, 2, '.', ',') ?></td>
                         <td id="e<?php echo $empleadoId ?>sueldo_base_total" data-columna-nombre="sueldo_base_total" class="gerente-sueldo_base_total editValueEmployee"><?php echo ($datosEmpleadoGerente->sueldo_base_dia) ?></td>
-                        <td id="e<?php echo $empleadoId ?>extras" data-columna-nombre="extras" class="gerente-extras editValueEmployee"><?php echo number_format($datosEmpleadoGerente->extras, 0, '.', ',') ?></td>
-                        <td id="e<?php echo $empleadoId ?>total" data-columna-nombre="total" class="gerente-total empleado-total"><?php echo number_format($datosEmpleadoGerente->total, 0, '.', ',') ?></td>
-                        <td id="e<?php echo $empleadoId ?>banco" data-columna-nombre="banco" class="gerente-banco editValueEmployee empleado-banco"><?php echo number_format($datosEmpleadoGerente->banco, 0, '.', ',') ?></td>
-                        <td id="e<?php echo $empleadoId ?>efectivo" data-columna-nombre="efectivo" class="gerente-efectivo empleado-efectivo"><?php echo number_format($datosEmpleadoGerente->efectivo, 0, '.', ',') ?></td>
-                        <td id="e<?php echo $empleadoId ?>fondo" data-columna-nombre="fondo" class="gerente-fondo editValueEmployee">
-    <?php echo $mensaje ?: $resultadoFondo; ?>
-</td>
+                        <td id="e<?php echo $empleadoId ?>extras" data-columna-nombre="extras" class="gerente-extras editValueEmployee"><?php echo number_format($datosEmpleadoGerente->extras, 2, '.', ',') ?></td>
+                        <td id="e<?php echo $empleadoId ?>total" data-columna-nombre="total" class="gerente-total empleado-total"><?php echo number_format($datosEmpleadoGerente->total, 2, '.', ',') ?></td>
+                        <td id="e<?php echo $empleadoId ?>banco" data-columna-nombre="banco" class="gerente-banco editValueEmployee empleado-banco"><?php echo number_format($datosEmpleadoGerente->banco, 2, '.', ',') ?></td>
+                        <td id="e<?php echo $empleadoId ?>efectivo" data-columna-nombre="efectivo" class="gerente-efectivo empleado-efectivo"><?php echo number_format($datosEmpleadoGerente->efectivo, 2, '.', ',') ?></td>
+                        <td id="e<?php echo $empleadoId ?>fondo" data-columna-nombre="fondo" class="gerente-fondo editValueEmployee"><?php echo number_format($datosEmpleadoGerente->fondo, 2, '.', ',') ?></td>
                         <td id="e<?php echo $empleadoId ?>observaciones" data-columna-nombre="observaciones" class="gerente-observaciones editValueEmployee"><?php echo $datosEmpleadoGerente->observaciones ?></td>
                       </tr>
                     </tbody>
@@ -425,8 +418,8 @@ $metasGerente = [];
                               <td style="background-color: <?php echo $color4 ?>; color:#000000;"><?php echo ($metaGerente->meta4 / 1000) ?> mil</td>
                               <td style="background-color: <?php echo $color3 ?>; color:#000000;"><?php echo ($metaGerente->meta3 / 1000) ?> mil</td>
                               <td style="background-color: <?php echo $color2 ?>; color:#000000;"><?php echo ($metaGerente->meta2 / 1000) ?> mil</td>
-                              <td style="background-color: <?php echo $color1 ?>; color:#000000;"><?php echo $metaRequerida; ?> mil</td>
-                              <?php endif; ?>
+                              <td style="background-color: <?php echo $color1 ?>; color:#000000;"><?php echo ($metaGerente->meta1 / 1000) ?> mil</td>
+                            <?php endif; ?>
                             <td colspan="9"></td>
                           </tr>
                           <tr>
@@ -482,9 +475,9 @@ $metasGerente = [];
                 <tbody>
                   <tr>
                     <td colspan="11"></td>
-                    <td id="nominaTotal"><?php echo number_format($nomina->total, 0) ?></td>
-                    <td id="nominaBanco"><?php echo number_format($nomina->banco, 0) ?></td>
-                    <td id="nominaEfectivo"><?php echo number_format($nomina->efectivo, 0) ?></td>
+                    <td id="nominaTotal"><?php echo number_format($nomina->total, 2) ?></td>
+                    <td id="nominaBanco"><?php echo number_format($nomina->banco, 2) ?></td>
+                    <td id="nominaEfectivo"><?php echo number_format($nomina->efectivo, 2) ?></td>
                     <td id="nominaObservaciones"><?php echo $nomina->observaciones ?></td>
                   </tr>
                 </tbody>
@@ -501,7 +494,6 @@ $metasGerente = [];
     </div>
   </div>
 <?php endif; ?>
-
 <!-- Fin nómina por tipos de empleado -->
 <script>
 
@@ -539,6 +531,7 @@ $metasGerente = [];
       toast.addEventListener('mouseleave', Swal.resumeTimer)
     }
   });
+
   function calcularComisionEmpleado(tipoEmpleadoId, tipoGananciaId, tipoDescuento, rutaId, valor) {
     //Tipos descuento 0-Normal sin descuento 1 =ConDescuento
     if (metasEmpleados["tipoEmpleado" + tipoEmpleadoId] && metasEmpleados["tipoEmpleado" + tipoEmpleadoId]["tipoGanancia" + tipoGananciaId] &&
@@ -754,60 +747,6 @@ $metasGerente = [];
     let empleadoId = trEmpleado.data('empleado-id');
     let tipoEmpleadoId = trEmpleado.data('tipo-empleado-id');
 
-
-    if (tipoEmpleadoId != 2) {
-        let tipoGananciaId = trEmpleado.data('tipo-ganancia-id');
-        let rutaId = trEmpleado.data('ruta-id');
-        let extras = parseFloat(trEmpleado.find('td[data-columna-nombre="extras"]').text().replace(/,/g, '')) || 0;
-
-        let diasTrabajados = parseFloat("<?php echo $diasTrabajados ?>");
-        let sueldoBaseDiario = parseFloat(trEmpleado.find('td[data-columna-nombre="sueldo_base_dia"]').text().replace(/,/g, '')) || 0;
-        let sueldoBaseTotal = 0;
-        let sueldoBaseTotalOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="sueldo_base_total"]').text().replace(/,/g, '')) || 0;
-
-        if (tipoEmpleadoId == 4) { // Tipo empleado oficina y gerente no tiene salario por día trabajado, tienen salario fijo
-            sueldoBaseTotal = sueldoBaseTotalOriginal;
-        } else {
-            sueldoBaseTotal = sueldoBaseDiario * diasTrabajados;
-            if (sueldoBaseTotalOriginal != sueldoBaseTotal) {
-                actualizarValorEmpleado(empleadoId, "sueldo_base_total", sueldoBaseTotal); // Actualizar valor en la tabla
-            }
-        }
-
-        // Recalcular comisiones
-        // Normales
-        let cantidadNormal = parseFloat(trEmpleado.find('td[data-columna-nombre="cantidad_normal"]').text().replace(/,/g, '')) || 0;
-        let colorCantidadNormal = getColorMetaEmpleado(tipoEmpleadoId, tipoGananciaId, 0, rutaId, cantidadNormal); // Sin descuento, es normal
-        trEmpleado.find('td[data-columna-nombre="cantidad_normal"]').css("background-color", colorCantidadNormal);
-        let comisionNormalOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="comisiones"]').text().replace(/,/g, '')) || 0;
-        let comisionNormal = calcularComisionEmpleado(tipoEmpleadoId, tipoGananciaId, 0, rutaId, cantidadNormal);
-
-        if (comisionNormalOriginal != comisionNormal) {
-            actualizarValorEmpleado(empleadoId, "comisiones", comisionNormal); // Actualizar valor en la tabla
-        }
-
-        // Con descuento
-        let cantidadDescuento = parseFloat(trEmpleado.find('td[data-columna-nombre="cantidad_descuento"]').text().replace(/,/g, '')) || 0;
-        let colorCantidadDescuento = getColorMetaEmpleado(tipoEmpleadoId, tipoGananciaId, 1, rutaId, cantidadDescuento); // Con descuento
-        trEmpleado.find('td[data-columna-nombre="cantidad_descuento"]').css("background-color", colorCantidadDescuento);
-        let comisionDescuentoOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="comisiones_descuento"]').text().replace(/,/g, '')) || 0;
-        let comisionDescuento = calcularComisionEmpleado(tipoEmpleadoId, tipoGananciaId, 1, rutaId, cantidadDescuento);
-
-        if (comisionDescuentoOriginal != comisionDescuento) {
-            actualizarValorEmpleado(empleadoId, "comisiones_descuento", comisionDescuento); // Actualizar valor en la tabla
-        }
-        // Fin recalcular comisiones
-
-        // Calcular total
-        let faltas = parseFloat(trEmpleado.find('td[data-columna-nombre="faltas"]').text().replace(/,/g, '')) || 0;
-        let infonavit = parseFloat(trEmpleado.find('td[data-columna-nombre="infonavit"]').text().replace(/,/g, '')) || 0;
-        let fondo = parseFloat(trEmpleado.find('td[data-columna-nombre="fondo"]').text().replace(/,/g, '')) || 0; // Obtener el valor del fondo
-
-        let totalOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="total"]').text().replace(/,/g, '')) || 0;
-        let total = extras + sueldoBaseTotal + comisionNormal + comisionDescuento - faltas - infonavit;
-        if (totalOriginal != total) {
-            actualizarValorEmpleado(empleadoId, "total", total); // Actualizar valor en la tabla
-
     if(tipoEmpleadoId != 2){
       let tipoGananciaId = trEmpleado.data('tipo-ganancia-id');
       let rutaId = trEmpleado.data('ruta-id');
@@ -824,7 +763,6 @@ $metasGerente = [];
         sueldoBaseTotal = sueldoBaseDiario * diasTrabajados;
         if (sueldoBaseTotalOriginal != sueldoBaseTotal) {
           actualizarValorEmpleado(empleadoId, "sueldo_base_total", sueldoBaseTotal); //Actualizar valor en la tabla
-
         }
       }
       //Recalcular comisiones
@@ -834,36 +772,6 @@ $metasGerente = [];
       trEmpleado.find('td[data-columna-nombre="cantidad_normal"]').css("background-color", colorCantidadNormal);
       let comisionNormalOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="comisiones"]').text().replace(/,/g, '')) || 0;
       let comisionNormal = calcularComisionEmpleado(tipoEmpleadoId, tipoGananciaId, 0, rutaId, cantidadNormal);
-
-
-        // Calcular efectivo (Total - Banco - Fondo)
-        let banco = parseFloat(trEmpleado.find('td[data-columna-nombre="banco"]').text().replace(/,/g, '')) || 0;
-        let efectivoOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="efectivo"]').text().replace(/,/g, '')) || 0;
-        let efectivo = total - banco - fondo; // Restar el fondo del total
-        if (efectivoOriginal != efectivo) {
-            actualizarValorEmpleado(empleadoId, "efectivo", efectivo); // Actualizar valor en la tabla
-        }
-    }
-
-    calcularTotalGerente();
-}
-
-
-document.getElementById('fondoSelect').addEventListener('change', function() {
-    let valorSeleccionado = parseFloat(this.value) || 0;
-
-    // Actualizar el contenido de todas las celdas <td> con la clase 'fondo'
-    document.querySelectorAll('td.fondo').forEach(function(td) {
-        td.textContent = valorSeleccionado;
-    });
-
-    // Recalcular los totales de todos los empleados visibles en la tabla
-    $('tr[data-empleado-id]').each(function() {
-        calcularTotalesEmpleado($(this));
-    });
-});
-
-
 
       if (comisionNormalOriginal != comisionNormal) {
         actualizarValorEmpleado(empleadoId, "comisiones", comisionNormal); //Actualizar valor en la tabla
@@ -903,7 +811,6 @@ document.getElementById('fondoSelect').addEventListener('change', function() {
 
     calcularTotalGerente();
   }
-
 
   function calcularTotalGerente() {
     let tipoEmpleadoId = 2;
@@ -987,46 +894,6 @@ document.getElementById('fondoSelect').addEventListener('change', function() {
   function calcularTotalesNomina() {
     let observaciones = null;
     let totalGral = 0;
-    let totalBanco = 0;
-    let totalEfectivo = 0;
-
-    console.log("Iniciando el cálculo de totales...");
-
-    // Calcular el total general (suma de todos los empleados)
-    $('.empleado-total').each(function() {
-        let valorTotalEmpleado = parseFloat($(this).text().replace(/,/g, '')) || 0;
-        totalGral += valorTotalEmpleado;
-        console.log("Valor total empleado:", valorTotalEmpleado, "Total General acumulado:", totalGral);
-    });
-
-    // Calcular el total en banco
-    $('.empleado-banco').each(function() {
-        let valorBancoEmpleado = parseFloat($(this).text().replace(/,/g, '')) || 0;
-        totalBanco += valorBancoEmpleado;
-        console.log("Valor banco empleado:", valorBancoEmpleado, "Total Banco acumulado:", totalBanco);
-    });
-
-    // Calcular el total en efectivo
-    $('.empleado-efectivo').each(function() {
-        let valorEfectivoEmpleado = parseFloat($(this).text().replace(/,/g, '')) || 0;
-        totalEfectivo += valorEfectivoEmpleado;
-        console.log("Valor efectivo empleado:", valorEfectivoEmpleado, "Total Efectivo acumulado:", totalEfectivo);
-    });
-
-    // Actualizar los campos en la tabla
-    console.log("Total General:", totalGral);
-    console.log("Total Banco:", totalBanco);
-    console.log("Total Efectivo:", totalEfectivo);
-
-    $('#nominaTotal').text(totalGral.toFixed(2));
-    $('#nominaBanco').text(totalBanco.toFixed(2));
-    $('#nominaEfectivo').text(totalEfectivo.toFixed(2));
-
-    console.log("Cálculo de totales completado.");
-}
-
-
-
     $('.empleado-total').each(function(index) {
       totalGral = totalGral + parseFloat($(this).text().replace(/,/g, ''));
     });
@@ -1075,5 +942,4 @@ document.getElementById('fondoSelect').addEventListener('change', function() {
       }
     });
   }
-
 </script>
