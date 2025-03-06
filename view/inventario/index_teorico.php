@@ -205,73 +205,72 @@ if ($companiaId) {
               </tr>
             </thead>
             <tbody>
-              <?php foreach ($zonas as $zona):
-                $ventasKg = $modelVenta->obtenerVentasKgZonaFecha($zona["idzona"], $fechaInicial, $fechaFinal);
-                $totalVentaKg = $ventasKg["totalKgZona"];
+  <?php foreach ($zonas as $zona): ?>
+    <tr>
+      <td colspan='9'><strong>Zona: <?php echo $zona["nombre"] . " (ID: " . $zona["idzona"] . ")"; ?></strong></td>
+    </tr>
+    
+    <?php
+      // Obtener datos relevantes para la zona
+      $ventasKg = $modelVenta->obtenerVentasKgZonaFecha($zona["idzona"], $fechaInicial, $fechaFinal);
+      $totalVentaKg = $ventasKg["totalKgZona"];
+      echo "<tr><td colspan='9'>Ventas KG: $totalVentaKg</td></tr>";
 
-                $inventarioAnteriorKg = $modelInventario->obtenerTotalInventarioGasKgZonaFecha($zona["idzona"], $fechaAnterior);
-                $totalInventarioAnteriorKg = $inventarioAnteriorKg["totalKgZona"];
+      $inventarioAnteriorKg = $modelInventario->obtenerTotalInventarioGasKgZonaFecha($zona["idzona"], $fechaAnterior);
+      $totalInventarioAnteriorKg = $inventarioAnteriorKg["totalKgZona"];
+      echo "<tr><td colspan='9'>Inventario Anterior KG: $totalInventarioAnteriorKg</td></tr>";
 
-                $inventarioKg = $modelInventario->obtenerTotalInventarioGasKgZonaFecha($zona["idzona"], $fechaFinal);
-                $totalKgInventarioActual = $inventarioKg["totalKgZona"];
+      $inventarioKg = $modelInventario->obtenerTotalInventarioGasKgZonaFecha($zona["idzona"], $fechaFinal);
+      $totalKgInventarioActual = $inventarioKg["totalKgZona"];
+      echo "<tr><td colspan='9'>Inventario Actual KG: $totalKgInventarioActual</td></tr>";
 
-                $comprasTraspasosKg = $modelInventario->obtenerTotalComprasTraspasosGasKgZonaFecha($zona["idzona"], $fechaInicial, $fechaFinal);
-                $totalComprasKg = $comprasTraspasosKg["totalKgCompras"];
+      $comprasTraspasosKg = $modelInventario->obtenerTotalComprasTraspasosGasKgZonaFecha($zona["idzona"], $fechaInicial, $fechaFinal);
+      $totalComprasKg = $comprasTraspasosKg["totalKgCompras"];
+      echo "<tr><td colspan='9'>Compras/Traspasos KG: $totalComprasKg</td></tr>";
 
-                $autoconsumosKg = $modelAutoconsumo->obtenerTotalAutoconsumosZonaProductoFecha($zona["idzona"], "Gas LP", $fechaInicial, $fechaFinal);
-                $totalAutoconsumoKg = $autoconsumosKg[0]["total"] * 0.524;
+      $autoconsumosKg = $modelAutoconsumo->obtenerTotalAutoconsumosZonaProductoFecha($zona["idzona"], "Gas LP", $fechaInicial, $fechaFinal);
+      $totalAutoconsumoKg = $autoconsumosKg[0]["total"] * 0.524;
+      echo "<tr><td colspan='9'>Autoconsumo KG: $totalAutoconsumoKg</td></tr>";
 
-                /*$totalTraspasosEnviados = $modelTraspaso->obtenerTotalEnviadosZonaIdEntreFechas($zona["idzona"], $fechaInicial, $fechaFinal);
-                $totalTraspasosEnviadosKg = $totalTraspasosEnviados[0]["total"]* 0.524;*/
+      // Cálculo del total contable dependiendo del tipo de zona
+      if ($zona["tipo_zona_planta_id"] == 3) { // Sucursal
+        $totalComprasSucursales += $totalComprasKg;
+        echo "<tr><td colspan='9'>Planta -totalComprasSucursales = $totalComprasSucursales </td></tr>";
+        $totalContableKg = $totalInventarioAnteriorKg + $totalComprasKg - $totalVentaKg - $totalAutoconsumoKg;
+        echo "<tr><td colspan='9'>Sucursal - Total Contable KG: ($totalInventarioAnteriorKg + $totalComprasKg - $totalVentaKg - $totalAutoconsumoKg) = $totalContableKg</td></tr>";
+      } else { // Planta
+        $totalComprasSucursales += $totalComprasKg;
+        echo "<tr><td colspan='9'>Planta -totalComprasSucursales = $totalComprasSucursales </td></tr>";
 
-                if($zona["tipo_zona_planta_id"] == 3){//Sucursal
-                  $totalComprasSucursales += $totalComprasKg;
-                  $totalContableKg = $totalInventarioAnteriorKg + $totalComprasKg - $totalVentaKg - $totalAutoconsumoKg;
-                }else{//Planta
-                  $totalContableKg = $totalInventarioAnteriorKg + $totalComprasKg - $totalVentaKg - $totalAutoconsumoKg - $totalComprasSucursales;
-                }
-                //Cálculo contable Ejemplo Cañón Tlaltenango(Inventario Inicial+Compras/Traspasos-VTAS-Consumo Interno-(Comp/Traspasos Jalpa)-(Comp/Traspasos Villa Guerrero)+TránsitoMesAnterior)
-            
-                $diferencia = $totalKgInventarioActual - ($totalContableKg);
-                $diferenciaTotal += $diferencia;
-                ?>
-                <tr class="text-right">
-                  <td>
-                    <?php echo number_format($totalVentaKg, 2); ?>
-                  </td>
-                  <td>
-                    <?php echo $zona["nombre"]; ?>
-                  </td>
-                  <td>
-                    <?php echo number_format($totalInventarioAnteriorKg, 2); ?>
-                  </td>
-                  <td>
-                    <?php echo number_format($totalComprasKg, 2); ?>
-                  </td>
-                  <td>
-                    <?php echo number_format($totalAutoconsumoKg, 2) ?>
-                  </td>
-                  <td>
-                    <?php echo number_format($totalVentaKg, 2); ?>
-                  </td>
-                  <td>
-                    <?php echo number_format($totalContableKg, 2) ?>
-                  </td>
-                  <td>
-                    <?php echo number_format($totalKgInventarioActual, 2); ?>
-                  </td>
-                  <td>
-                    <?php echo number_format($diferencia, 2) ?>
-                  </td>
-                </tr>
-              <?php endforeach; ?>
-              <tr class="text-right">
-                <td colspan="8"></td></td>
-                <td>
-                  <?php echo number_format($diferenciaTotal, 2) ?>
-                </td>
-              </tr>
-            </tbody>
+        $totalContableKg = $totalInventarioAnteriorKg + $totalComprasKg - $totalVentaKg - $totalAutoconsumoKg - $totalComprasSucursales - $totalComprasKg;
+        echo "<tr><td colspan='9'>Planta - Total Contable KG: ($totalInventarioAnteriorKg + $totalComprasKg - $totalVentaKg - $totalAutoconsumoKg - $totalComprasSucursales- $totalComprasKg) = $totalContableKg</td></tr>";
+      }
+
+      // Cálculo de la diferencia entre inventario actual y contable
+      $diferencia = $totalKgInventarioActual - $totalContableKg;
+      $diferenciaTotal += $diferencia;
+      echo "<tr><td colspan='9'>Diferencia KG: ($totalKgInventarioActual - $totalContableKg) = $diferencia</td></tr>";
+    ?>
+    
+    <tr class="text-right">
+      <td><?php echo number_format($totalVentaKg, 2); ?></td>
+      <td><?php echo $zona["nombre"]; ?></td>
+      <td><?php echo number_format($totalInventarioAnteriorKg, 2); ?></td>
+      <td><?php echo number_format($totalComprasKg, 2); ?></td>
+      <td><?php echo number_format($totalAutoconsumoKg, 2); ?></td>
+      <td><?php echo number_format($totalVentaKg, 2); ?></td>
+      <td><?php echo number_format($totalContableKg, 2); ?></td>
+      <td><?php echo number_format($totalKgInventarioActual, 2); ?></td>
+      <td><?php echo number_format($diferencia, 2); ?></td>
+    </tr>
+  <?php endforeach; ?>
+  
+  <tr class="text-right">
+    <td colspan="8"></td>
+    <td><?php echo number_format($diferenciaTotal, 2); ?></td>
+  </tr>
+</tbody>
+
           </table>
         </div>
       </div>

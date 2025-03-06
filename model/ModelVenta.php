@@ -230,17 +230,37 @@ class ModelVenta
 		return $sql;
 	}
 	
-	function rutasVentasEntreFechas($zonaId, $fechaInicial, $fechaFinal)
-	{
-		$sql = $this->base_datos->query("SELECT rutas.clave_ruta, rutas.idruta,rutas.tipo_ruta_id
-			FROM ventas,rutas
-			WHERE rutas.idruta = ventas.ruta_id
-			AND ventas.zona_id = '$zonaId'
-			AND ventas.fecha >= '$fechaInicial' 
-			AND ventas.fecha <= '$fechaFinal'
-			GROUP BY rutas.idruta ORDER BY rutas.clave_ruta")->fetchAll(PDO::FETCH_ASSOC);
-		return $sql;
-	}
+	function rutasVentasEntreFechas(int $zonaId, string $fechaInicial, string $fechaFinal): array
+{
+    // Verificar que la conexión a la base de datos exista
+    if (!isset($this->base_datos) || !$this->base_datos instanceof PDO) {
+        return []; // Retorna un array vacío si no hay conexión
+    }
+
+    try {
+        // Preparar la consulta con parámetros para evitar SQL Injection
+        $sql = "SELECT rutas.clave_ruta, rutas.idruta, rutas.tipo_ruta_id
+                FROM ventas
+                INNER JOIN rutas ON rutas.idruta = ventas.ruta_id
+                WHERE ventas.zona_id = :zonaId
+                AND ventas.fecha BETWEEN :fechaInicial AND :fechaFinal
+                GROUP BY rutas.idruta
+                ORDER BY rutas.clave_ruta";
+
+        $stmt = $this->base_datos->prepare($sql);
+        $stmt->execute([
+            ':zonaId'      => $zonaId,
+            ':fechaInicial' => $fechaInicial,
+            ':fechaFinal'   => $fechaFinal
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: []; // Retorna los datos o array vacío
+    } catch (PDOException $e) {
+        error_log("Error en rutasVentasEntreFechas: " . $e->getMessage());
+        return [];
+    }
+}
+
 	function rutasVentasEntreFechasEstaciones($fechaInicial, $fechaFinal) {
 		$sql = $this->base_datos->query("
 			SELECT 
@@ -285,16 +305,36 @@ class ModelVenta
 			GROUP BY ventas.fecha ORDER BY ventas.fecha")->fetchAll(PDO::FETCH_ASSOC);
 		return $sql;
 	}
-	function fechasVentasRutaEstaciones($rutaId, $fechaInicial, $fechaFinal)
-	{
-		$sql = $this->base_datos->query("SELECT ventas.fecha
-			FROM ventas
-			WHERE ventas.ruta_id = '$rutaId'
-			AND ventas.fecha >= '$fechaInicial' 
-			AND ventas.fecha <= '$fechaFinal'
-			GROUP BY ventas.fecha ORDER BY ventas.fecha")->fetchAll(PDO::FETCH_ASSOC);
-		return $sql;
-	}
+	function fechasVentasRutaEstaciones(int $rutaId, string $fechaInicial, string $fechaFinal): array
+{
+    // Verificar que la conexión a la base de datos exista
+    if (!isset($this->base_datos) || !$this->base_datos instanceof PDO) {
+        return []; // Retorna un array vacío si no hay conexión
+    }
+
+    try {
+        // Consulta con parámetros para evitar inyección SQL
+        $sql = "SELECT ventas.fecha
+                FROM ventas
+                WHERE ventas.ruta_id = :rutaId
+                AND ventas.fecha BETWEEN :fechaInicial AND :fechaFinal
+                GROUP BY ventas.fecha
+                ORDER BY ventas.fecha";
+
+        $stmt = $this->base_datos->prepare($sql);
+        $stmt->execute([
+            ':rutaId'       => $rutaId,
+            ':fechaInicial' => $fechaInicial,
+            ':fechaFinal'   => $fechaFinal
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: []; // Retorna los datos o array vacío
+    } catch (PDOException $e) {
+        error_log("Error en fechasVentasRutaEstaciones: " . $e->getMessage());
+        return [];
+    }
+}
+
 	function fechasVentasRutaProducto($rutaId, $productoId, $fechaInicial, $fechaFinal)
 	{
 		$sql = $this->base_datos->query("SELECT ventas.fecha
@@ -741,76 +781,54 @@ class ModelVenta
 				
 				
 				/*-------------------INVENTARIO TEÓRICO-------------------- */
-				function obtenerVentasKgZonaFecha($zonaId,$fechaInicial,$fechaFinal)
-				{
-					$totalKgZona = 0;
-					$rutasVenta = $this->rutasVentasEntreFechas($zonaId, $fechaInicial, $fechaFinal);
-					
-					foreach ($rutasVenta as $claveRuta => $ruta){
-						
-						$fechas = $this->fechasVentasRuta($ruta["idruta"], $fechaInicial, $fechaFinal);
-						
-						$totalLitros = 0;
-						$totalKilos = 0;
-						$totalCil = 0;
-						$totalCredito = 0;
-						$totalDescCredito = 0;
-						$totalContado = 0;
-						$totalLtsDescContado = 0;
-						$totalDescContado = 0;
-						$totalVenta = 0;
-						$totalPrecioLleno = 0;
-						$totalLtsCredito = 0;
-						$totalLtsContado = 0;
-						
-						foreach ($fechas as $claveFecha => $fecha){
-							$fecha = $fecha["fecha"];
-							
-							$ventas = $this->listaZonaRutaFecha($zonaId, $ruta["idruta"], $fecha);
-							
-							foreach ($ventas as $venta){
-								//Venta de litros en pipas (1)/estación carburación (5)/plantas lts (4)
-								if ($venta["producto_id"] == 4) {
-									$litros = ($venta["total_rubros_venta"] * $venta["producto_capacidad"]);
-									$totalLitros += $litros;
-									
-									$kilos = ($litros * .524);
-									$totalKilos += $kilos;
-								} else {
-									//Venta de kg en Cilindreras (2)/Planta Cilindros (3)
-									$kilos = ($venta["total_rubros_venta"] * $venta["producto_capacidad"]);
-									$totalKilos += $kilos;
-									
-									$litros = ($kilos / .524);
-									$totalLitros += $litros;
-								}
-								$cilindros = ($venta["tipo_ruta_id"] == 2 || $venta["tipo_ruta_id"] == 3) ? $venta["total_rubros_venta"] : 0;
-								$totalCil += $cilindros;
-								
-								$totalKgZona += $kilos;
-								
-								//Dividir el total de la venta que fue a crédito entre el precio al que se vendió para obtener los litros a crédito. 
-								//Sacarlo el cálculo en base a lo total $ vendido.
-								$ltsCredito = ($venta["total_venta_credito"] + $venta["descuento_total_venta_credito"]) / $venta["precio"];
-								$ltsContado = ($venta["total_venta_contado"] + $venta["descuento_total_venta_contado"]) / $venta["precio"];
-								
-								$totalCredito += $venta["total_venta_credito"];
-								$totalDescCredito += $venta["descuento_total_venta_credito"];
-								$totalContado += $venta["total_venta_contado"];       
-								$totalLtsDescContado += $venta["cantidad_venta_contado"];
-								$totalDescContado += $venta["descuento_total_venta_contado"];
-								$totalVenta += ($venta["total_venta"] - $venta["descuento_total_venta_credito"] - $venta["descuento_total_venta_contado"]);
-								$totalPrecioLleno += $venta["total_venta"];
-								
-								$totalLtsCredito += $ltsCredito;
-								$totalLtsContado += $ltsContado;
-								
-								//Total Venta en Reporte= (Crédito + Contado) o (Precio lleno - descuento crédito - descuento contado)
-								//Precio Lleno = Litros por el precio público sin descuento
-							}
-						}
-					}
-				}
+				function obtenerVentasKgZonaFecha(int $zonaId, string $fechaInicial, string $fechaFinal): float
+{
+    $totalKgZona = 0;
+    
+    // Verifica que la conexión a la base de datos exista
+    if (!isset($this->base_datos) || !$this->base_datos instanceof PDO) {
+        return 0; // Retorna 0 si no hay conexión
+    }
+
+    $rutasVenta = $this->rutasVentasEntreFechas($zonaId, $fechaInicial, $fechaFinal);
+
+    foreach ($rutasVenta as $ruta) {
+        $idruta = $ruta["idruta"] ?? null;
+        if (!$idruta) continue; // Evita errores si idruta es NULL
+
+        $fechas = $this->fechasVentasRuta($idruta, $fechaInicial, $fechaFinal);
+
+        $totalKilos = 0;
+
+        foreach ($fechas as $fechaRow) {
+            $fecha = $fechaRow["fecha"] ?? null;
+            if (!$fecha) continue;
+
+            $ventas = $this->listaZonaRutaFecha($zonaId, $idruta, $fecha);
+
+            foreach ($ventas as $venta) {
+                if (!isset($venta["producto_id"], $venta["total_rubros_venta"], $venta["producto_capacidad"])) {
+                    continue; // Evita errores si falta algún dato
+                }
+
+                if ($venta["producto_id"] == 4) {
+                    // Venta en litros (Pipas, Estación Carburación, Plantas lts)
+                    $litros = $venta["total_rubros_venta"] * $venta["producto_capacidad"];
+                    $kilos = $litros * 0.524;
+                } else {
+                    // Venta en kg (Cilindreras, Planta Cilindros)
+                    $kilos = $venta["total_rubros_venta"] * $venta["producto_capacidad"];
+                }
+
+                $totalKilos += $kilos;
+                $totalKgZona += $kilos;
+            }
+        }
+    }
+
+    return $totalKgZona;
+}
+
 				function obtenerVentasKgZonaFechaEstaciones($fechaInicial, $fechaFinal) {
 					// Consulta de ventas
 					$sql = "SELECT 
