@@ -88,7 +88,8 @@ function obtenerTotalRecibidosZonaIdEntreFechas($zonaId, $fechaInicio, $fechaFin
             AND zona_destino_id ='" . $zonaId . "' 
             AND fecha >= '$fechaInicio'
             AND fecha <= '$fechaFin'
-            AND traspasos.estatus_traspaso_id = 1
+            AND traspasos.estatus_traspaso_id IN (1, 2);
+
     ")->fetchAll(PDO::FETCH_ASSOC);
     
     return $resultado;
