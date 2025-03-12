@@ -94,6 +94,28 @@ function obtenerTotalRecibidosZonaIdEntreFechas($zonaId, $fechaInicio, $fechaFin
     
     return $resultado;
 }
+function obtenerTotalRecibidosZonaIdEntreFechas2($zonaId, $fechaInicio, $fechaFin)
+{
+    // Solo aceptados
+    $resultado = $this->base_datos->query("SELECT *
+        FROM 
+            traspasos,
+            zonas AS zona_origen, 
+            zonas AS zona_destino, 
+            estatus_traspaso
+        WHERE 
+            zona_origen.idzona = traspasos.zona_origen_id 
+            AND zona_destino.idzona = traspasos.zona_destino_id 
+            AND estatus_traspaso.idestatustraspaso = traspasos.estatus_traspaso_id
+            AND zona_destino_id ='" . $zonaId . "' 
+            AND fecha >= '$fechaInicio'
+            AND fecha <= '$fechaFin'
+            AND traspasos.estatus_traspaso_id IN (1, 2);
+
+    ")->fetchAll(PDO::FETCH_ASSOC);
+    
+    return $resultado;
+}
 
 
 

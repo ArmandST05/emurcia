@@ -542,28 +542,60 @@ function obtenerTotalInventarioGasKgZonaFechaEstaciones($zonaId, $fecha)
     return $data;
 }
 
-	function obtenerTotalComprasTraspasosGasKgZonaFecha($zonaId, $fechaInicial,$fechaFinal)
-	{
-		/* Compras en el caso de plantas
-		Sucursales se considera traspasos recibidos de las plantas como compras*/
-		$modelCompra = new ModelCompra();
-		$modelTraspaso = new ModelTraspaso();
-		$modelZona = new ModelZona();
-		$total = 0;
+function obtenerTotalComprasTraspasosGasKgZonaFecha($zonaId, $fechaInicial, $fechaFinal)
+{
+    /* Compras en el caso de plantas
+    Sucursales se consideran traspasos recibidos de las plantas como compras */
+    $modelCompra = new ModelCompra();
+    $modelTraspaso = new ModelTraspaso();
+    $modelZona = new ModelZona();
+    $total = 0;
 
-		$zona = $modelZona->obtenerZonaId($zonaId);
-		if($zona["tipo_zona_planta_id"] == 2){//Planta
-			$totalData = $modelCompra->obtenerTotalComprasGasZonaFechas($zonaId,$fechaInicial,$fechaFinal);
-			$total = $totalData[0]["total"];
-		}else if($zona["tipo_zona_planta_id"] == 3){//Sucursal *.524
-			$totalData = $modelTraspaso->obtenerTotalRecibidosZonaIdEntreFechas($zonaId,$fechaInicial,$fechaFinal);
-			
-			$total = $totalData[0]["total"]*.524;
-		}
-		$data["totalKgCompras"] = $total; 	
-		return $data;
-	}
+    $zona = $modelZona->obtenerZonaId($zonaId);
 
+    if ($zona["tipo_zona_planta_id"] == 2) { // Planta
+        $totalData = $modelCompra->obtenerTotalComprasGasZonaFechas($zonaId, $fechaInicial, $fechaFinal);
+        $total = $totalData[0]["total"];
+    } else if ($zona["tipo_zona_planta_id"] == 3) { // Sucursal *.524
+        $totalData = $modelTraspaso->obtenerTotalRecibidosZonaIdEntreFechas($zonaId, $fechaInicial, $fechaFinal);
+        $total = $totalData[0]["total"] * 0.524;
+		echo "Total " . $total . "<br>";
+
+        // Si la zona es 19, hay un ajuste adicional
+        if ($zona["idzona"] == 19) {
+            $totalDataExtra = $modelTraspaso->obtenerTotalRecibidosZonaIdEntreFechas2($zonaId, $fechaInicial, $fechaFinal);
+
+            // Depuración: Ver todos los datos obtenidos
+            var_dump($totalDataExtra);
+
+            if (!empty($totalDataExtra)) {
+                foreach ($totalDataExtra as $traspaso) {
+                    $cantidad = isset($traspaso["cantidad"]) ? (float)$traspaso["cantidad"] : 0;
+                    echo "Cantidad recibida: " . $cantidad . "<br>";
+
+                    if ($cantidad < 150) {
+                        // Si la cantidad es menor a 150, calculamos el total * 30
+                        $totalExtra = $cantidad * 30;
+                        echo "Total * 30: " . $totalExtra . "<br>";
+
+                        // SUMAMOS EL TOTAL EXTRA AL TOTAL FINAL
+                        $total += $totalExtra;
+						echo "Total para < a 150: " . $totalExtra . "<br>";
+                    } else {
+                        // Si la cantidad es mayor o igual a 150, simplemente sumamos al total
+                        $total += $cantidad;
+						echo "Total para MAYOR a 150: " . $totalExtra . "<br>";
+                    }
+                }
+            } else {
+                echo "No hay datos de traspasos para la zona y el rango de fechas especificados.";
+            }
+        }
+    }
+
+    $data["totalKgCompras"] = $total;
+    return $data;
+}
 
 
 

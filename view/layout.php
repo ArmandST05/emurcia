@@ -1,4 +1,4 @@
-<?php
+<?php   
 date_default_timezone_set('America/Mexico_City');
 //require('/session1.php');
 $zona = $_SESSION['zona'];
