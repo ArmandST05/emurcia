@@ -47,7 +47,7 @@ class Medoo
 	public function __construct()
 	{
 		$options['database_type'] = 'mysql';
-		$options['database_name'] = 'mvillalpando_powergas_grupoemurcia';
+		$options['database_name'] = 'mvillalpando_powergas_grupoemurcia_test';
 		$options['server'] = 'localhost';
 		$options['username'] = 'root';
 		$options['password'] = '';
