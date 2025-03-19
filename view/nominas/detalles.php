@@ -122,7 +122,6 @@ $metasGerente = [];
                 ?>
                         <thead style="color: #000000 ">
                           <tr>
-                            <th colspan="15" bgcolor="lightgray"><?php echo $tipoEmpleadoData->nombre . " " . strtoupper($rutaNombre) ?></th>
                           </tr>
                           <?php if ($tipoEmpleadoId != 4 && $tipoEmpleadoId != 6) : ?>
                             <tr>

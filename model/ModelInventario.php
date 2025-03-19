@@ -561,36 +561,41 @@ function obtenerTotalComprasTraspasosGasKgZonaFecha($zonaId, $fechaInicial, $fec
         $total = $totalData[0]["total"] * 0.524;
 		echo "Total " . $total . "<br>";
 
-        // Si la zona es 19, hay un ajuste adicional
         if ($zona["idzona"] == 19) {
-            $totalDataExtra = $modelTraspaso->obtenerTotalRecibidosZonaIdEntreFechas2($zonaId, $fechaInicial, $fechaFinal);
-
-            // Depuración: Ver todos los datos obtenidos
-            var_dump($totalDataExtra);
-
-            if (!empty($totalDataExtra)) {
-                foreach ($totalDataExtra as $traspaso) {
-                    $cantidad = isset($traspaso["cantidad"]) ? (float)$traspaso["cantidad"] : 0;
-                    echo "Cantidad recibida: " . $cantidad . "<br>";
-
-                    if ($cantidad < 150) {
-                        // Si la cantidad es menor a 150, calculamos el total * 30
-                        $totalExtra = $cantidad * 30;
-                        echo "Total * 30: " . $totalExtra . "<br>";
-
-                        // SUMAMOS EL TOTAL EXTRA AL TOTAL FINAL
-                        $total += $totalExtra;
-						echo "Total para < a 150: " . $totalExtra . "<br>";
-                    } else {
-                        // Si la cantidad es mayor o igual a 150, simplemente sumamos al total
-                        $total += $cantidad;
-						echo "Total para MAYOR a 150: " . $totalExtra . "<br>";
-                    }
-                }
-            } else {
-                echo "No hay datos de traspasos para la zona y el rango de fechas especificados.";
-            }
-        }
+			$totalDataExtra = $modelTraspaso->obtenerTotalRecibidosZonaIdEntreFechas2($zonaId, $fechaInicial, $fechaFinal);
+		
+			// Depuración: Ver todos los datos obtenidos
+			var_dump($totalDataExtra);
+		
+			$sumaMenores150 = 0;
+			$sumaMayores150 = 0;
+		
+			if (!empty($totalDataExtra)) {
+				foreach ($totalDataExtra as $traspaso) {
+					$cantidad = isset($traspaso["cantidad"]) ? (float)$traspaso["cantidad"] : 0;
+		
+					if ($cantidad < 150) {
+						$sumaMenores150 += $cantidad;
+					} else {
+						$sumaMayores150 += $cantidad;
+					}
+				}
+		
+				// Multiplicamos la suma de los menores a 150 por 30
+				$totalExtra = $sumaMenores150 * 30;
+		
+				// Sumamos el total extra al total de cantidades mayores a 150
+				$totalFinal = $totalExtra + $sumaMayores150;
+		
+				echo "Suma de cantidades menores a 150: " . $sumaMenores150 . "<br>";
+				echo "Total extra (menores a 150 * 30): " . $totalExtra . "<br>";
+				echo "Suma de cantidades mayores o iguales a 150: " . $sumaMayores150 . "<br>";
+				echo "Total final (total extra + suma mayores a 150): " . $totalFinal . "<br>";
+			} else {
+				echo "No hay datos de traspasos para la zona y el rango de fechas especificados.";
+			}
+		}
+		
     }
 
     $data["totalKgCompras"] = $total;
