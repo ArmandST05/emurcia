@@ -301,20 +301,17 @@ $metasGerente = [];
                                    
      
                                    if ($cantidadNormal < $metaRequerida) {
-     
-                                       $mensaje = "No llegó meta";
-                                       $resultadoTotal = $nominaEmpleado->total;
-                                       
-                                       $comisionTotal =$cantidadNormal/1000;
-                                       $comisionTotal2 = $comisionTotal*$comisionReducida;
-                                       $totalNomina =  $resultadoTotal+$comisionTotal2;
-                                       
-                                   } else {
-                                       $mensaje = "Sí llegó meta";
-                                       $resultadoFondo = number_format($nominaEmpleado->fondo, 0, '.', ',');
-                                       $totalNomina = $nominaEmpleado->total; 
-     
-                                   }
+                                    $mensaje = "No llegó meta";
+                                    $resultadoTotal = $nominaEmpleado->total;
+                                    $comisionTotal = $cantidadNormal / 1000;
+                                    $comisionTotal2 = $comisionTotal * $comisionReducida;
+                                    $totalNomina = $resultadoTotal + $comisionTotal2;
+                                } else {
+                                    $mensaje = "Sí llegó meta";
+                                    $resultadoFondo = number_format($nominaEmpleado->fondo, 0, '.', ',');
+                                    $comisionTotal2 = 0; // No hay comisión extra si se alcanza la meta
+                                    $totalNomina = $nominaEmpleado->total;
+                                }
                                 ?></td>
                                 <td id="e<?php echo $empleadoId ?>comisiones" data-columna-nombre="comisiones"><?php echo number_format($nominaEmpleado->comisiones, 0, '.', ',') ?></td>
                                 <?php
@@ -339,8 +336,8 @@ $metasGerente = [];
                               <td id="e<?php echo $empleadoId ?>faltas" data-columna-nombre="faltas" class="editValueEmployee" data-columna-nombre="faltas" class="editValueEmployee"><?php echo number_format($nominaEmpleado->faltas, 0, '.', ',') ?></td>
                               <td id="e<?php echo $empleadoId ?>sueldo_base_total" data-columna-nombre="sueldo_base_total" class="<?php echo ($tipoEmpleadoId == 4) ? 'editValueEmployee' : '' ?>"><?php echo ($tipoEmpleadoId != 4) ? number_format(($nominaEmpleado->sueldo_base_dia * $diasTrabajados), 0, '.', ',') : number_format($nominaEmpleado->sueldo_base_dia, 0, '.', ',') ?></td>
                               <td id="e<?php echo $empleadoId ?>extras" data-columna-nombre="extras" class="editValueEmployee"><?php echo number_format($nominaEmpleado->extras, 0, '.', ',') ?></td>
-                              <td id="e<?php echo $empleadoId ?>fondo" data-columna-nombre="fondo" class="gerente-fondo"><?php echo $mensaje ?: $resultadoFondo; ?></td>
-                              <td id="e<?php echo $empleadoId ?>total" data-columna-nombre="total" class="empleado-total"><?php echo number_format($totalNomina, 0, '.', ',') ?></td>                              <td id="e<?php echo $empleadoId ?>banco" data-columna-nombre="banco" class="editValueEmployee empleado-banco"><?php echo number_format($nominaEmpleado->banco, 0, '.', ',') ?></td>
+                              <td id="e<?php echo $empleadoId ?>meta" data-columna-nombre="meta" class="meta" data-comision="<?php echo number_format($comisionTotal2, 0, '.', ',') ?>"><?php echo $mensaje; ?></td>                              <td id="e<?php echo $empleadoId ?>total" data-columna-nombre="total" class="empleado-total"><?php echo number_format($totalNomina, 0, '.', ',') ?></td>
+                              <td id="e<?php echo $empleadoId ?>banco" data-columna-nombre="banco" class="editValueEmployee empleado-banco"><?php echo number_format($nominaEmpleado->banco, 0, '.', ',') ?></td>
                               <td id="e<?php echo $empleadoId ?>efectivo" data-columna-nombre="efectivo" class="empleado-efectivo"><?php echo number_format($nominaEmpleado->efectivo, 0, '.', ',') ?></td>
                               <td id="e<?php echo $empleadoId ?>observaciones" data-columna-nombre="observaciones" class="editValueEmployee"><?php echo $nominaEmpleado->observaciones ?></td>
                             </tr>
@@ -804,9 +801,10 @@ $metasGerente = [];
       let faltas = parseFloat(trEmpleado.find('td[data-columna-nombre="faltas"]').text().replace(/,/g, '')) || 0;
       let infonavit = parseFloat(trEmpleado.find('td[data-columna-nombre="infonavit"]').text().replace(/,/g, '')) || 0;
       let fondo = parseFloat(trEmpleado.find('td[data-columna-nombre="fondo"]').text().replace(/,/g, '')) || 0;
+      let comisionExtra = parseFloat(trEmpleado.find('td[data-columna-nombre="meta"]').data('comision')) || 0;
 
       let totalOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="total"]').text().replace(/,/g, '')) || 0;
-      let total = extras + sueldoBaseTotal + comisionNormal + comisionDescuento - faltas - infonavit - fondo;
+      let total = extras + sueldoBaseTotal + comisionNormal + comisionDescuento - faltas - infonavit - fondo + comisionExtra;
       if (totalOriginal != total) {
         actualizarValorEmpleado(empleadoId, "total", total); //Actualizar valor en la tabla
       }
