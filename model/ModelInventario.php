@@ -560,12 +560,10 @@ function obtenerTotalComprasTraspasosGasKgZonaFecha($zonaId, $fechaInicial, $fec
         $totalData = $modelTraspaso->obtenerTotalRecibidosZonaIdEntreFechas($zonaId, $fechaInicial, $fechaFinal);
         $total = $totalData[0]["total"] * 0.524;
 		echo "Total " . $total . "<br>";
-
-        if ($zona["idzona"] == 19) {
+		if ($zona["idzona"] == 19) {
 			$totalDataExtra = $modelTraspaso->obtenerTotalRecibidosZonaIdEntreFechas2($zonaId, $fechaInicial, $fechaFinal);
 		
 			// Depuración: Ver todos los datos obtenidos
-			var_dump($totalDataExtra);
 		
 			$sumaMenores150 = 0;
 			$sumaMayores150 = 0;
@@ -584,17 +582,18 @@ function obtenerTotalComprasTraspasosGasKgZonaFecha($zonaId, $fechaInicial, $fec
 				// Multiplicamos la suma de los menores a 150 por 30
 				$totalExtra = $sumaMenores150 * 30;
 		
-				// Sumamos el total extra al total de cantidades mayores a 150
-				$totalFinal = $totalExtra + $sumaMayores150;
+				// Multiplicamos la suma de los mayores o iguales a 150 por 0.524
+				$sumaMayores150Kg = $sumaMayores150 * 0.524;
 		
-				echo "Suma de cantidades menores a 150: " . $sumaMenores150 . "<br>";
-				echo "Total extra (menores a 150 * 30): " . $totalExtra . "<br>";
-				echo "Suma de cantidades mayores o iguales a 150: " . $sumaMayores150 . "<br>";
-				echo "Total final (total extra + suma mayores a 150): " . $totalFinal . "<br>";
+				// Sumamos el total extra al total de cantidades mayores a 150 convertidas a Kg
+				$totalFinal = $totalExtra + $sumaMayores150Kg;
+				
+				
 			} else {
 				echo "No hay datos de traspasos para la zona y el rango de fechas especificados.";
 			}
 		}
+		
 		
     }
 

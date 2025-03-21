@@ -205,7 +205,7 @@ if ($companiaId) {
               </tr>
             </thead>
             <tbody>
-  <?php foreach ($zonas as $zona):
+            <?php foreach ($zonas as $zona):
     $ventasKg = $modelVenta->obtenerVentasKgZonaFecha($zona["idzona"], $fechaInicial, $fechaFinal);
     $totalVentaKg = $ventasKg["totalKgZona"];
 
@@ -215,9 +215,10 @@ if ($companiaId) {
     $inventarioKg = $modelInventario->obtenerTotalInventarioGasKgZonaFecha($zona["idzona"], $fechaFinal);
     $totalKgInventarioActual = $inventarioKg["totalKgZona"];
 
-    // Cálculo de Compras y Traspasos (ajustado con el nuevo cálculo)
     if ($zona["idzona"] == 19) {
+        // Obtener el total de traspasos recibidos en la zona 19
         $totalDataExtra = $modelTraspaso->obtenerTotalRecibidosZonaIdEntreFechas2($zona["idzona"], $fechaInicial, $fechaFinal);
+
         $sumaMenores150 = 0;
         $sumaMayores150 = 0;
 
@@ -235,13 +236,18 @@ if ($companiaId) {
             // Multiplicamos la suma de los menores a 150 por 30
             $totalExtra = $sumaMenores150 * 30;
 
-            // Sumamos el total extra al total de cantidades mayores a 150
-            $totalComprasKg = $totalExtra + $sumaMayores150; // Asignamos el total calculado
+            // Convertimos la suma de los mayores a 150 a kg
+            $sumaMayores150Kg = $sumaMayores150 * 0.524;
+
+            // Sumamos el total extra al total de cantidades mayores a 150 en kg
+            $totalFinal = $totalExtra + $sumaMayores150Kg;
         } else {
-            $totalComprasKg = 0;
+            $totalFinal = 0;
         }
+        // Asignar el total de compras/traspasos para la zona 19
+        $totalComprasKg = $totalFinal;
     } else {
-        // Si no es zona 19, usa el cálculo normal de compras/traspasos
+        // Asignar el total normal para otras zonas
         $comprasTraspasosKg = $modelInventario->obtenerTotalComprasTraspasosGasKgZonaFecha($zona["idzona"], $fechaInicial, $fechaFinal);
         $totalComprasKg = $comprasTraspasosKg["totalKgCompras"];
     }
@@ -256,27 +262,46 @@ if ($companiaId) {
         $totalContableKg = $totalInventarioAnteriorKg + $totalComprasKg - $totalVentaKg - $totalAutoconsumoKg - $totalComprasSucursales;
     }
 
-    $diferencia = $totalKgInventarioActual - $totalContableKg;
+    $diferencia = $totalKgInventarioActual - ($totalContableKg);
     $diferenciaTotal += $diferencia;
-    ?>
-    <tr class="text-right">
-      <td><?php echo number_format($totalVentaKg, 2); ?></td>
-      <td><?php echo $zona["nombre"]; ?></td>
-      <td><?php echo number_format($totalInventarioAnteriorKg, 2); ?></td>
-      <td><?php echo number_format($totalComprasKg, 2); // Se usa el nuevo total aquí ?></td>
-      <td><?php echo number_format($totalAutoconsumoKg, 2) ?></td>
-      <td><?php echo number_format($totalVentaKg, 2); ?></td>
-      <td><?php echo number_format($totalContableKg, 2) ?></td>
-      <td><?php echo number_format($totalKgInventarioActual, 2); ?></td>
-      <td><?php echo number_format($diferencia, 2) ?></td>
-    </tr>
-  <?php endforeach; ?>
-  <tr class="text-right">
-    <td colspan="8"></td>
-    <td><?php echo number_format($diferenciaTotal, 2) ?></td>
-  </tr>
-</tbody>
-
+?>
+                <tr class="text-right">
+                  <td>
+                    <?php echo number_format($totalVentaKg, 2); ?>
+                  </td>
+                  <td>
+                    <?php echo $zona["nombre"]; ?>
+                  </td>
+                  <td>
+                    <?php echo number_format($totalInventarioAnteriorKg, 2); ?>
+                  </td>
+                  <td>
+                    <?php echo number_format($totalComprasKg, 2); ?>
+                  </td>
+                  <td>
+                    <?php echo number_format($totalAutoconsumoKg, 2) ?>
+                  </td>
+                  <td>
+                    <?php echo number_format($totalVentaKg, 2); ?>
+                  </td>
+                  <td>
+                    <?php echo number_format($totalContableKg, 2) ?>
+                  </td>
+                  <td>
+                    <?php echo number_format($totalKgInventarioActual, 2); ?>
+                  </td>
+                  <td>
+                    <?php echo number_format($diferencia, 2) ?>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+              <tr class="text-right">
+                <td colspan="8"></td></td>
+                <td>
+                  <?php echo number_format($diferenciaTotal, 2) ?>
+                </td>
+              </tr>
+            </tbody>
           </table>
         </div>
       </div>
