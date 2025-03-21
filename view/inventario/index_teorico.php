@@ -205,7 +205,21 @@ if ($companiaId) {
               </tr>
             </thead>
             <tbody>
-            <?php foreach ($zonas as $zona):
+            <?php 
+
+$totalComprasSucursales = 0; 
+
+// PRIMER RECORRIDO: Sumar compras de las sucursales antes de procesar las plantas
+foreach ($zonas as $zona) {
+    if ($zona["tipo_zona_planta_id"] == 3) { // Solo para sucursales
+        $comprasTraspasosKg = $modelInventario->obtenerTotalComprasTraspasosGasKgZonaFecha($zona["idzona"], $fechaInicial, $fechaFinal);
+        $totalComprasKg = isset($comprasTraspasosKg["totalKgCompras"]) ? $comprasTraspasosKg["totalKgCompras"] : 0;
+        $totalComprasSucursales += $totalComprasKg;
+    }
+}
+
+// SEGUNDO RECORRIDO: Ahora sí calcular valores para cada zona
+foreach ($zonas as $zona):
     $ventasKg = $modelVenta->obtenerVentasKgZonaFecha($zona["idzona"], $fechaInicial, $fechaFinal);
     $totalVentaKg = $ventasKg["totalKgZona"];
 
@@ -216,47 +230,35 @@ if ($companiaId) {
     $totalKgInventarioActual = $inventarioKg["totalKgZona"];
 
     if ($zona["idzona"] == 19) {
-        // Obtener el total de traspasos recibidos en la zona 19
         $totalDataExtra = $modelTraspaso->obtenerTotalRecibidosZonaIdEntreFechas2($zona["idzona"], $fechaInicial, $fechaFinal);
-
         $sumaMenores150 = 0;
         $sumaMayores150 = 0;
 
         if (!empty($totalDataExtra)) {
             foreach ($totalDataExtra as $traspaso) {
                 $cantidad = isset($traspaso["cantidad"]) ? (float)$traspaso["cantidad"] : 0;
-
                 if ($cantidad < 150) {
                     $sumaMenores150 += $cantidad;
                 } else {
                     $sumaMayores150 += $cantidad;
                 }
             }
-
-            // Multiplicamos la suma de los menores a 150 por 30
             $totalExtra = $sumaMenores150 * 30;
-
-            // Convertimos la suma de los mayores a 150 a kg
             $sumaMayores150Kg = $sumaMayores150 * 0.524;
-
-            // Sumamos el total extra al total de cantidades mayores a 150 en kg
             $totalFinal = $totalExtra + $sumaMayores150Kg;
         } else {
             $totalFinal = 0;
         }
-        // Asignar el total de compras/traspasos para la zona 19
         $totalComprasKg = $totalFinal;
     } else {
-        // Asignar el total normal para otras zonas
         $comprasTraspasosKg = $modelInventario->obtenerTotalComprasTraspasosGasKgZonaFecha($zona["idzona"], $fechaInicial, $fechaFinal);
-        $totalComprasKg = $comprasTraspasosKg["totalKgCompras"];
+        $totalComprasKg = isset($comprasTraspasosKg["totalKgCompras"]) ? $comprasTraspasosKg["totalKgCompras"] : 0;
     }
 
     $autoconsumosKg = $modelAutoconsumo->obtenerTotalAutoconsumosZonaProductoFecha($zona["idzona"], "Gas LP", $fechaInicial, $fechaFinal);
-    $totalAutoconsumoKg = $autoconsumosKg[0]["total"] * 0.524;
+    $totalAutoconsumoKg = isset($autoconsumosKg[0]["total"]) ? $autoconsumosKg[0]["total"] * 0.524 : 0;
 
     if ($zona["tipo_zona_planta_id"] == 3) { // Sucursal
-        $totalComprasSucursales += $totalComprasKg;
         $totalContableKg = $totalInventarioAnteriorKg + $totalComprasKg - $totalVentaKg - $totalAutoconsumoKg;
     } else { // Planta
         $totalContableKg = $totalInventarioAnteriorKg + $totalComprasKg - $totalVentaKg - $totalAutoconsumoKg - $totalComprasSucursales;
@@ -265,6 +267,9 @@ if ($companiaId) {
     $diferencia = $totalKgInventarioActual - ($totalContableKg);
     $diferenciaTotal += $diferencia;
 ?>
+
+
+
                 <tr class="text-right">
                   <td>
                     <?php echo number_format($totalVentaKg, 2); ?>

@@ -559,7 +559,7 @@ function obtenerTotalComprasTraspasosGasKgZonaFecha($zonaId, $fechaInicial, $fec
     } else if ($zona["tipo_zona_planta_id"] == 3) { // Sucursal *.524
         $totalData = $modelTraspaso->obtenerTotalRecibidosZonaIdEntreFechas($zonaId, $fechaInicial, $fechaFinal);
         $total = $totalData[0]["total"] * 0.524;
-		echo "Total " . $total . "<br>";
+		
 		if ($zona["idzona"] == 19) {
 			$totalDataExtra = $modelTraspaso->obtenerTotalRecibidosZonaIdEntreFechas2($zonaId, $fechaInicial, $fechaFinal);
 		
