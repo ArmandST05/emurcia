@@ -279,20 +279,43 @@ foreach ($nominaTipoEmpleado as $indice => $nominaEmpleado) :
     }
 
     $metaRequerida = $metasPorEmpleados->meta1;
+    $metaDescRequerida = $metasPorEmpleadosDescuento->comision1;
+
+    $comisionLts = $datosVentaEmpleado->lts_descuento_credito;
+
     $comisionReducida = $metasPorEmpleados->comision1 / 2;
+    $comisionDescuentoReducida = $metasPorEmpleadosDescuento->meta1 / 2;
     $mensaje = "";
     $totalNomina = $nominaEmpleado->total;
     $comisionTotal2 = 0;
-
-    if ($cantidadNormal < $metaRequerida) {
+    $comisionTotalDesc2 =0;
+    if ($cantidadNormal < $metaRequerida /*&& $comisionLts < $metaDescRequerida*/) {
         $mensaje = "No llegó meta";
         $comisionTotal = $cantidadNormal / 1000;
+       $comisionTotalDesc = $comisionLts / 1000;
+
+
+        $comisionTotalDes2 = $comisionLts * $comisionDescuentoReducida;
         $comisionTotal2 = $comisionTotal * $comisionReducida;
-        $totalNomina = $nominaEmpleado->total + $comisionTotal2;
+        $totalNomina = $nominaEmpleado->total + $comisionTotal2 +$comisionTotalDes2;
+
+        // Solo mostrar la depuración si no llegó a la meta
+       echo "<h3>Depuración de Cálculo de Comisión (No llegó a la meta)</h3>";
+        echo "Meta Requerida: {$metaRequerida} <br>";
+        echo "Comisión Reducida: {$comisionReducida} <br>";
+        echo "Cantidad Normal: {$cantidadNormal} <br>";
+        echo "Comisión Total Base: {$comisionTotal} <br>";
+        echo "Comisión Total Ajustada: {$comisionTotal2} <br>";
+        echo "Total Nómina Final: {$totalNomina} <br>";
     } else {
         $mensaje = "Sí llegó meta";
         $resultadoFondo = number_format($nominaEmpleado->fondo, 0, '.', ',');
+
+        // Aquí no es necesario mostrar nada si sí llegó a la meta, pero se mantiene el cálculo
     }
+
+    echo "<hr>";
+
 ?>
 
 <tr class="tr-te<?php echo $tipoEmpleadoId ?>" data-empleado-id="<?php echo $empleadoId ?>" data-tipo-empleado-id="<?php echo $tipoEmpleadoId ?>" data-tipo-ganancia-id="<?php echo $tipoGananciaId ?>" data-ruta-id="<?php echo $rutaId ?>">
@@ -823,6 +846,8 @@ foreach ($nominaTipoEmpleado as $indice => $nominaEmpleado) :
 
     let totalOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="total"]').text().replace(/,/g, '')) || 0;
     let total = extras + sueldoBaseTotal + comisionNormal + comisionDescuento - faltas - infonavit - fondo + comisionExtra;
+
+    
     if (totalOriginal != total) {
       actualizarValorEmpleado(empleadoId, "total", total); //Actualizar valor en la tabla
     }
