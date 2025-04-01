@@ -279,34 +279,27 @@ foreach ($nominaTipoEmpleado as $indice => $nominaEmpleado) :
     }
 
     $metaRequerida = $metasPorEmpleados->meta1;
-    $metaDescRequerida = $metasPorEmpleadosDescuento->comision1;
+    //$metaDescRequerida = $metasPorEmpleadosDescuento->comision1;
 
-    $comisionLts = $datosVentaEmpleado->lts_descuento_credito;
+   // $comisionLts = $datosVentaEmpleado->lts_descuento_credito;
 
     $comisionReducida = $metasPorEmpleados->comision1 / 2;
-    $comisionDescuentoReducida = $metasPorEmpleadosDescuento->meta1 / 2;
+   // $comisionDescuentoReducida = $metaDescRequerida / 2;
     $mensaje = "";
     $totalNomina = $nominaEmpleado->total;
     $comisionTotal2 = 0;
     $comisionTotalDesc2 =0;
     if ($cantidadNormal < $metaRequerida /*&& $comisionLts < $metaDescRequerida*/) {
-        $mensaje = "No llegó meta";
+      
         $comisionTotal = $cantidadNormal / 1000;
-       $comisionTotalDesc = $comisionLts / 1000;
+       //$comisionTotalDesc = $comisionLts / 1000;
 
 
-        $comisionTotalDes2 = $comisionLts * $comisionDescuentoReducida;
+        //$comisionTotalDes2 = $comisionLts * $comisionTotalDesc;
         $comisionTotal2 = $comisionTotal * $comisionReducida;
-        $totalNomina = $nominaEmpleado->total + $comisionTotal2 +$comisionTotalDes2;
+        //$totalNomina = $nominaEmpleado->total + $comisionTotal2;
+        $mensaje = "No llegó meta";
 
-        // Solo mostrar la depuración si no llegó a la meta
-       echo "<h3>Depuración de Cálculo de Comisión (No llegó a la meta)</h3>";
-        echo "Meta Requerida: {$metaRequerida} <br>";
-        echo "Comisión Reducida: {$comisionReducida} <br>";
-        echo "Cantidad Normal: {$cantidadNormal} <br>";
-        echo "Comisión Total Base: {$comisionTotal} <br>";
-        echo "Comisión Total Ajustada: {$comisionTotal2} <br>";
-        echo "Total Nómina Final: {$totalNomina} <br>";
     } else {
         $mensaje = "Sí llegó meta";
         $resultadoFondo = number_format($nominaEmpleado->fondo, 0, '.', ',');
@@ -314,7 +307,7 @@ foreach ($nominaTipoEmpleado as $indice => $nominaEmpleado) :
         // Aquí no es necesario mostrar nada si sí llegó a la meta, pero se mantiene el cálculo
     }
 
-    echo "<hr>";
+
 
 ?>
 
@@ -380,6 +373,12 @@ foreach ($nominaTipoEmpleado as $indice => $nominaEmpleado) :
     <td id="e<?php echo $empleadoId ?>observaciones" data-columna-nombre="observaciones" class="editValueEmployee">
         <?php echo $nominaEmpleado->observaciones ?>
     </td>
+    <td id="e<?php echo $empleadoId ?>meta" data-columna-nombre="meta" style="display: none;">
+    <?php echo number_format($comisionTotal2, 0, '.', ',') ?>
+    
+</td>
+
+
 </tr>
 <?php endforeach; ?>
 
@@ -545,6 +544,21 @@ foreach ($nominaTipoEmpleado as $indice => $nominaEmpleado) :
 <?php endif; ?>
 <!-- Fin nómina por tipos de empleado -->
 <script>
+
+
+    // Verificar si ya se ha recargado una vez
+    if (!sessionStorage.getItem("recargado")) {
+        // Marcar que la página ya se cargó una vez
+        sessionStorage.setItem("recargado", "true");
+
+        // Recargar la página después de un breve retraso
+        setTimeout(function () {
+            location.reload();
+        }, 1000); // 1000 ms = 1 segundo (puedes ajustar el tiempo)
+    } else {
+        // Si ya se recargó, limpiar el flag para futuras visitas
+        sessionStorage.removeItem("recargado");
+    }
 
 
   var metasEmpleados = <?php echo json_encode($metasEmpleados) ?>;
@@ -838,29 +852,31 @@ foreach ($nominaTipoEmpleado as $indice => $nominaEmpleado) :
     }
     //Fin recalcular comisiones
 
-    //Calcular total
-    let faltas = parseFloat(trEmpleado.find('td[data-columna-nombre="faltas"]').text().replace(/,/g, '')) || 0;
-    let infonavit = parseFloat(trEmpleado.find('td[data-columna-nombre="infonavit"]').text().replace(/,/g, '')) || 0;
-    let fondo = parseFloat(trEmpleado.find('td[data-columna-nombre="fondo"]').text().replace(/,/g, '')) || 0;
-    let comisionExtra = parseFloat(trEmpleado.find('td[data-columna-nombre="meta"]').data('comision')) || 0;
+  // Calcular total
+let faltas = parseFloat(trEmpleado.find('td[data-columna-nombre="faltas"]').text().replace(/,/g, '')) || 0;
+let infonavit = parseFloat(trEmpleado.find('td[data-columna-nombre="infonavit"]').text().replace(/,/g, '')) || 0;
+let fondo = parseFloat(trEmpleado.find('td[data-columna-nombre="fondo"]').text().replace(/,/g, '')) || 0;
+let comisionExtra = parseFloat(trEmpleado.find('td[data-columna-nombre="meta"]').text().replace(/,/g, '')) || 0;
 
-    let totalOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="total"]').text().replace(/,/g, '')) || 0;
-    let total = extras + sueldoBaseTotal + comisionNormal + comisionDescuento - faltas - infonavit - fondo + comisionExtra;
+let totalOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="total"]').text().replace(/,/g, '')) || 0;
+let total = parseFloat((extras + sueldoBaseTotal + comisionNormal + comisionDescuento - faltas - infonavit - fondo + comisionExtra).toFixed(2));
 
-    
-    if (totalOriginal != total) {
-      actualizarValorEmpleado(empleadoId, "total", total); //Actualizar valor en la tabla
-    }
 
-    // Calcular efectivo (Total - Banco)
-    let banco = parseFloat(trEmpleado.find('td[data-columna-nombre="banco"]').text().replace(/,/g, '')) || 0;
-    let efectivoOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="efectivo"]').text().replace(/,/g, '')) || 0;
-    let efectivo = total - banco;
 
-    if (efectivoOriginal != efectivo) {
-      actualizarValorEmpleado(empleadoId, "efectivo", efectivo); //Actualizar valor en la tabla
-    }
-  }
+if (totalOriginal != total) {
+  actualizarValorEmpleado(empleadoId, "total", total); //Actualizar valor en la tabla
+}
+
+
+// Calcular efectivo (Total - Banco)
+let banco = parseFloat(trEmpleado.find('td[data-columna-nombre="banco"]').text().replace(/,/g, '')) || 0;
+let efectivoOriginal = parseFloat(trEmpleado.find('td[data-columna-nombre="efectivo"]').text().replace(/,/g, '')) || 0;
+let efectivo = total - banco;
+
+if (efectivoOriginal != efectivo) {
+  actualizarValorEmpleado(empleadoId, "efectivo", efectivo); //Actualizar valor en la tabla
+}
+}
 
   calcularTotalGerente();
 }
