@@ -217,7 +217,7 @@ echo "<h3>Depuración antes del primer recorrido</h3>";
 
 foreach ($zonas as $zona) {
     if ($zona["tipo_zona_planta_id"] == 3 && $zona["idzona"] != 19) { 
-        echo "<b>Procesando Zona ID: {$zona["idzona"]}</b><br>";
+        echo "<b>Procesando Zona ID: {$zona["nombre"]}</b><br>";
 
         $comprasTraspasosKg = $modelInventario->obtenerTotalComprasTraspasosGasKgZonaFecha($zona["idzona"], $fechaInicial, $fechaFinal);
         
@@ -234,11 +234,11 @@ foreach ($zonas as $zona) {
     }
 }
 
-echo "<h3>Total Compras Zona Normal (Sucursales) después del bucle: {$totalComprasSucursales} kg</h3><br>";
+echo "<h3>Total Compras de las Sucursales{$totalComprasSucursales} kg</h3><br>";
 
 // SEGUNDO RECORRIDO: Cálculo de valores por zona
 foreach ($zonas as $zona):
-    echo "<h3>Zona ID: {$zona['nombre']}</h3>";
+    echo "<h3>Zona: {$zona['nombre']}</h3>";
 
     $ventasKg = $modelVenta->obtenerVentasKgZonaFecha($zona["idzona"], $fechaInicial, $fechaFinal);
     $totalVentaKg = isset($ventasKg["totalKgZona"]) ? $ventasKg["totalKgZona"] : 0;
@@ -277,9 +277,9 @@ foreach ($zonas as $zona):
         // Guardar este valor para usarlo en la zona 5
         $comprasZona19 = $totalComprasKg;
 
-        echo "Suma < 150kg: {$sumaMenores150} x 30 = {$totalExtra} <br>";
-        echo "Suma > 150kg: {$sumaMayores150} x 0.524 = {$sumaMayores150Kg} <br>";
-        echo "Total Compras Zona 19: {$totalComprasKg} kg <br>";
+        echo "Suma de las menores a 150kg: {$sumaMenores150} x 30 = {$totalExtra} <br>";
+        echo "Suma de las mayores a 150kg: {$sumaMayores150} x 0.524 = {$sumaMayores150Kg} <br>";
+        echo "Total Compras Zacatecas Aure: {$totalComprasKg} kg <br>";
     } else {
         $comprasTraspasosKg = $modelInventario->obtenerTotalComprasTraspasosGasKgZonaFecha($zona["idzona"], $fechaInicial, $fechaFinal);
         $totalComprasKg = isset($comprasTraspasosKg["totalKgCompras"]) ? $comprasTraspasosKg["totalKgCompras"] : 0;
@@ -293,24 +293,24 @@ foreach ($zonas as $zona):
     // Cálculo del total contable
     if ($zona["tipo_zona_planta_id"] == 3 && $zona["idzona"] != 19) { 
         $totalContableKg = $totalInventarioAnteriorKg + $totalComprasKg - $totalVentaKg - $totalAutoconsumoKg;
-        echo "Cálculo sucursal: ({$totalInventarioAnteriorKg} + {$totalComprasKg} - {$totalVentaKg} - {$totalAutoconsumoKg}) = {$totalContableKg} kg <br>";
+        echo "Cálculo para sucursales: (Inventario anterior: {$totalInventarioAnteriorKg} + Total compras/traspasos{$totalComprasKg} - Ventas: {$totalVentaKg} - Autoconsumo:{$totalAutoconsumoKg}) = Contable: {$totalContableKg} kg <br>";
     } elseif ($zona["tipo_zona_planta_id"] != 3) { 
         if ($zona["idzona"] == 5) { 
             $totalContableKg = $totalInventarioAnteriorKg + $totalComprasKg - $totalVentaKg - $totalAutoconsumoKg - $comprasZona19;
-            echo "Cálculo planta (Zona 5): ({$totalInventarioAnteriorKg} + {$totalComprasKg} - {$totalVentaKg} - {$totalAutoconsumoKg} - {$comprasZona19}) = {$totalContableKg} kg <br>";
+            echo "Cálculo planta (Zona 5): (Inventario anterior:{$totalInventarioAnteriorKg} + Total compras/traspasos{$totalComprasKg} - Ventas:{$totalVentaKg} - Autoconsumo:{$totalAutoconsumoKg} - {$comprasZona19}) = Contable: {$totalContableKg} kg <br>";
         } else { 
             $totalContableKg = $totalInventarioAnteriorKg + $totalComprasKg - $totalVentaKg - $totalAutoconsumoKg - $totalComprasSucursales;
-            echo "Cálculo planta normal: ({$totalInventarioAnteriorKg} + {$totalComprasKg} - {$totalVentaKg} - {$totalAutoconsumoKg} - {$totalComprasSucursales}) = {$totalContableKg} kg <br>";
+            echo "Cálculo planta normal: (Inventario anterior:{$totalInventarioAnteriorKg} + Total compras/traspasos{$totalComprasKg} - Ventas:{$totalVentaKg} - Autoconsumo:{$totalAutoconsumoKg} - {$totalComprasSucursales}) = Contable: {$totalContableKg} kg <br>";
         }
     } else { 
         $totalContableKg = $totalInventarioAnteriorKg + $totalComprasKg - $totalVentaKg - $totalAutoconsumoKg;
-        echo "Cálculo Zona 19: ({$totalInventarioAnteriorKg} + {$totalComprasKg} - {$totalVentaKg} - {$totalAutoconsumoKg}) = {$totalContableKg} kg <br>";
+        echo "Cálculo Zona 19: (Inventario anterior:{$totalInventarioAnteriorKg} + Total compras/traspasos{$totalComprasKg} - Ventas:{$totalVentaKg} - Autoconsumo:{$totalAutoconsumoKg}) = Contable: {$totalContableKg} kg <br>";
     }
 
     $diferencia = $totalKgInventarioActual - $totalContableKg;
     $diferenciaTotal += $diferencia;
 
-    echo "Diferencia: ({$totalKgInventarioActual} - {$totalContableKg}) = {$diferencia} kg <br><hr>";
+    echo "Diferencia: (Inventario actual:{$totalKgInventarioActual} - Contable: {$totalContableKg}) = {$diferencia} kg <br><hr>";
 
 ?>
 

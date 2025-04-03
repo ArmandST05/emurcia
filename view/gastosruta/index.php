@@ -192,9 +192,7 @@ $totalGastos = 0;
             <?php foreach ($gastos as $gasto) :
               $totalGastos += $gasto["cantidad"];
             ?>
-            <?php
-var_dump($gasto); // Para ver la estructura del arreglo
-?>
+
               <tr>
                 <td><?php echo $gasto["zona_nombre"] ?></td>
                 <td><?php echo $gasto["ruta_gasto"] ?></td>
@@ -206,7 +204,7 @@ var_dump($gasto); // Para ver la estructura del arreglo
                 <td>
                   
                 <?php if (isset($gasto['comprobante_gasto']) && !empty($gasto['comprobante_gasto'])): ?>
-                      <a href="https://cgtest.v2technoconsulting.com/view/gastosruta/comprobantes/<?php echo basename($gasto['comprobante_gasto']); ?>" download>
+                      <a href='https://www.credidesgrupoemurcia.com.mx/view/gastosruta/comprobantes/<?php echo basename($gasto['comprobante_gasto']); ?>' download>
                           Descargar comprobante
                       </a>
                   <?php else: ?>
