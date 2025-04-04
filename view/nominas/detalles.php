@@ -265,51 +265,52 @@ $metasGerente = [];
                         <tbody style="color:#000000;">
                         <?php
 foreach ($nominaTipoEmpleado as $indice => $nominaEmpleado) :
-    $empleadoId = $nominaEmpleado->empleado_id;
-    $ruta = $modelRuta->obtenerRutaId($nominaEmpleado->ruta_id);
-    $datosVentaEmpleado = $modelNomina->obtenerDatosNominaVentaPorEmpleado($zonaId, $fechaInicial, $fechaFinal, $empleadoId);
+  $empleadoId = $nominaEmpleado->empleado_id;
+  $ruta = $modelRuta->obtenerRutaId($nominaEmpleado->ruta_id);
+  $datosVentaEmpleado = $modelNomina->obtenerDatosNominaVentaPorEmpleado($zonaId, $fechaInicial, $fechaFinal, $empleadoId);
 
-    // Lógica de cálculo de comisiones y meta
-    if ($tipoEmpleadoId == 5) { // Cilindros
-        $cantidadNormal = floatval($datosVentaEmpleado->total_cilindros);
-    } else if ($tipoEmpleadoId == 6) { // Estaciones
-        $cantidadNormal = floatval($datosVentaEmpleado->total_lts_normal) + floatval($datosVentaEmpleado->lts_descuento_credito);
-    } else {
-        $cantidadNormal = floatval($datosVentaEmpleado->total_lts_normal);
-    }
+  if ($tipoEmpleadoId == 5) { // Cilindreros
+      $cantidadNormal = floatval($datosVentaEmpleado->total_cilindros);
+  } else if ($tipoEmpleadoId == 6) { // Estaciones
+      $cantidadNormal = floatval($datosVentaEmpleado->total_lts_normal) + floatval($datosVentaEmpleado->lts_descuento_credito);
+  } else {
+      $cantidadNormal = floatval($datosVentaEmpleado->total_lts_normal);
+  }
 
-    $metaRequerida = $metasPorEmpleados->meta1;
-    //$metaDescRequerida = $metasPorEmpleadosDescuento->comision1;
+  // Inicialización de variables generales
+  $mensaje = "";
+  $totalNomina = $nominaEmpleado->total;
+  $comisionTotal2 = null; // Se deja en null para diferenciar casos
 
-   // $comisionLts = $datosVentaEmpleado->lts_descuento_credito;
+  // Lógica para empleados tipo 5 (Cilindreros)
+  if ($tipoEmpleadoId == 5) { 
+      $metaRequeridaCilindros = $metasPorEmpleados->comision1 / 2;
+      $cilindrosMeta = floatval($metasPorEmpleados->meta1);
 
-    $comisionReducida = $metasPorEmpleados->comision1 / 2;
-   // $comisionDescuentoReducida = $metaDescRequerida / 2;
-    $mensaje = "";
-    $totalNomina = $nominaEmpleado->total;
-    $comisionTotal2 = 0;
-    $comisionTotalDesc2 =0;
-    if ($cantidadNormal < $metaRequerida /*&& $comisionLts < $metaDescRequerida*/) {
-      
-        $comisionTotal = $cantidadNormal / 1000;
-       //$comisionTotalDesc = $comisionLts / 1000;
+      if ($cantidadNormal < $cilindrosMeta) { 
+          $comisionTotal2 = $cantidadNormal * $metaRequeridaCilindros;
+          $mensaje = "No llegó meta";
+      } else {
+          $mensaje = "Sí llegó meta";
+      }
+  }
 
+  // Lógica para otros empleados (No Cilindreros)
+  if ($tipoEmpleadoId != 5) {
+      $metaRequeridaOtros = $metasPorEmpleados->meta1;
+      $comisionReducidaOtros = $metasPorEmpleados->comision1 / 2;
 
-        //$comisionTotalDes2 = $comisionLts * $comisionTotalDesc;
-        $comisionTotal2 = $comisionTotal * $comisionReducida;
-        //$totalNomina = $nominaEmpleado->total + $comisionTotal2;
-        $mensaje = "No llegó meta";
-
-    } else {
-        $mensaje = "Sí llegó meta";
-        $resultadoFondo = number_format($nominaEmpleado->fondo, 0, '.', ',');
-
-        // Aquí no es necesario mostrar nada si sí llegó a la meta, pero se mantiene el cálculo
-    }
-
-
-
+      if ($cantidadNormal < $metaRequeridaOtros) {
+          $comisionTotal2 = ($cantidadNormal / 1000) * $comisionReducidaOtros;
+          $mensaje = "No llegó meta";
+      } else {
+          $mensaje = "Sí llegó meta";
+      }
+  }
 ?>
+
+
+
 
 <tr class="tr-te<?php echo $tipoEmpleadoId ?>" data-empleado-id="<?php echo $empleadoId ?>" data-tipo-empleado-id="<?php echo $tipoEmpleadoId ?>" data-tipo-ganancia-id="<?php echo $tipoGananciaId ?>" data-ruta-id="<?php echo $rutaId ?>">
     <td><?php echo ($ruta) ? $ruta["clave_ruta"] : "" ?></td>
