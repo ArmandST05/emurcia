@@ -68,6 +68,34 @@ class ModelVenta
 
 		return $sql;
 	}
+	public function listaZonaRutaFechaEstaciones($zonaId, $fecha)
+{
+	$sql = $this->base_datos->query("
+		SELECT ventas.idventa, ventas.ruta_id, ventas.fecha, ventas.hora,
+			detalles_venta.iddetalleventa AS detalle_venta_id,
+			(SELECT SUM(cantidad) FROM detalle_venta_rubros WHERE detalle_venta_rubros.detalle_venta_id = detalles_venta.iddetalleventa) AS sum_rubros_venta,
+			(SELECT COUNT(idventa) FROM ventas AS ventas_posteriores WHERE ventas_posteriores.fecha > ventas.fecha AND ventas_posteriores.ruta_id = ventas.ruta_id) AS total_ventas_posteriores,
+			rutas.clave_ruta AS ruta_nombre, rutas.capacidad AS ruta_capacidad, rutas.tipo_ruta_id, rutas.zona_id,
+			detalles_venta.producto_id, productos.nombre AS producto_nombre, productos.capacidad AS producto_capacidad,
+			detalles_venta.cantidad, detalles_venta.precio, detalles_venta.total_venta, detalles_venta.cantidad_venta_contado, 
+			detalles_venta.descuento_unitario_venta_contado, detalles_venta.descuento_total_venta_contado, detalles_venta.cantidad_venta_credito,
+			detalles_venta.descuento_unitario_venta_credito, detalles_venta.descuento_total_venta_credito, 
+			detalles_venta.total_venta_credito, detalles_venta.total_venta_contado, detalles_venta.total_rubros_venta,
+			detalles_venta.lectura_inicial, detalles_venta.lectura_final, detalles_venta.porcentaje_inicial, detalles_venta.porcentaje_final,
+			detalles_venta.entradas_almacen, detalles_venta.otras_salidas, detalles_venta.pruebas, detalles_venta.consumo_interno, detalles_venta.traspasos
+		FROM ventas
+		JOIN detalles_venta ON ventas.idventa = detalles_venta.venta_id
+		JOIN productos ON productos.idproducto = detalles_venta.producto_id
+		JOIN rutas ON rutas.idruta = ventas.ruta_id
+		WHERE ventas.fecha = '$fecha'
+		  AND rutas.zona_id = '$zonaId'
+		  AND rutas.tipo_ruta_id = 5
+		ORDER BY ventas.fecha, ventas.hora DESC
+	")->fetchAll(PDO::FETCH_ASSOC);
+
+	return $sql;
+}
+
 
 	function listaZonaRutaProductoFecha($zonaId, $rutaId, $productoId, $fecha)
 	{
@@ -242,16 +270,17 @@ class ModelVenta
 	}
 
 
-	function rutasVentasEntreFechasEstaciones($zonaId, $fechaInicial, $fechaFinal)
+	function rutasVentasEntreFechasEstaciones($fechaInicial, $fechaFinal)
 	{
-		$sql = $this->base_datos->query("SELECT rutas.clave_ruta, rutas.idruta,rutas.tipo_ruta_id
-			FROM ventas,rutas
-			WHERE rutas.idruta = ventas.ruta_id
-			AND ventas.zona_id = '$zonaId'
-			AND ventas.fecha >= '$fechaInicial' 
-			AND ventas.fecha <= '$fechaFinal'
-			and rutas.tipo_ruta_id = 5
-			GROUP BY rutas.idruta ORDER BY rutas.clave_ruta")->fetchAll(PDO::FETCH_ASSOC);
+		$sql = $this->base_datos->query("SELECT rutas.clave_ruta, rutas.idruta, rutas.tipo_ruta_id, rutas.zona_id
+	FROM ventas
+	INNER JOIN rutas ON rutas.idruta = ventas.ruta_id
+	WHERE ventas.fecha >= '$fechaInicial' 
+	AND ventas.fecha <= '$fechaFinal'
+	AND rutas.tipo_ruta_id = 5
+	GROUP BY rutas.idruta 
+	ORDER BY rutas.clave_ruta")->fetchAll(PDO::FETCH_ASSOC);
+
 		return $sql;
 	}
 	function rutasVentasLtsEntreFechas($zonaId, $fechaInicial, $fechaFinal)
@@ -279,6 +308,7 @@ class ModelVenta
 			GROUP BY ventas.fecha ORDER BY ventas.fecha")->fetchAll(PDO::FETCH_ASSOC);
 		return $sql;
 	}
+
 
 	function fechasVentasRutaProducto($rutaId, $productoId, $fechaInicial, $fechaFinal)
 	{
@@ -573,6 +603,38 @@ class ModelVenta
 	}
 
 	/*-------------------INVENTARIO TEÓRICO-------------------- */
+	
+	function obtenerVentasKgZonaFechaEstaciones($fechaInicial, $fechaFinal)
+	{
+		$totalKgZona = 0;
+		$rutasVenta = $this->rutasVentasEntreFechasEstaciones($fechaInicial, $fechaFinal);
+	
+		
+		foreach ($rutasVenta as $claveRuta => $ruta) {
+	
+			$fechas = $this->fechasVentasRuta($ruta["idruta"], $fechaInicial, $fechaFinal);
+			
+			foreach ($fechas as $claveFecha => $fecha) {
+				$fecha = $fecha["fecha"];
+	
+				$ventas = $this->listaZonaRutaFechaEstaciones($ruta["zona_id"], $fecha);
+				foreach ($ventas as $venta) {
+					if ($venta["producto_id"] == 4 && $venta["tipo_ruta_id"] == 5) {
+						$litros = ($venta["total_rubros_venta"] * $venta["producto_capacidad"]);
+						$kilos = ($litros * 0.524);
+						$totalKgZona += $kilos;
+					}
+				}
+			}
+		}
+	
+		$data["totalKgZona"] = $totalKgZona;
+		var_dump($data);
+		
+			return $data;
+	}
+	
+
 	function obtenerVentasKgZonaFecha($zonaId,$fechaInicial,$fechaFinal)
 	{
 		$totalKgZona = 0;

@@ -159,19 +159,32 @@ function obtenerTotalCantidadEntreFechas($fechaInicio, $fechaFin)
 		$sql = $this->base_datos->query("SELECT * FROM traspasos WHERE idtraspaso='" . $id . "'")->fetchAll(PDO::FETCH_ASSOC);
 		return $sql;
 	}
+    public function obtenerEstaciones($zonaId) {
+        $sql = $this->base_datos->query("
+            SELECT idruta, clave_ruta 
+            FROM rutas
+            WHERE tipo_ruta_id = 5
+            AND zona_id = '$zonaId'
+            ORDER BY clave_ruta DESC
+        ")->fetchAll(PDO::FETCH_ASSOC);
+    
+        return $sql;
+    }
+    
+	function insertar($fecha, $zonaOrigen, $zonaDestino, $cantidad, $destinoEstacion, $comprobanteTraspaso)
+{
+    $this->base_datos->insert("traspasos", [
+        "fecha" => $fecha,
+        "zona_origen_id" => $zonaOrigen,
+        "zona_destino_id" => $zonaDestino,
+        "cantidad" => $cantidad,
+        "estatus_traspaso_id" => 2,
+        "comprobante_traspaso" => $comprobanteTraspaso,
+        "destinoEstacion" => $destinoEstacion  // Agregado el campo de estación de destino
+    ]);
+    return $this->base_datos->id();
+}
 
-	function insertar($fecha, $zonaOrigen, $zonaDestino, $cantidad, $comprobanteTraspaso)
-	{
-		$this->base_datos->insert("traspasos", [
-			"fecha" => $fecha,
-			"zona_origen_id" => $zonaOrigen,
-			"zona_destino_id" => $zonaDestino,
-			"cantidad" => $cantidad,
-			"estatus_traspaso_id" => 2,
-			"comprobante_traspaso" => $comprobanteTraspaso
-		]);
-		return $this->base_datos->id();
-	}
 
 	function aceptar($id)
 	{

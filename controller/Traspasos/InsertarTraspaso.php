@@ -12,10 +12,11 @@ $fecha = date("Y-m-d");
 $zonaOrigen = $_SESSION["zonaId"];
 $zonaDestino = $_POST["zonaDestino"];
 $cantidad = $_POST["cantidad"];
-$comprobante = $_FILES['comprobante']; // Obtenemos el archivo comprobante
+$destinoEstacion = $_POST["destinoEstacion"];  // Obtenemos la estación de destino
+$comprobante = $_FILES['comprobante_traspaso']; // Obtener el archivo comprobante
 
 /* Validaciones */
-if (empty($zonaOrigen) || empty($zonaDestino) || empty($cantidad)) {
+if (empty($zonaOrigen) || empty($zonaDestino) || empty($cantidad) || empty($destinoEstacion)) {  // Agregamos validación para la estación
     echo "<script> 
             alert('Ingresa todos los datos por favor');
             window.location.href = '../../view/index.php?action=traspasos/nuevo.php';
@@ -67,9 +68,8 @@ if (!empty($_FILES['comprobante_traspaso']['name'])) { // Cambiar 'comprobante' 
     }
 }
 
-
-/* Insertar el traspaso */
-$nuevoTraspaso = $modelTraspaso->insertar($fecha, $zonaOrigen, $zonaDestino, $cantidad, $comprobantePath);
+/* Insertar el traspaso (agregamos la estación de destino en la inserción) */
+$nuevoTraspaso = $modelTraspaso->insertar($fecha, $zonaOrigen, $zonaDestino, $cantidad, $destinoEstacion, $comprobantePath);
 if ($nuevoTraspaso) {
     echo "<script> 
             alert('Traspaso agregado'); 

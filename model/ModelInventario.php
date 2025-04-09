@@ -600,6 +600,22 @@ function obtenerTotalComprasTraspasosGasKgZonaFecha($zonaId, $fechaInicial, $fec
     $data["totalKgCompras"] = $total;
     return $data;
 }
+function obtenerTotalTraspasosGasKgZonaFechaEstaciones($zonaId, $fechaInicial, $fechaFinal)
+{
+    $modelTraspaso = new ModelTraspaso();
+    $modelZona = new ModelZona();
+    $total = 0;
+
+    $zona = $modelZona->obtenerZonaId($zonaId);
+
+    if ($zona["tipo_zona_planta_id"] == 3) { // Sucursal
+        $totalData = $modelTraspaso->obtenerTotalRecibidosZonaIdEntreFechas($zonaId, $fechaInicial, $fechaFinal);
+        $total = $totalData[0]["total"] * 0.524;
+    }
+
+    $data["totalKgCompras"] = $total;
+    return $data;
+}
 
 
 
@@ -608,10 +624,7 @@ function obtenerTotalComprasTraspasosGasKgZonaFecha($zonaId, $fechaInicial, $fec
 function obtenerEstacionesPorCompania($companiaId)
 {
     $resultado = $this->base_datos->query("SELECT * FROM rutas 
-        WHERE (clave_ruta LIKE '%est.%' 
-        OR clave_ruta LIKE '%Est%' 
-        OR clave_ruta LIKE '%Estacion%' 
-        OR clave_ruta LIKE '%Estación%') 
+        WHERE tipo_ruta_id = 5 
         AND zona_id IN (SELECT idzona FROM zonas WHERE compania_id = '$companiaId')");
 
     // Verificar si la consulta falló
