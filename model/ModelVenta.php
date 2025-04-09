@@ -241,6 +241,19 @@ class ModelVenta
 		return $sql;
 	}
 
+
+	function rutasVentasEntreFechasEstaciones($zonaId, $fechaInicial, $fechaFinal)
+	{
+		$sql = $this->base_datos->query("SELECT rutas.clave_ruta, rutas.idruta,rutas.tipo_ruta_id
+			FROM ventas,rutas
+			WHERE rutas.idruta = ventas.ruta_id
+			AND ventas.zona_id = '$zonaId'
+			AND ventas.fecha >= '$fechaInicial' 
+			AND ventas.fecha <= '$fechaFinal'
+			and rutas.tipo_ruta_id = 5
+			GROUP BY rutas.idruta ORDER BY rutas.clave_ruta")->fetchAll(PDO::FETCH_ASSOC);
+		return $sql;
+	}
 	function rutasVentasLtsEntreFechas($zonaId, $fechaInicial, $fechaFinal)
 	{
 		//Obtener rutas que tuvieron ventas de litros entre fechas
