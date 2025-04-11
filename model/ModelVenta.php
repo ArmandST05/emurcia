@@ -606,33 +606,31 @@ class ModelVenta
 	
 	function obtenerVentasKgZonaFechaEstaciones($fechaInicial, $fechaFinal)
 	{
-		$totalKgZona = 0;
+		$totalKgPorRuta = [];
 		$rutasVenta = $this->rutasVentasEntreFechasEstaciones($fechaInicial, $fechaFinal);
 	
-		
-		foreach ($rutasVenta as $claveRuta => $ruta) {
+		foreach ($rutasVenta as $ruta) {
+			$rutaId = $ruta["idruta"];
+			$zonaId = $ruta["zona_id"];
+			$fechas = $this->fechasVentasRuta($rutaId, $fechaInicial, $fechaFinal);
 	
-			$fechas = $this->fechasVentasRuta($ruta["idruta"], $fechaInicial, $fechaFinal);
-			
-			foreach ($fechas as $claveFecha => $fecha) {
-				$fecha = $fecha["fecha"];
+			foreach ($fechas as $fechaItem) {
+				$fecha = $fechaItem["fecha"];
+				$ventas = $this->listaZonaRutaFechaEstaciones($zonaId, $fecha);
 	
-				$ventas = $this->listaZonaRutaFechaEstaciones($ruta["zona_id"], $fecha);
 				foreach ($ventas as $venta) {
 					if ($venta["producto_id"] == 4 && $venta["tipo_ruta_id"] == 5) {
 						$litros = ($venta["total_rubros_venta"] * $venta["producto_capacidad"]);
 						$kilos = ($litros * 0.524);
-						$totalKgZona += $kilos;
+						$totalKgPorRuta[$rutaId] = ($totalKgPorRuta[$rutaId] ?? 0) + $kilos;
 					}
 				}
 			}
 		}
 	
-		$data["totalKgZona"] = $totalKgZona;
-		var_dump($data);
-		
-			return $data;
+		return $totalKgPorRuta;
 	}
+	
 	
 
 	function obtenerVentasKgZonaFecha($zonaId,$fechaInicial,$fechaFinal)

@@ -103,75 +103,51 @@ class ModelInventario
 		ORDER BY calendar.fecha_inventario,rutas.clave_ruta, productos.nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
 		return $sql;
 	}
-	function obtenerReporteInventarioFechasEstaciones($fechaInicial, $fechaFinal, $zonaId)
-{
-    // Consulta principal
-    $sql = $this->base_datos->query("SELECT 
-            calendar.fecha_inventario, 
-            rutas.idruta AS ruta_id, 
-            rutas.clave_ruta AS ruta_nombre,
-            rutas.capacidad AS ruta_capacidad, 
-            productos.nombre AS producto_nombre, 
-            productos.idproducto AS producto_id, 
-            productos.capacidad AS producto_capacidad,
-            IFNULL((
-                SELECT SUM(cantidad) FROM inventario 
-                WHERE ruta_id = rutas.idruta 
-                    AND producto_id = productos.idproducto 
-                    AND tipo_transaccion_inventario_id = 1
-                    AND inventario.fecha <= calendar.fecha_inventario
-            ), 0) AS total_entradas,
-            IFNULL((
-                SELECT SUM(cantidad) FROM inventario 
-                WHERE ruta_id = rutas.idruta 
-                    AND producto_id = productos.idproducto 
-                    AND tipo_transaccion_inventario_id = 2
-                    AND inventario.fecha <= calendar.fecha_inventario
-            ), 0) AS total_salidas,
-            IFNULL((
-                (SELECT SUM(cantidad) FROM inventario 
-                    WHERE ruta_id = rutas.idruta 
-                        AND producto_id = productos.idproducto 
-                        AND tipo_transaccion_inventario_id = 1
-                        AND inventario.fecha <= calendar.fecha_inventario
-                ) - 
-                (SELECT SUM(cantidad) FROM inventario 
-                    WHERE ruta_id = rutas.idruta 
-                        AND producto_id = productos.idproducto 
-                        AND tipo_transaccion_inventario_id = 2
-                        AND inventario.fecha <= calendar.fecha_inventario
-                )
-            ), 0) AS inventario_actual
-        FROM 
-            rutas
-        CROSS JOIN (
-            SELECT 
-                fecha_inventario 
-            FROM (
-                SELECT 
-                    ADDDATE('1970-01-010', t4.i * 10000 + t3.i * 1000 + t2.i * 100 + t1.i * 10 + t0.i) fecha_inventario 
-                FROM            
-                    (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t0,
-                    (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t1,
-                    (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t2,
-                    (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t3,
-                    (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t4
-            ) v
-            WHERE fecha_inventario BETWEEN '$fechaInicial' AND '$fechaFinal'
-        ) calendar
-        LEFT JOIN 
-            tipo_ruta_productos ON rutas.tipo_ruta_id = tipo_ruta_productos.tipo_ruta_id 
-        INNER JOIN 
-            productos ON tipo_ruta_productos.producto_id = productos.idproducto 
-        WHERE rutas.estatus = 1
-            AND rutas.tipo_ruta_id = 5 -- Filtrar por las rutas que son estaciones
-        ORDER BY 
-            calendar.fecha_inventario, rutas.clave_ruta, productos.nombre ASC
-    ")->fetchAll(PDO::FETCH_ASSOC);
+	function obtenerReporteInventarioFechasEstaciones($fechaInicial, $fechaFinal, $rutaId)
+	{
+		$sql = $this->base_datos->query("SELECT 
+    calendar.fecha_inventario, 
+    rutas.idruta AS ruta_id, 
+    rutas.clave_ruta AS ruta_nombre,
+    rutas.capacidad AS ruta_capacidad, 
+    productos.nombre AS producto_nombre, 
+    productos.idproducto AS producto_id, 
+    productos.capacidad AS producto_capacidad,
+    IFNULL(SUM(CASE WHEN i.tipo_transaccion_inventario_id = 1 THEN i.cantidad ELSE 0 END), 0) AS total_entradas,
+    IFNULL(SUM(CASE WHEN i.tipo_transaccion_inventario_id = 2 THEN i.cantidad ELSE 0 END), 0) AS total_salidas,
+    IFNULL(SUM(CASE WHEN i.tipo_transaccion_inventario_id = 1 THEN i.cantidad ELSE 0 END), 0) -
+    IFNULL(SUM(CASE WHEN i.tipo_transaccion_inventario_id = 2 THEN i.cantidad ELSE 0 END), 0) AS inventario_actual
+FROM 
+    rutas
+CROSS JOIN (
+    SELECT ADDDATE('1970-01-01', t4.i * 10000 + t3.i * 1000 + t2.i * 100 + t1.i * 10 + t0.i) AS fecha_inventario 
+    FROM            
+        (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t0,
+        (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t1,
+        (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t2,
+        (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t3,
+        (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t4
+) calendar
+LEFT JOIN tipo_ruta_productos ON rutas.tipo_ruta_id = tipo_ruta_productos.tipo_ruta_id 
+INNER JOIN productos ON tipo_ruta_productos.producto_id = productos.idproducto 
+LEFT JOIN inventario i ON i.ruta_id = rutas.idruta 
+    AND i.producto_id = productos.idproducto 
+    AND i.fecha <= calendar.fecha_inventario
+WHERE 
+    rutas.estatus = 1
+    AND rutas.tipo_ruta_id = 5
+    AND rutas.idruta = '$rutaId'
+    AND calendar.fecha_inventario BETWEEN '$fechaInicial' AND '$fechaFinal'
+GROUP BY 
+    calendar.fecha_inventario, rutas.idruta, productos.idproducto
+ORDER BY 
+    calendar.fecha_inventario, rutas.clave_ruta, productos.nombre
 
-    return $sql;
-}
-
+		")->fetchAll(PDO::FETCH_ASSOC);
+	
+		return $sql;
+	}
+	
 
 
 	function obtenerReporteInventarioGasolinaFechas($fechaInicial, $fechaFinal, $mes, $anio, $zonaId)
@@ -647,13 +623,7 @@ function obtenerEstacionesPorCompania($companiaId)
 	}
 		function obtenerEstacionesInventarioTeorico()
 	{
-		$sql = $this->base_datos->query("SELECT r.* 
-				FROM rutas AS r
-				WHERE r.clave_ruta LIKE '%est.%'
-				OR r.clave_ruta LIKE '%Est%' 
-				OR r.clave_ruta LIKE '%Estacion%' 
-				OR r.clave_ruta LIKE '%Estación%'
-				ORDER BY r.clave_ruta ASC")->fetchAll(PDO::FETCH_ASSOC);
+		$sql = $this->base_datos->query("select * from rutas where rutas.tipo_ruta_id = 5")->fetchAll(PDO::FETCH_ASSOC);
 		return $sql;
 	}
 	public function obtenerEstacionesPorZonaRuta($companiaId, $zonaId, $rutaId) {

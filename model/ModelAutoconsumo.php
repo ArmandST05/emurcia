@@ -158,20 +158,22 @@ function obtenerTotalAutoconsumosZonaProductoFecha($zonaId, $productoNombre, $fe
                                     AND (a.fechai BETWEEN '$fechaInicial' AND '$fechaFinal')")->fetchAll(PDO::FETCH_ASSOC);
     return $sql;
 }
-function obtenerTotalAutoconsumosEstacionesProductoFecha($productoNombre, $fechaInicial, $fechaFinal)
+function obtenerTotalAutoconsumosEstacionesProductoFecha($productoNombre, $fechaInicial, $fechaFinal, $rutaId)
 {
-    $sql = $this->base_datos->query("SELECT SUM(a.litros) AS total
-                                    FROM autoconsumos a
-                                    JOIN rutas r ON a.ruta_id = r.idruta
-                                    JOIN zonas z ON r.zona_id = z.idzona
-                                    WHERE r.clave_ruta LIKE '%est.%' 
-                                    OR r.clave_ruta LIKE '%Est%' 
-                                    OR r.clave_ruta LIKE '%Estacion%' 
-                                    OR r.clave_ruta LIKE '%Estación%'
-                                    AND a.combustible = '$productoNombre'
-                                    AND (a.fechai BETWEEN '$fechaInicial' AND '$fechaFinal')")->fetchAll(PDO::FETCH_ASSOC);
+    $sql = $this->base_datos->query("SELECT IFNULL(SUM(a.litros), 0) AS total
+        FROM autoconsumos a
+        INNER JOIN rutas r ON a.ruta_id = r.idruta
+        INNER JOIN zonas z ON r.zona_id = z.idzona
+        WHERE r.tipo_ruta_id = 5
+          AND r.idruta = '$rutaId'
+          AND a.combustible = '$productoNombre'
+          AND a.fechai BETWEEN '$fechaInicial' AND '$fechaFinal'
+    ")->fetchAll(PDO::FETCH_ASSOC);
+
     return $sql;
 }
+
+
 
 function obtenerAutoconsumosRutaFecha($rutaId, $fechaInicial, $fechaFinal)
 {

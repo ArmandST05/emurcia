@@ -171,17 +171,18 @@ if ($companiaId) {
             <?php 
               foreach ($estacionesPorZona as $zona):
                 $ventasKg = $modelVenta->obtenerVentasKgZonaFechaEstaciones($fechaInicial, $fechaFinal);
-                $totalVentaKg = $ventasKg["totalKgZona"];
-
+                $totalVentaKg = $ventasKg[$zona["idruta"]] ?? 0;
                 $inventarioAnteriorKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idruta"], $fechaAnterior);
                 $totalInventarioAnteriorKg = $inventarioAnteriorKg["totalKgZona"];
                 
                 $inventarioKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idruta"], $fechaFinal);
                 $totalKgInventarioActual = $inventarioKg["totalKgZona"];
+                
+
 
     
 
-                $autoconsumosKg = $modelAutoconsumo->obtenerTotalAutoconsumosEstacionesProductoFecha($zona["idruta"], "Gas LP", $fechaInicial, $fechaFinal);
+                $autoconsumosKg = $modelAutoconsumo->obtenerTotalAutoconsumosEstacionesProductoFecha("Gas LP", $fechaInicial, $fechaFinal, $zona["idruta"]);
                 $totalAutoconsumoKg = $autoconsumosKg[0]["total"] * 0.524;
 
                 // Calcular el total contable según el tipo de zona (Sucursal o Planta)
