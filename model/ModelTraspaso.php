@@ -118,7 +118,19 @@ function obtenerTotalRecibidosZonaIdEntreFechas2($zonaId, $fechaInicio, $fechaFi
 }
 
 
+function obtenerTotalRecibidosEstacionEntreFechas($rutaEstacionId, $fechaInicio, $fechaFin)
+{
+    $resultado = $this->base_datos->query("SELECT SUM(cantidad) AS total
+        FROM traspasos
+        INNER JOIN rutas r ON r.idruta = traspasos.destinoEstacion
+        WHERE r.tipo_ruta_id = 5
+        AND traspasos.destinoEstacion = '$rutaEstacionId'
+        AND traspasos.fecha BETWEEN '$fechaInicio' AND '$fechaFin'
+        AND traspasos.estatus_traspaso_id IN (1, 2)
+    ")->fetchAll(PDO::FETCH_ASSOC);
 
+    return $resultado;
+}
 
 function obtenerTotalEnviadosZonaIdEntreFechas($zonaId, $fechaInicio, $fechaFin)
 {

@@ -36,6 +36,25 @@ class ModelAutoconsumo
     return $this->base_datos->id();
   }
 
+  function insertar_AutoconcumoEstaciones($rutaId, $litros, $costo_litro, $fecha, $comprobante){
+    $sql = $this->base_datos->insert("autoconsumos_estaciones", [
+        "ruta_id" => $rutaId,
+        "litros" => $litros,
+        "costo" => $costo_litro,
+        "fecha" => $fecha,
+        "comprobante_estaciones" => $comprobante
+
+    ]);
+    return $this->base_datos->id();
+  }
+  function obtenerEstacionesPorZona($zonaId, $tipoRutaId = 5) {
+    $sql = $this->base_datos->query("
+        SELECT idruta, clave_ruta 
+        FROM rutas 
+        WHERE zona_id = '$zonaId' AND tipo_ruta_id = $tipoRutaId
+    ");
+    return $sql->fetchAll(PDO::FETCH_ASSOC);
+}
 
 
   function obtenerAutoconsumosCompaniaFecha($companiaId, $fechaInicial, $fechaFinal)
@@ -160,14 +179,13 @@ function obtenerTotalAutoconsumosZonaProductoFecha($zonaId, $productoNombre, $fe
 }
 function obtenerTotalAutoconsumosEstacionesProductoFecha($productoNombre, $fechaInicial, $fechaFinal, $rutaId)
 {
-    $sql = $this->base_datos->query("SELECT IFNULL(SUM(a.litros), 0) AS total
-        FROM autoconsumos a
+    $sql = $this->base_datos->query("
+        SELECT IFNULL(SUM(a.litros), 0) AS total
+        FROM autoconsumos_estaciones a
         INNER JOIN rutas r ON a.ruta_id = r.idruta
-        INNER JOIN zonas z ON r.zona_id = z.idzona
         WHERE r.tipo_ruta_id = 5
           AND r.idruta = '$rutaId'
-          AND a.combustible = '$productoNombre'
-          AND a.fechai BETWEEN '$fechaInicial' AND '$fechaFinal'
+          AND a.fecha BETWEEN '$fechaInicial' AND '$fechaFinal'
     ")->fetchAll(PDO::FETCH_ASSOC);
 
     return $sql;

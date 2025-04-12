@@ -3,7 +3,9 @@ $modelRuta = new ModelRuta();
 $modelAutoconsumo = new ModelAutoconsumo();
 $modelCompania = new ModelCompania();
 $companias = $modelCompania->listaTodas();
-if ($_SESSION["tipoUsuario"] == "u") $rutas = $modelRuta->listaPorZonaEstatus($_SESSION['zonaId'],1);
+if ($_SESSION["tipoUsuario"] == "u") {
+    $rutas = $modelRuta->listaPorZonaEstatus($_SESSION['zonaId'],1);
+}
 
 $day = date("d");
 $mes = date("m");
@@ -12,6 +14,9 @@ $dayf = date("d");
 $mesf = date("m");
 $aniof = date("Y");
 
+// Definir tipos permitidos y zonas permitidas
+$tiposPermitidos = ["su", "u", "ad"];
+$zonasConEstaciones = [1, 3, 5, 8];
 ?>
 <!-- Page Heading -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
@@ -21,9 +26,15 @@ $aniof = date("Y");
     <a href="#">Nuevo</a>
   </div>
 </div>
+
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
   <h1 class="h3 mb-0 text-gray-800">Nuevo Autoconsumo</h1>
+
+  <?php if (in_array($_SESSION["tipoUsuario"], $tiposPermitidos) && in_array($_SESSION["zonaId"], $zonasConEstaciones)): ?>
+    <a href="../view/index.php?action=autoconsumos/nuevo_estaciones.php">Nuevo Autoconsumo Estaciones</a>
+  <?php endif; ?>
 </div>
+
 
 <!-- Content Row -->
 <div class="row">
