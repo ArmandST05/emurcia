@@ -604,32 +604,33 @@ class ModelVenta
 
 	/*-------------------INVENTARIO TEÓRICO-------------------- */
 	
-	function obtenerVentasKgZonaFechaEstaciones($fechaInicial, $fechaFinal)
-	{
-		$totalKgPorRuta = [];
-		$rutasVenta = $this->rutasVentasEntreFechasEstaciones($fechaInicial, $fechaFinal);
-	
-		foreach ($rutasVenta as $ruta) {
-			$rutaId = $ruta["idruta"];
-			$zonaId = $ruta["zona_id"];
-			$fechas = $this->fechasVentasRuta($rutaId, $fechaInicial, $fechaFinal);
-	
-			foreach ($fechas as $fechaItem) {
-				$fecha = $fechaItem["fecha"];
-				$ventas = $this->listaZonaRutaFechaEstaciones($zonaId, $fecha);
-	
-				foreach ($ventas as $venta) {
-					if ($venta["producto_id"] == 4 && $venta["tipo_ruta_id"] == 5) {
-						$litros = ($venta["total_rubros_venta"] * $venta["producto_capacidad"]);
-						$kilos = ($litros * 0.524);
-						$totalKgPorRuta[$rutaId] = ($totalKgPorRuta[$rutaId] ?? 0) + $kilos;
-					}
-				}
-			}
-		}
-	
-		return $totalKgPorRuta;
-	}
+	public function obtenerVentasKgZonaFechaEstaciones($fechaInicial, $fechaFinal)
+{
+    $sql = $this->base_datos->query("
+        SELECT 
+            ventas.ruta_id,
+            rutas.zona_id,
+            SUM(detalles_venta.total_rubros_venta * productos.capacidad * 0.524) AS total_kg
+        FROM ventas
+        JOIN detalles_venta ON ventas.idventa = detalles_venta.venta_id
+        JOIN productos ON productos.idproducto = detalles_venta.producto_id
+        JOIN rutas ON rutas.idruta = ventas.ruta_id
+        WHERE 
+            ventas.fecha BETWEEN '$fechaInicial' AND '$fechaFinal'
+            AND productos.idproducto = 4
+            AND rutas.tipo_ruta_id = 5
+        GROUP BY ventas.ruta_id
+    ")->fetchAll(PDO::FETCH_ASSOC);
+
+    $totalKgPorRuta = [];
+
+    foreach ($sql as $row) {
+        $totalKgPorRuta[$row["ruta_id"]] = $row["total_kg"];
+    }
+
+    return $totalKgPorRuta;
+}
+
 	
 	
 

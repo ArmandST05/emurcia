@@ -13,8 +13,9 @@ $companias = $modelInventario-> obtenerCompaniasInventarioTeorico();
 $companiaId = (isset($_GET["compania"])) ? $_GET["compania"] : null;
 
 $mesBusqueda = (isset($_GET["mesInicial"])) ? $_GET["mesInicial"] : date("Y-m");
-$fechaInicial = isset($_GET['fechaInicial']) ? $_GET['fechaInicial'] : date('Y-m-01');
-$fechaFinal = isset($_GET['fechaFinal']) ? $_GET['fechaFinal'] : date('Y-m-15');
+$fechaInicial = $mesBusqueda . "-01";
+$fechaFinal = date("Y-m-t", strtotime($fechaInicial));
+$fechaAnterior = date("Y-m-t", strtotime($fechaInicial . ' - 1 month'));
 
 $fechaAnterior = date("Y-m-d", strtotime($fechaInicial . ' - 1 day'));
 $diferenciaTotal = 0;
@@ -80,31 +81,17 @@ if ($companiaId) {
               </div>
             </div>
             <div class="row">
-            <div class="col-md-1">
-  <div class="form-group">
-    <label>Fecha inicio:</label>
-  </div>
-</div>
-<div class="col-md-3">
-  <div class="form-group">
-    <input class="form-control form-control-sm" type="date" id="fechaInicial" name="fechaInicial"
-      value="<?php echo isset($_GET['fechaInicial']) ? $_GET['fechaInicial'] : date('Y-m-01'); ?>">
-  </div>
-</div>
-
-<div class="col-md-1">
-  <div class="form-group">
-    <label>Fecha fin:</label>
-  </div>
-</div>
-<div class="col-md-3">
-  <div class="form-group">
-    <input class="form-control form-control-sm" type="date" id="fechaFinal" name="fechaFinal"
-      value="<?php echo isset($_GET['fechaFinal']) ? $_GET['fechaFinal'] : date('Y-m-15'); ?>">
-  </div>
-</div>
-
-
+              <div class="col-md-1">
+                <div class="form-group">
+                  <label>Mes:</label>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <input class="form-control form-control-sm" type="month" id="mesInicial" name="mesInicial"
+                    value="<?php echo $mesBusqueda ?>">
+                </div>
+              </div>
             </div>
           <?php endif; ?>
           <input type='hidden' name='action' id='action' value="inventario/index_estaciones.php" />
@@ -174,12 +161,12 @@ if ($companiaId) {
               <th>VTA TOTAL</th>
               <th>ZONA</th>
               <th>Inv Inicial</th>
+              <th>Traspasos a Estaciones</th> <!-- Nueva columna -->
               <th>C. Interno</th>
               <th>VTAS</th>
               <th>Contable</th>
               <th>Real</th>
               <th>Diferencia</th>
-              <th>Traspasos a Estaciones</th> <!-- Nueva columna -->
             </tr>
           </thead>
 
@@ -194,29 +181,32 @@ if ($companiaId) {
       $inventarioKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idruta"], $fechaFinal);
       $totalKgInventarioActual = $inventarioKg["totalKgZona"];
 
+      $traspasosEstaciones = $modelTraspaso->obtenerTotalRecibidosEstacionEntreFechas($zona["idruta"], $fechaInicial, $fechaFinal);
+      $totalTraspasosEstaciones = $traspasosEstaciones[0]["total"] ?? 0;
+
       $autoconsumosKg = $modelAutoconsumo->obtenerTotalAutoconsumosEstacionesProductoFecha("Gas LP", $fechaInicial, $fechaFinal, $zona["idruta"]);
       $totalAutoconsumoKg = $autoconsumosKg[0]["total"] * 0.524;
 
       // Calcular el total contable
-      $totalContableKg = $totalInventarioAnteriorKg - $totalVentaKg - $totalAutoconsumoKg;
+      $totalContableKg = $totalInventarioAnteriorKg + $totalTraspasosEstaciones - $totalVentaKg - $totalAutoconsumoKg;
 
       // Cálculo de la diferencia
       $diferencia = $totalKgInventarioActual - $totalContableKg;
       $diferenciaTotal += $diferencia;
-      $traspasosEstaciones = $modelTraspaso->obtenerTotalRecibidosEstacionEntreFechas($zona["idruta"], $fechaInicial, $fechaFinal);
-      $totalTraspasosEstaciones = $traspasosEstaciones[0]["total"] ?? 0;
+      
       
   ?>
     <tr class="text-right">
       <td><?php echo number_format($totalVentaKg, 2); ?></td>
       <td><?php echo $zona["clave_ruta"]; ?></td>
       <td><?php echo number_format($totalInventarioAnteriorKg, 2); ?></td>
+      <td><?php echo number_format($totalTraspasosEstaciones, 2); ?></td>
       <td><?php echo number_format($totalAutoconsumoKg, 2) ?></td>
       <td><?php echo number_format($totalVentaKg, 2); ?></td>
       <td><?php echo number_format($totalContableKg, 2) ?></td>
       <td><?php echo number_format($totalKgInventarioActual, 2); ?></td>
       <td><?php echo number_format($diferencia, 2) ?></td>
-      <td><?php echo number_format($totalTraspasosEstaciones, 2); ?></td>
+      
       </tr>
   <?php endforeach; ?>
 
@@ -268,22 +258,4 @@ if ($companiaId) {
     $("#inventarioNuevo").val(inventario);
     
   }
-  document.getElementById("fechaInicial").addEventListener("change", function () {
-  const fechaInicial = new Date(this.value);
-  if (!isNaN(fechaInicial)) {
-    const fechaMax = new Date(fechaInicial);
-    fechaMax.setDate(fechaMax.getDate() + 14); // +14 días = 15 días incluyendo el día inicial
-    const fechaFinalInput = document.getElementById("fechaFinal");
-
-    // Establecer los límites
-    fechaFinalInput.min = this.value;
-    fechaFinalInput.max = fechaMax.toISOString().split("T")[0];
-
-    // Validar si la fecha final actual excede el límite
-    if (new Date(fechaFinalInput.value) > fechaMax) {
-      fechaFinalInput.value = fechaFinalInput.max;
-    }
-  }
-});
-
 </script>
