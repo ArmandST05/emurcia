@@ -213,7 +213,6 @@ $anio = date("Y");
     </div>
   </div>
 </div>
-
 <!-- Content Row -->
 <div class="row">
   <!-- Card -->
@@ -234,68 +233,70 @@ $anio = date("Y");
         <?php endif; ?>
         <div class="row">
           <table class="table table-bordered table-sm table-responsive" id="listaTabla" name="listaTabla">
-          <thead>
-  <tr>
-    <th>Fecha</th>
-    <th>Zona Origen</th>
-    <th>Zona Destino</th>
-    <th>Cantidad</th>
-    <th>Estatus</th>
-    <th>Comprobante</th>
-    <th>Acciones</th>
-  </tr>
-</thead>
-<tbody>
-  <?php 
-  $totalCantidad = 0;
-  foreach ($traspasos as $traspaso) :
-    $totalCantidad += $traspaso["cantidad"];
-  ?>
-    <tr align='center'>
-      <td><?php echo $traspaso["fecha"] ?></td>
-      <td><?php echo $traspaso["zona_origen"] ?></td>
-      <td><?php echo $traspaso["zona_destino"] ?></td>
-      <td class="text-right"><?php echo $traspaso["cantidad"] ?></td>
-      <td><?php echo $traspaso["estatus_nombre"] ?></td>
-      <td>
-        <a href="<?php echo 'https://cgtest.v2technoconsulting.com/view/traspasos/comprobantes/' . basename($traspaso['comprobante_traspaso']); ?>" download >
-          Descargar comprobante
-        </a>
-        
-      </td>
-      <td>
-        <?php if ($_SESSION["tipoUsuario"] == "u" && $tipoBusqueda == "recibidos" && $traspaso["estatus_id"] == 2) : ?>
-          <button class='btn btn-sm btn-warning' type='button' data-toggle="tooltip" title="Aceptar" onclick="aceptar('<?php echo $traspaso['idtraspaso']; ?>');">
-            <i class='fas fa-check fa-sm'></i>
-          </button>
-          <button class='btn btn-sm btn-primary' type='button' data-toggle="tooltip" title="Rechazar" onclick="rechazar('<?php echo $traspaso['idtraspaso']; ?>');">
-            <i class='fas fa-times fa-sm'></i>
-          </button>
-        <?php elseif ((($_SESSION["tipoUsuario"] == "su" || $_SESSION["tipoUsuario"] == "inv") && $tipoBusqueda == "enviados" && date_diff(date_create($traspaso["fecha"]), date_create(date("Y-m-d")))->format('%d') <= 3) || ($_SESSION["tipoUsuario"] == "u" && $tipoBusqueda == "enviados" && $traspaso["estatus_id"] == 2)) : ?>
-          <button class='btn btn-sm btn-primary' type='button' data-toggle="tooltip" title="Eliminar" onclick="eliminar('<?php echo $traspaso['idtraspaso']; ?>');">
-            <i class='fas fa-trash fa-sm'></i>
-          </button>
-        <?php endif; ?>
-      </td>
-    </tr>
-  <?php endforeach; ?>
-  <tr class="bg-light">
-    <td><b>Total</b></td>
-    <td></td>
-    <td></td>
-    <td class="text-right"><b><?php echo number_format($totalCantidad, 2) ?></b></td>
-    <td></td>
-    <td></td>
-    <td></td>
-  </tr>
-</tbody>
-
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Zona Origen</th>
+                <th>Zona Destino</th>
+                <th>Cantidad</th>
+                <th>Estatus</th>
+                <th>Estación</th> <!-- columna agregada -->
+                <th>Comprobante</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php 
+              $totalCantidad = 0;
+              foreach ($traspasos as $traspaso) :
+                $totalCantidad += $traspaso["cantidad"];
+              ?>
+                <tr align='center'>
+                  <td><?php echo $traspaso["fecha"] ?></td>
+                  <td><?php echo $traspaso["zona_origen"] ?></td>
+                  <td><?php echo $traspaso["zona_destino"] ?></td>
+                  <td class="text-right"><?php echo $traspaso["cantidad"] ?></td>
+                  <td><?php echo $traspaso["estatus_nombre"] ?></td>
+                  <td><?php echo !empty($traspaso["estacion_destino"]) ? $traspaso["estacion_destino"] : "No hay estación"; ?></td> <!-- columna agregada -->
+                  <td>
+                    <a href="<?php echo 'https://cgtest.v2technoconsulting.com/view/traspasos/comprobantes/' . basename($traspaso['comprobante_traspaso']); ?>" download>
+                      Descargar comprobante
+                    </a>
+                  </td>
+                  <td>
+                    <?php if ($_SESSION["tipoUsuario"] == "u" && $tipoBusqueda == "recibidos" && $traspaso["estatus_id"] == 2) : ?>
+                      <button class='btn btn-sm btn-warning' type='button' data-toggle="tooltip" title="Aceptar" onclick="aceptar('<?php echo $traspaso['idtraspaso']; ?>');">
+                        <i class='fas fa-check fa-sm'></i>
+                      </button>
+                      <button class='btn btn-sm btn-primary' type='button' data-toggle="tooltip" title="Rechazar" onclick="rechazar('<?php echo $traspaso['idtraspaso']; ?>');">
+                        <i class='fas fa-times fa-sm'></i>
+                      </button>
+                    <?php elseif ((($_SESSION["tipoUsuario"] == "su" || $_SESSION["tipoUsuario"] == "inv") && $tipoBusqueda == "enviados" && date_diff(date_create($traspaso["fecha"]), date_create(date("Y-m-d")))->format('%d') <= 3) || ($_SESSION["tipoUsuario"] == "u" && $tipoBusqueda == "enviados" && $traspaso["estatus_id"] == 2)) : ?>
+                      <button class='btn btn-sm btn-primary' type='button' data-toggle="tooltip" title="Eliminar" onclick="eliminar('<?php echo $traspaso['idtraspaso']; ?>');">
+                        <i class='fas fa-trash fa-sm'></i>
+                      </button>
+                    <?php endif; ?>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+              <tr class="bg-light">
+                <td><b>Total</b></td>
+                <td></td>
+                <td></td>
+                <td class="text-right"><b><?php echo number_format($totalCantidad, 2) ?></b></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td> <!-- columna agregada -->
+              </tr>
+            </tbody>
           </table>
         </div>
       </div>
     </div>
   </div>
 </div>
+
 
 <script type="text/javascript">
   

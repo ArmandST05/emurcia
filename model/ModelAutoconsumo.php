@@ -74,6 +74,33 @@ class ModelAutoconsumo
                                     ORDER BY a.fechai")->fetchAll(PDO::FETCH_ASSOC);
     return $sql;
   }
+  function ObtenerAutoconsumosEstaciones($companiaId, $fechaInicial, $fechaFinal){
+    $sql = $this->base_datos->query("SELECT companias.idcompania AS compania_id,
+                                      UPPER(companias.nombre) AS compania_nombre,
+                                      zonas.idzona AS zona_id, 
+                                      UPPER(zonas.nombre) AS zona_nombre, 
+                                      r.clave_ruta AS ruta_nombre, 
+                                      r.idruta AS ruta_id,
+                                      a.idautoconsumo,
+                                      a.litros,
+                                      a.costo,
+                                      (a.litros * a.costo) AS total
+                                       FROM autoconsumos a, rutas r, zonas, companias
+                                      WHERE a.ruta_id = r.idruta 
+                                      AND r.zona_id = zonas.idzona
+                                      AND zonas.compania_id = companias.idcompania
+                                      AND companias.idcompania = '$companiaId' 
+                                      AND (a.fechai BETWEEN '$fechaInicial' AND '$fechaFinal') 
+                                      ORDER BY a.fechai")->fetchAll(PDO::FETCH_ASSOC);
+      return $sql;
+  }
+  public function obtenerAutoconsumosPorFechaEstaciones($zonaId){
+    $sql = $this->base_datos->query("SELECT clave_ruta as nombre, idruta as id
+        FROM rutas 
+        WHERE tipo_ruta_id = 5 AND zona_id = '$zonaId'")->fetchAll(PDO::FETCH_ASSOC);
+    return $sql;
+}
+
   function obtenerAutoconsumosCompaniaProductoFecha($companiaId, $productoNombre, $fechaInicial, $fechaFinal)
   {
       $sql = $this->base_datos->query("SELECT 

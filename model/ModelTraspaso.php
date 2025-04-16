@@ -47,27 +47,27 @@ class ModelTraspaso
 function obtenerRecibidosZonaIdEntreFechas($zonaId, $fechaInicio, $fechaFin)
 {
     $resultado = $this->base_datos->query("SELECT 
-            traspasos.idtraspaso,
-            traspasos.fecha,
-            zona_origen.nombre AS zona_origen,
-            zona_destino.nombre AS zona_destino,
-            traspasos.cantidad,
-            traspasos.estatus_traspaso_id AS estatus_id,
-            estatus_traspaso.nombre AS estatus_nombre,
-            traspasos.comprobante_traspaso  -- Agregado el campo comprobante_traspaso
-        FROM 
-            traspasos,
-            zonas AS zona_origen,
-            zonas AS zona_destino,
-            estatus_traspaso
-        WHERE 
-            zona_origen.idzona = traspasos.zona_origen_id 
-            AND zona_destino.idzona = traspasos.zona_destino_id 
-            AND estatus_traspaso.idestatustraspaso = traspasos.estatus_traspaso_id
-            AND zona_destino_id ='" . $zonaId . "' 
-            AND fecha >= '$fechaInicio'
-            AND fecha <= '$fechaFin'
-            ")->fetchAll(PDO::FETCH_ASSOC);
+    traspasos.idtraspaso,
+    traspasos.fecha,
+    zona_origen.nombre AS zona_origen,
+    zona_destino.nombre AS zona_destino,
+    traspasos.cantidad,
+    traspasos.estatus_traspaso_id AS estatus_id,
+    estatus_traspaso.nombre AS estatus_nombre,
+    traspasos.comprobante_traspaso,
+    rutas.clave_ruta AS estacion_destino  -- Ahora usamos clave_ruta en lugar del ID
+FROM 
+    traspasos
+INNER JOIN zonas AS zona_origen ON zona_origen.idzona = traspasos.zona_origen_id
+INNER JOIN zonas AS zona_destino ON zona_destino.idzona = traspasos.zona_destino_id
+INNER JOIN estatus_traspaso ON estatus_traspaso.idestatustraspaso = traspasos.estatus_traspaso_id
+INNER JOIN rutas ON rutas.idruta = traspasos.destinoEstacion  -- Aquí se une con rutas
+WHERE 
+    zona_destino.idzona = '$zonaId' 
+    AND traspasos.fecha >= '$fechaInicio'
+    AND traspasos.fecha <= '$fechaFin'
+")->fetchAll(PDO::FETCH_ASSOC);
+
     return $resultado;
 }
 
