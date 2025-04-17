@@ -16,7 +16,7 @@ $destinoEstacion = $_POST["destinoEstacion"];  // Obtenemos la estación de dest
 $comprobante = $_FILES['comprobante_traspaso']; // Obtener el archivo comprobante
 
 /* Validaciones */
-if (empty($zonaOrigen) || empty($zonaDestino) || empty($cantidad) || empty($destinoEstacion)) {  // Agregamos validación para la estación
+if (empty($zonaOrigen) || empty($zonaDestino) || empty($cantidad)) {  // Agregamos validación para la estación
     echo "<script> 
             alert('Ingresa todos los datos por favor');
             window.location.href = '../../view/index.php?action=traspasos/nuevo.php';
