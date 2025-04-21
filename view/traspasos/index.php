@@ -240,7 +240,7 @@ $anio = date("Y");
                 <th>Zona Destino</th>
                 <th>Cantidad</th>
                 <th>Estatus</th>
-                <th>Estación</th> <!-- columna agregada -->
+                <th>Estación/Bodega</th> <!-- columna agregada -->
                 <th>Comprobante</th>
                 <th>Acciones</th>
               </tr>

@@ -172,12 +172,12 @@ function obtenerTotalCantidadEntreFechas($fechaInicio, $fechaFin)
 		return $sql;
 	}
     public function obtenerEstaciones($zonaId) {
-        $sql = $this->base_datos->query("
-            SELECT idruta, clave_ruta 
-            FROM rutas
-            WHERE tipo_ruta_id = 5
-            AND zona_id = '$zonaId'
-            ORDER BY clave_ruta DESC
+        $sql = $this->base_datos->query("SELECT idruta, clave_ruta 
+FROM rutas
+WHERE tipo_ruta_id IN (5,10)
+AND zona_id = '$zonaId'
+ORDER BY clave_ruta DESC
+
         ")->fetchAll(PDO::FETCH_ASSOC);
     
         return $sql;
