@@ -2,11 +2,11 @@
 $modelZona = new ModelZona();
 $modelCompania = new ModelCompania();
 $modelAutoconsumo = new ModelAutoconsumo();
-// Búsqueda de datos
+
+// Parámetros de búsqueda
 $fechaInicial = (!empty($_GET['fechaInicial'])) ? $_GET['fechaInicial'] : date("Y-m-d");
 $fechaFinal = (!empty($_GET['fechaFinal'])) ? $_GET['fechaFinal'] : date("Y-m-d");
 $rutaId = (!empty($_GET['ruta'])) ? $_GET['ruta'] : 0;
-$productoNombre = (!empty($_GET['producto'])) ? $_GET['producto'] : "0";
 
 if ($_SESSION["tipoUsuario"] == "su" || $_SESSION["tipoUsuario"] == "uc" || $_SESSION["tipoUsuario"] == "inv") {
     $zonas = $modelZona->obtenerZonasGas();
@@ -18,206 +18,118 @@ if ($_SESSION["tipoUsuario"] == "su" || $_SESSION["tipoUsuario"] == "uc" || $_SE
     $zonaId = $_SESSION['zonaId'];
 }
 
-if ($companiaId != 0) {
-    // Búsqueda por compañía - Obtener autoconsumos de todas las zonas de la compañía
-    if ($productoNombre != "0") {
-        $autoconsumos = $modelAutoconsumo->obtenerAutoconsumosCompaniaProductoFecha($companiaId, $productoNombre, $fechaInicial, $fechaFinal);
-    } else {
-        $autoconsumos = $modelAutoconsumo->obtenerAutoconsumosCompaniaFecha($companiaId, $fechaInicial, $fechaFinal);
-    }
-} else if ($rutaId != 0) {
-    // Búsqueda por ruta
-    if ($productoNombre != "0") {
-        $autoconsumos = $modelAutoconsumo->obtenerAutoconsumosRutaProductoFecha($rutaId, $productoNombre, $fechaInicial, $fechaFinal);
-    } else {
-        $autoconsumos = $modelAutoconsumo->obtenerAutoconsumosRutaFecha($rutaId, $fechaInicial, $fechaFinal);
-    }
-} else {
-    // Búsqueda por zona (No se especificó ruta) - Obtener autoconsumos de todas las rutas de la zona
-    if ($productoNombre != "0") {
-        $autoconsumos = $modelAutoconsumo->obtenerAutoconsumosZonaProductoFecha($zonaId, $productoNombre, $fechaInicial, $fechaFinal);
-    } else {
-        $autoconsumos = $modelAutoconsumo->obtenerAutoconsumosZonaFecha($zonaId, $fechaInicial, $fechaFinal);
-    }
-}
+$autoconsumos = [];
+$autoconsumos = $modelAutoconsumo->ObtenerAutoconsumosEstaciones($companiaId, $fechaInicial, $fechaFinal);
 
-// Ordenar los datos
-$datosAutoconsumo = [];
-foreach ($autoconsumos as $autoconsumo) {
-    $datosAutoconsumo[$autoconsumo['compania_id']][$autoconsumo['zona_id']][] = $autoconsumo;
-}
 ?>
 
-<!-- Page Heading -->
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <div class="inline-block">
-        <a href="#"><i class="fas fa-home fa-sm"></i></a> /
-        <a href="#">Autoconsumos</a>
+<!-- Filtros -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Buscar</h6>
     </div>
-</div>
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Autoconsumos</h1>
-    <div>
-        <?php if ($_SESSION["tipoUsuario"] == "u") : ?>
-            <a class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" href="index.php?action=autoconsumos/nuevo.php">Nuevo</a>
-        <?php endif; ?>
-        <?php
-        // Mostrar solo si la zona está permitida
-        $zonasPermitidas = [1, 3, 5, 8];
-        if (in_array($_SESSION["zonaId"], $zonasPermitidas)) :
-        ?>
-            <a class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm ml-2" href="index.php?action=autoconsumos/index_estaciones.php">Autoconsumos estaciones</a>
-        <?php endif; ?>
-    </div>
-</div>
+    <div class="card-body" name="buscar" id="buscar">
+        <form action='index.php' method='GET'>
+            <input type="hidden" name="action" value="autoconsumos/index_estaciones.php">
 
-<!-- Content Row -->
-<div class="row">
-    <div class="col-xl-12 col-lg-12">
-        <div class="card shadow mb-4">
-            <!-- Card Header - Dropdown -->
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">Buscar</h6>
-            </div>
-            <!-- Card Body -->
-            <div class="card-body" name="buscar" id="buscar">
-                <form action='index.php' method='GET'>
-                    <?php if ($_SESSION["tipoUsuario"] == "su" || $_SESSION["tipoUsuario"] == "uc" || $_SESSION["tipoUsuario"] == "inv") : ?>
-                        <div class="row">
-                            <div class="col-lg-1 col-sm-6">
-                                <div class="form-group">
-                                    <label>Compañía:</label>
-                                </div>
-                            </div>
-                            <div class="col-lg-4 col-sm-6">
-                                <div class="form-group">
-                                    <select class="form-control form-control-sm" name="compania" id="compania">
-                                        <option value="0" selected>Selecciona opción</option>
-                                        <?php foreach ($companias as $compania) : ?>
-                                            <option value="<?php echo $compania['idcompania'] ?>" <?php echo ($companiaId == $compania['idcompania']) ? "selected" : "" ?>>
-                                                <?php echo $compania["nombre"] ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-lg-1 col-sm-6">
-                                <div class="form-group">
-                                    <label>Zona:</label>
-                                </div>
-                            </div>
-                            <div class="col-lg-4 col-sm-6">
-                                <div class="form-group">
-                                    <select class="form-control form-control-sm" name="zona" id="zona">
-                                        <option selected value="0">Selecciona opción</option>
-                                        <?php foreach ($zonas as $dataZona) : ?>
-                                            <option value="<?php echo $dataZona['idzona'] ?>" <?php echo ($zonaId == $dataZona['idzona']) ? "selected" : "" ?>>
-                                                <?php echo strtoupper($dataZona["nombre"]) ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endif; ?>
-                    <div class="row">
-                        <div class="col-lg-1 col-sm-6">
-                            <div class="form-group">
-                                <label>Ruta:</label>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-sm-6">
-                            <div class="form-group">
-                                <select class="form-control form-control-sm" name="ruta" id="ruta">
-                                    <option value="0">Todas</option>
-                                </select>
-                            </div>
-                        </div>
+            <?php if ($_SESSION["tipoUsuario"] == "su" || $_SESSION["tipoUsuario"] == "uc" || $_SESSION["tipoUsuario"] == "inv") : ?>
+                <div class="row">
+                    <div class="col-lg-2">
+                        <label>Compañía:</label>
+                        <select class="form-control form-control-sm" name="compania">
+                            <option value="0">Selecciona opción</option>
+                            <?php foreach ($companias as $compania) : ?>
+                                <option value="<?= $compania['idcompania'] ?>" <?= ($companiaId == $compania['idcompania']) ? "selected" : "" ?>>
+                                    <?= $compania["nombre"] ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
 
-                    <div class="row">
-                        <div class="col-lg-1 col-sm-6">
-                            <div class="form-group">
-                                <label>Desde:</label>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-sm-6">
-                            <input class="form-control form-control-sm" type="date" name="fechaInicial" value="<?php echo $fechaInicial ?>" required>
-                        </div>
+                    <div class="col-lg-2">
+                        <label>Zona:</label>
+                        <select class="form-control form-control-sm" name="zona">
+                            <option value="0">Selecciona opción</option>
+                            <?php foreach ($zonas as $dataZona) : ?>
+                                <option value="<?= $dataZona['idzona'] ?>" <?= ($zonaId == $dataZona['idzona']) ? "selected" : "" ?>>
+                                    <?= strtoupper($dataZona["nombre"]) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
-                    <div class="row">
-                        <div class="col-lg-1 col-sm-6">
-                            <div class="form-group">
-                                <label>Hasta:</label>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-sm-6">
-                            <input class="form-control form-control-sm" type="date" name="fechaFinal" value="<?php echo $fechaFinal ?>" required>
-                        </div>
-                    </div>
-                    <input type='hidden' name='action' id='action' value="autoconsumos/index.php" />
-                    <div class="row">
-                        <div clas="col-md-1 offset-md-10">
-                            <input class="btn btn-primary btn-sm" type='submit' id='busqueda' value='Buscar'>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+                </div>
+            <?php endif; ?>
 
-<!-- Content Row -->
-<div class="row">
-    <!-- Card -->
-    <div class="col-xl-12 col-lg-12">
-        <div class="card shadow mb-4">
-            <!-- Card Header -->
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">Lista de Autoconsumos</h6>
-            </div>
-            <!-- Card Body -->
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-sm" width="100%" cellspacing="0">
-                        <thead>
-                            <tr>
-                                <th>Compañía</th>
-                                <th>Zona</th>
-                                <th>Ruta</th>
-                                <th>Producto</th>
-                                <th>Litros</th>
-                                <th>Costo</th>
-                                <th>Costo Total</th>
-                                <th>Fecha</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (isset($datosAutoconsumo)) : ?>
-                                <?php foreach ($datosAutoconsumo as $companiaId => $zonas) : ?>
-                                    <?php foreach ($zonas as $zonaId => $autoconsumos) : ?>
-                                        <?php foreach ($autoconsumos as $autoconsumo) : ?>
-                                            <tr>
-                                                <td><?php echo $autoconsumo['compania_nombre'] ?></td>
-                                                <td><?php echo $autoconsumo['zona_nombre'] ?></td>
-                                                <td><?php echo $autoconsumo['ruta_nombre'] ?></td>
-                                                <td><?php echo $autoconsumo['producto_nombre'] ?></td>
-                                                <td><?php echo $autoconsumo['litros'] ?></td>
-                                                <td><?php echo $autoconsumo['costo'] ?></td>
-                                                <td><?php echo $autoconsumo['costo_total'] ?></td>
-                                                <td><?php echo $autoconsumo['fecha'] ?></td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    <?php endforeach; ?>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
+            <div class="row mt-3">
+                <div class="col-lg-2">
+                    <label>Estación:</label>
+                    <select class="form-control form-control-sm" name="ruta" id="ruta">
+                        <option value="0">Todas</option>
+                        <?php 
+                            $estaciones = $modelAutoconsumo->obtenerEstaciones($zonaId);
+                        
+                        ?>
+                        <?php foreach ($estaciones as $ruta) : ?>
+    <option value="<?= $ruta['idruta'] ?>" <?= ($rutaId == $ruta['idruta']) ? 'selected' : '' ?>>
+        <?= $ruta['clave_ruta'] ?>
+    </option>
+<?php endforeach; ?>
+
+                    </select>
+                </div>
+                <div class="col-lg-2">
+                    <label>Desde:</label>
+                    <input type="date" class="form-control form-control-sm" name="fechaInicial" value="<?= $fechaInicial ?>" required>
+                </div>
+
+                <div class="col-lg-2">
+                    <label>Hasta:</label>
+                    <input type="date" class="form-control form-control-sm" name="fechaFinal" value="<?= $fechaFinal ?>" required>
+                </div>
+
+                <div class="col-lg-2 align-self-end">
+                    <button class="btn btn-primary btn-sm" type="submit">Buscar</button>
                 </div>
             </div>
-        </div>
+        </form>
     </div>
 </div>
+<!-- Resultados -->
+<?php if (!empty($autoconsumos)) : ?>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Resultados</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered table-hover text-center">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Zona</th>
+                            <th>Estación</th>
+                            <th>Litros</th>
+                            <th>Costo</th>
+                            <th>Total</th>
+                            <th>Fecha</th> <!-- Nueva columna para la fecha -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($autoconsumos as $row) : ?>
+                            <?php if ($rutaId == 0 || $rutaId == $row['ruta_id']) : ?>
+                                <tr>
+                                    <td><?= $row['zona_nombre'] ?></td>
+                                    <td><?= $row['ruta_nombre'] ?></td>
+                                    <td><?= number_format($row['litros'], 2) ?></td>
+                                    <td>$<?= number_format($row['costo'], 2) ?></td>
+                                    <td>$<?= number_format($row['total'], 2) ?></td>
+                                    <td><?= isset($row['fecha']) ? date('Y-m-d', strtotime($row['fecha'])) : 'N/A' ?></td> <!-- Mostrar la fecha en formato YYYY-MM-DD -->
+                                </tr>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
 
