@@ -61,7 +61,7 @@ FROM
 INNER JOIN zonas AS zona_origen ON zona_origen.idzona = traspasos.zona_origen_id
 INNER JOIN zonas AS zona_destino ON zona_destino.idzona = traspasos.zona_destino_id
 INNER JOIN estatus_traspaso ON estatus_traspaso.idestatustraspaso = traspasos.estatus_traspaso_id
-INNER JOIN rutas ON rutas.idruta = traspasos.destinoEstacion  -- Aquí se une con rutas
+LEFT JOIN rutas ON rutas.idruta = traspasos.destinoEstacion
 WHERE 
     zona_destino.idzona = '$zonaId' 
     AND traspasos.fecha >= '$fechaInicio'
