@@ -62,12 +62,7 @@ $clientesDescuento = $modelClienteDescuento->listaZonaEstatus($zonaId, 1);
               <button type="button" class="btn btn-light btn-sm" data-toggle="tooltip" data-placement="top" title="Limpiar" onclick="limpiarNuevaVta()">Limpiar <i class="fas fa-broom"></i></button>
             </div>
           </div>
-          <div class="row">
-            <div class="col-md-4">
-            <label for="comprobante_venta">Subir Comprobante:</label>
-            <input type="file" name="comprobante_venta" id="comprobante_venta" required>
-            </div>
-          </div>
+          
           <div class="row">
             <div class="col-md-2">
               <div class="row">
@@ -315,6 +310,55 @@ $clientesDescuento = $modelClienteDescuento->listaZonaEstatus($zonaId, 1);
               </div>
             </div>
           </div>
+          <div class="row">
+                <div class="col-md-2">
+                  <label>km inicial</label>
+                </div>
+                <div class="col-md-2">
+                  <input type="number" class="form-control form-control-sm" name="traspasosVta" id="traspasosVta" min="0" step=".01" value="0" onchange="calcularCantidadVta()">
+                </div>
+                <div class="col-md-2">
+                  <label>km final</label>
+                </div>
+                <div class="col-md-2">
+                  <input type="number" class="form-control form-control-sm" name="traspasosVta" id="traspasosVta" min="0" step=".01" value="0" onchange="calcularCantidadVta()">
+                </div>
+          </div>
+          <div class="row">
+                <div class="col-md-2">
+                  <label>Traspasos</label>
+                </div>
+                <div class="col-md-2">
+                  <input type="number" class="form-control form-control-sm" name="traspasosVta" id="traspasosVta" min="0" step=".01" value="0" onchange="calcularCantidadVta()">
+                </div>
+              </div>
+          <hr>
+          <div class="row">
+  <div class="col-md-12">
+    <div class="row">
+      <div class="col-md-12">
+        <label>Desglose de autoconsumo por ruta:</label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4">
+        <select class="form-control form-control-sm" name="selectRuta" id="selectRuta">
+          <?php foreach ($rutas as $ruta) : ?>
+            <option value="<?php echo $ruta['idruta'] ?>"
+              data-nombre="<?php echo $ruta['clave_ruta'] ?>">
+              <?php echo $ruta['clave_ruta'] ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="button" class="btn btn-warning btn-sm" onclick="agregarRutaAutoconsumo()"><i class="fas fa-plus"></i></button>
+      </div>
+    </div>
+    <div id="listaRutasAutoconsumo"></div> <!-- Aquí se agregan las filas -->
+  </div>
+</div>
+
           <hr>
           <div class="row">
             <div class="col-md-12">
@@ -582,7 +626,7 @@ $clientesDescuento = $modelClienteDescuento->listaZonaEstatus($zonaId, 1);
           event.preventDefault();
           alertify.error("Coloca correctamente el desglose de las cantidades (litros) de descuentos que otorgaste. Separadas por contado y crédito.");
         }
-        else */if(cantidadVta <= 0 && totalSalidasVta <= 0){
+        else if(cantidadVta <= 0 && totalSalidasVta <= 0){
           event.preventDefault();
           alertify.error("Ingresa una cantidad válida");
         }
@@ -597,7 +641,7 @@ $clientesDescuento = $modelClienteDescuento->listaZonaEstatus($zonaId, 1);
         else if(productoId != 4 && (inventarioVta < 0.0001 || cantidadVta > inventarioVta )){
           event.preventDefault();
           alertify.error("No tienes inventario suficiente");
-        }
+        }*/
     });
 
     function calcularCantidadVta(){
@@ -722,6 +766,90 @@ $clientesDescuento = $modelClienteDescuento->listaZonaEstatus($zonaId, 1);
         }
       });
     }
+    function agregarRutaAutoconsumo() {
+  var rutaId = $("#selectRuta option:selected").val();
+  var rutaNombre = $("#selectRuta option:selected").data("nombre");
+
+  if ($("#rowRutaAutoconsumo" + rutaId).length > 0) {
+    alertify.error('Ya agregaste esta ruta');
+    return;
+  }
+
+  let newRow = '<div class="row mt-2" id="rowRutaAutoconsumo' + rutaId + '">';
+  newRow += '<div class="col-md-3"><label>' + rutaNombre + '</label></div>';
+
+  newRow += '<div class="col-md-3">';
+  newRow += '<label>Litros Autoconsumo</label>';
+  newRow += '<input type="number" class="form-control form-control-sm litrosAutoconsumo" name="rutasAutoconsumo['+rutaId+'][litros]" min="0" step=".01" value="0" onchange="calcularRutaAutoconsumo('+rutaId+')">';
+  newRow += '</div>';
+  newRow += '<div class="col-md-2">';
+newRow += '<label>Km inicial</label>';
+newRow += '<input type="text" class="form-control form-control-sm" id="kmi'+rutaId+'" name="rutasAutoconsumo['+rutaId+'][kmi]" onchange="calcularRutaAutoconsumo('+rutaId+')">';
+newRow += '</div>';
+
+newRow += '<div class="col-md-2">';
+newRow += '<label>Km final</label>';
+newRow += '<input type="text" class="form-control form-control-sm" id="kmf'+rutaId+'" name="rutasAutoconsumo['+rutaId+'][kmf]" onchange="calcularRutaAutoconsumo('+rutaId+')">';
+newRow += '</div>';
+
+newRow += '<div class="col-md-2">';
+newRow += '<label>Costo/litro</label>';
+newRow += '<input type="text" class="form-control form-control-sm" id="costo'+rutaId+'" name="rutasAutoconsumo['+rutaId+'][costo]" onchange="calcularRutaAutoconsumo('+rutaId+')">';
+newRow += '</div>';
+
+newRow += '<div class="col-md-2">';
+newRow += '<label>Total</label>';
+newRow += '<input type="text" class="form-control form-control-sm" id="total'+rutaId+'" disabled>';
+newRow += '</div>';
+
+newRow += '<div class="col-md-2">';
+newRow += '<label>Rendimiento</label>';
+newRow += '<input type="text" class="form-control form-control-sm" id="rendi'+rutaId+'" disabled>';
+newRow += '</div>';
+
+
+  newRow += '<div class="col-md-1"><button type="button" class="btn btn-danger btn-sm" onclick="eliminarRutaAutoconsumo(' + rutaId + ')"><i class="fas fa-trash"></i></button></div>';
+  newRow += '</div>';
+
+  $("#listaRutasAutoconsumo").append(newRow);
+}
+
+function validarTotalAutoconsumo() {
+  let consumoMaximo = parseFloat($("#consumoInternoVta").val()) || 0;
+  let totalAutoconsumo = 0;
+
+  $(".litrosAutoconsumo").each(function () {
+    let val = parseFloat($(this).val()) || 0;
+    totalAutoconsumo += val;
+  });
+
+  if (totalAutoconsumo > consumoMaximo) {
+    alertify.error("La suma de litros de autoconsumo no puede ser mayor que el consumo interno.");
+    
+    // Limpiar el último campo modificado
+    $(event.target).val(0);
+
+    validarTotalAutoconsumo(); // volver a validar tras limpiar
+  }
+}
+
+function eliminarRutaAutoconsumo(rutaId) {
+  $("#rowRutaAutoconsumo" + rutaId).remove();
+}
+function calcularRutaAutoconsumo(rutaId) {
+  var costo_litro = parseFloat(document.getElementById('costo' + rutaId).value) || 0;
+  var kmi = parseFloat(document.getElementById('kmi' + rutaId).value) || 0;
+  var kmf = parseFloat(document.getElementById('kmf' + rutaId).value) || 0;
+  var litrosInput = document.querySelector(`input[name='rutasAutoconsumo[${rutaId}][litros]']`);
+  var litros = parseFloat(litrosInput ? litrosInput.value : 0) || 0;
+
+  var total = costo_litro * litros;
+  var rendimiento = litros > 0 ? (kmf - kmi) / litros : 0;
+
+  document.getElementById('total' + rutaId).value = total.toFixed(2);
+  document.getElementById('rendi' + rutaId).value = rendimiento.toFixed(2);
+}
+
     //CLIENTES DESCUENTO
     function agregarClienteDescuento(){
       var clienteId = $("#selectClienteDescuento option:selected").val();

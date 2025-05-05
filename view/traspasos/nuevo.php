@@ -42,6 +42,7 @@ $zonas = ($_SESSION["tipoZona"] == 1) ? $modelZona->obtenerZonasGas() : $modelZo
       <div class="form-group">
         <label for="zonaDestino">Zona Destino</label>
         <select class="form-control form-control-sm" id="zonaDestino" name="zonaDestino">
+          <option value="">Selecciona una zona</option>
           <?php foreach ($zonas as $zona) : ?>
             <option value="<?php echo $zona['idzona'] ?>">
               <?php echo strtoupper($zona["nombre"]) ?>
