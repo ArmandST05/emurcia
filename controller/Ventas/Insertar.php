@@ -160,6 +160,25 @@ if (strlen($rutaVta) < 1 || strlen($productoVta) < 1) {
         if (!empty($_POST['rutasAutoconsumo'])) {
             $fechaInicio = $_POST['fecha_inicio'] ?? $fecha;
             $fechaFin = $_POST['fecha_fin'] ?? $fecha;
+			// Autoconsumo FIJO
+			if (!empty($consumoInternoVta) && $consumoInternoVta > 0) {
+				$kmiFijo = $_POST["kmiVta"] ?? 0;
+				$kmfFijo = $_POST["kmfVta"] ?? 0;
+				$costoFijo = $_POST["costoVta"] ?? 0;
+				$comprobanteFijo = ''; // Agrega lógica si hay comprobante
+
+				$modelAutoconsumo->insertar(
+					$rutaVta,
+					'Gas LP',
+					floatval($consumoInternoVta),
+					floatval($costoFijo),
+					intval($kmiFijo),
+					intval($kmfFijo),
+					$fecha,
+					$fecha,
+					$comprobanteFijo
+				);
+			}
 
             foreach ($_POST['rutasAutoconsumo'] as $rutaId => $datos) {
 				$litros = isset($datos['litros']) ? floatval($datos['litros']) : 0;
