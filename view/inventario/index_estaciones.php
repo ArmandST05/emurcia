@@ -167,48 +167,53 @@ if ($companiaId) {
               <th>Contable</th>
               <th>Real</th>
               <th>Diferencia</th>
+              <th>Porcentaje %</th>
             </tr>
           </thead>
 
           <tbody>
   <?php 
-    foreach ($estacionesPorZona as $zona):
-      $ventasKg = $modelVenta->obtenerVentasKgZonaFechaEstaciones($fechaInicial, $fechaFinal);
-      $totalVentaKg = $ventasKg[$zona["idruta"]] ?? 0;
-      $inventarioAnteriorKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idruta"], $fechaAnterior);
-      $totalInventarioAnteriorKg = $inventarioAnteriorKg["totalKgZona"];
+foreach ($estacionesPorZona as $zona):
+    $ventasKg = $modelVenta->obtenerVentasKgZonaFechaEstaciones($fechaInicial, $fechaFinal);
+    $totalVentaKg = $ventasKg[$zona["idruta"]] ?? 0;
 
-      $inventarioKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idruta"], $fechaFinal);
-      $totalKgInventarioActual = $inventarioKg["totalKgZona"];
+    $inventarioAnteriorKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idruta"], $fechaAnterior);
+    $totalInventarioAnteriorKg = $inventarioAnteriorKg["totalKgZona"];
 
-      $traspasosEstaciones = $modelTraspaso->obtenerTotalRecibidosEstacionEntreFechas($zona["idruta"], $fechaInicial, $fechaFinal);
-      $totalTraspasosEstaciones = $traspasosEstaciones[0]["total"] ?? 0;
+    $inventarioKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idruta"], $fechaFinal);
+    $totalKgInventarioActual = $inventarioKg["totalKgZona"]; // REAL = 100%
 
-      $autoconsumosKg = $modelAutoconsumo->obtenerTotalAutoconsumosEstacionesProductoFecha("Gas LP", $fechaInicial, $fechaFinal, $zona["idruta"]);
-      $totalAutoconsumoKg = $autoconsumosKg[0]["total"] * 0.524;
+    $traspasosEstaciones = $modelTraspaso->obtenerTotalRecibidosEstacionEntreFechas($zona["idruta"], $fechaInicial, $fechaFinal);
+    $totalTraspasosEstaciones = $traspasosEstaciones[0]["total"] ?? 0;
 
-      // Calcular el total contable
-      $totalContableKg = $totalInventarioAnteriorKg + $totalTraspasosEstaciones - $totalVentaKg - $totalAutoconsumoKg;
+    $autoconsumosKg = $modelAutoconsumo->obtenerTotalAutoconsumosEstacionesProductoFecha("Gas LP", $fechaInicial, $fechaFinal, $zona["idruta"]);
+    $totalAutoconsumoKg = $autoconsumosKg[0]["total"] * 0.524;
 
-      // Cálculo de la diferencia
-      $diferencia = $totalKgInventarioActual - $totalContableKg;
-      $diferenciaTotal += $diferencia;
-      
-      
-  ?>
-    <tr class="text-right">
-      <td><?php echo number_format($totalVentaKg, 2); ?></td>
-      <td><?php echo $zona["clave_ruta"]; ?></td>
-      <td><?php echo number_format($totalInventarioAnteriorKg, 2); ?></td>
-      <td><?php echo number_format($totalTraspasosEstaciones, 2); ?></td>
-      <td><?php echo number_format($totalAutoconsumoKg, 2) ?></td>
-      <td><?php echo number_format($totalVentaKg, 2); ?></td>
-      <td><?php echo number_format($totalContableKg, 2) ?></td>
-      <td><?php echo number_format($totalKgInventarioActual, 2); ?></td>
-      <td><?php echo number_format($diferencia, 2) ?></td>
-      
-      </tr>
-  <?php endforeach; ?>
+    $totalContableKg = $totalInventarioAnteriorKg + $totalTraspasosEstaciones - $totalVentaKg - $totalAutoconsumoKg;
+
+    $diferencia = $totalKgInventarioActual - $totalContableKg;
+    $diferenciaTotal += $diferencia;
+    $totalPorcentaje = $totalKgInventarioActual / 0.524;
+    // ✅ Cálculo del porcentaje de diferencia respecto al real
+ $porcentajeDiferencia = ($totalKgInventarioActual != 0) 
+    ? (($totalPorcentaje - $totalContableKg) / $totalKgInventarioActual) * 10
+    : 0;
+?>
+
+  <tr class="text-right">
+    <td><?php echo number_format($totalVentaKg, 2); ?></td>
+    <td><?php echo $zona["clave_ruta"]; ?></td>
+    <td><?php echo number_format($totalInventarioAnteriorKg, 2); ?></td>
+    <td><?php echo number_format($totalTraspasosEstaciones, 2); ?></td>
+    <td><?php echo number_format($totalAutoconsumoKg, 2); ?></td>
+    <td><?php echo number_format($totalVentaKg, 2); ?></td>
+    <td><?php echo number_format($totalContableKg, 2); ?></td>
+    <td><?php echo number_format($totalPorcentaje, 2); ?></td>
+    <td><?php echo number_format($diferencia, 2); ?></td>
+    <td><?php echo number_format($porcentajeDiferencia, 2); ?>%</td> <!-- ✅ Porcentaje comparando con el real -->
+  </tr>
+<?php endforeach; ?>
+
 
   <tr class="text-right">
     <td colspan="8"></td>
