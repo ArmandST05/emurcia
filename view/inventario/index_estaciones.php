@@ -182,6 +182,9 @@ foreach ($estacionesPorZona as $zona):
 
     $inventarioKg = $modelInventario->obtenerTotalInventarioGasKgZonaFechaEstaciones($zona["idruta"], $fechaFinal);
     $totalKgInventarioActual = $inventarioKg["totalKgZona"]; // REAL = 100%
+    $litrosPorEstacion = $inventarioKg["litrosPorEstacion"];
+
+
 
     $traspasosEstaciones = $modelTraspaso->obtenerTotalRecibidosEstacionEntreFechas($zona["idruta"], $fechaInicial, $fechaFinal);
     $totalTraspasosEstaciones = $traspasosEstaciones[0]["total"] ?? 0;
@@ -208,8 +211,9 @@ foreach ($estacionesPorZona as $zona):
     <td><?php echo number_format($totalAutoconsumoKg, 2); ?></td>
     <td><?php echo number_format($totalVentaKg, 2); ?></td>
     <td><?php echo number_format($totalContableKg, 2); ?></td>
-    <td><?php echo number_format($totalPorcentaje, 2); ?></td>
-    <td><?php echo number_format($diferencia, 2); ?></td>
+<?php foreach ($litrosPorEstacion as $litros): ?>
+    <td><?php echo number_format($litros, 2); ?> Lts</td>
+<?php endforeach; ?>    <td><?php echo number_format($diferencia, 2); ?></td>
     <td><?php echo number_format($porcentajeDiferencia, 2); ?>%</td> <!-- ✅ Porcentaje comparando con el real -->
   </tr>
 <?php endforeach; ?>

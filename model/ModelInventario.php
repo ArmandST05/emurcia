@@ -503,6 +503,7 @@ function obtenerTotalInventarioGasKgZonaFechaEstaciones($zonaId, $fecha)
                 $kilos = ($inventarioActual * $ruta["producto_capacidad"]);
                 $litros = ($kilos / .524);
             }
+			$totalLitrosEstaciones[] = $litros; // agregar dentro del foreach de estaciones
 
             $totalLitrosFecha += $litros;
             $totalKilosFecha += $kilos;
@@ -511,7 +512,7 @@ function obtenerTotalInventarioGasKgZonaFechaEstaciones($zonaId, $fecha)
         $totalKgZona += $totalKilosFecha;
         $totalLtsZona += $totalLitrosFecha;
     }
-
+	$data["litrosPorEstacion"] = $totalLitrosEstaciones;
     $data["totalKgZona"] = $totalKgZona; // Cambiado a totalKgZona
     $data["totalLtsZona"] = $totalLtsZona; // Cambiado a totalLtsZona
 
