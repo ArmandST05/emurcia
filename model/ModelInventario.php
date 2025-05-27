@@ -465,13 +465,14 @@ function obtenerTotalInventarioGasKgZonaFechaEstaciones($zonaId, $fecha)
 {
     $datosInventario = $this->obtenerReporteInventarioFechasEstaciones($fecha, $fecha, $zonaId);
     $inventarios = array();
-    
+
     foreach ($datosInventario as $dato) {
         $inventarios[$dato["fecha_inventario"]][] = $dato;
     }
 
     $totalKgZona = 0;
     $totalLtsZona = 0;
+    $litrosPorEstacion = [];
 
     foreach ($inventarios as $claveInventario => $inventarioFecha) {
         $totalLitrosFecha = 0;
@@ -479,6 +480,7 @@ function obtenerTotalInventarioGasKgZonaFechaEstaciones($zonaId, $fecha)
 
         foreach ($inventarioFecha as $claveRuta => $ruta) {
             $productoId = $ruta["producto_id"];
+            $rutaId = $ruta["ruta_id"]; // ← ID de la estación
             $inventarioActual = number_format($ruta["inventario_actual"], 2);
 
             $totalEntradas = $ruta["total_entradas"];
@@ -490,33 +492,39 @@ function obtenerTotalInventarioGasKgZonaFechaEstaciones($zonaId, $fecha)
                 $inventarioActual = number_format(($totalEntradas - $totalSalidas), 2);
             }
 
-            // Si el producto es Lts, realizar cálculo de inventario en base a inventario actual y capacidad de Pipa
+            // Cálculo de litros y kilos según tipo de producto
             if ($productoId == 4) {
                 $litros = (($inventarioActual * $ruta["ruta_capacidad"]) / 100);
                 $kilos = ($litros * .524);
             } elseif ($productoId == 6 || $productoId == 7 || $productoId == 8) {
-                // Tanques Gasolina
                 $litros = $inventarioActual;
                 $kilos = ($litros * .524);
             } else {
-                // Se calcula los litros vendidos por el cilindro
                 $kilos = ($inventarioActual * $ruta["producto_capacidad"]);
                 $litros = ($kilos / .524);
             }
 
             $totalLitrosFecha += $litros;
             $totalKilosFecha += $kilos;
+
+            // Guardar litros por estación
+            if (!isset($litrosPorEstacion[$rutaId])) {
+                $litrosPorEstacion[$rutaId] = 0;
+            }
+            $litrosPorEstacion[$rutaId] += $litros;
         }
 
         $totalKgZona += $totalKilosFecha;
         $totalLtsZona += $totalLitrosFecha;
     }
 
-    $data["totalKgZona"] = $totalKgZona; // Cambiado a totalKgZona
-    $data["totalLtsZona"] = $totalLtsZona; // Cambiado a totalLtsZona
+    $data["totalKgZona"] = $totalKgZona;
+    $data["totalLtsZona"] = $totalLtsZona;
+    $data["litrosPorEstacion"] = $litrosPorEstacion;
 
     return $data;
 }
+
 
 function obtenerTotalComprasTraspasosGasKgZonaFecha($zonaId, $fechaInicial, $fechaFinal)
 {
