@@ -293,37 +293,63 @@ $clientesDescuento = $modelClienteDescuento->listaZonaEstatus($zonaId, 1);
                 </div>
               </div>
               <div class="row">
-                <div class="col-md-2">
-                  <label>Consumo Interno</label>
-                </div>
-                <div class="col-md-2">
-                  <input type="number" class="form-control form-control-sm" name="consumoInternoVta" id="consumoInternoVta" min="0" step=".01" value="0" onchange="calcularCantidadVta()">
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-md-2">
-                  <label>Traspasos</label>
-                </div>
-                <div class="col-md-2">
-                  <input type="number" class="form-control form-control-sm" name="traspasosVta" id="traspasosVta" min="0" step=".01" value="0" onchange="calcularCantidadVta()">
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="row">
-                <div class="col-md-2">
-                  <label>km inicial</label>
-                </div>
-                <div class="col-md-2">
-                  <input type="number" class="form-control form-control-sm" name="traspasosVta" id="traspasosVta" min="0" step=".01" value="0" onchange="calcularCantidadVta()">
-                </div>
-                <div class="col-md-2">
-                  <label>km final</label>
-                </div>
-                <div class="col-md-2">
-                  <input type="number" class="form-control form-control-sm" name="traspasosVta" id="traspasosVta" min="0" step=".01" value="0" onchange="calcularCantidadVta()">
-                </div>
-          </div>
+  <div class="col-md-2">
+    <label>Consumo Interno</label>
+  </div>
+  <div class="col-md-2">
+    <input type="number" class="form-control form-control-sm" name="consumoInternoVta" id="consumoInternoVta" min="0" step=".01" value="0" onchange="calcularCantidadVta(); calcularAutoconsumoFijo();">
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-2">
+    <label>Traspasos</label>
+  </div>
+  <div class="col-md-2">
+    <input type="number" class="form-control form-control-sm" name="traspasosVta" id="traspasosVta" min="0" step=".01" value="0" onchange="calcularCantidadVta();">
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-2">
+    <label>Kilometraje Inicial</label>
+  </div>
+  <div class="col-md-2">
+    <input type="number" class="form-control form-control-sm" name="kmiVta" id="kmiVta" min="0" step=".01" value="0" onchange="calcularAutoconsumoFijo();">
+  </div>
+
+  <div class="col-md-2">
+    <label>Kilometraje Final</label>
+  </div>
+  <div class="col-md-2">
+    <input type="number" class="form-control form-control-sm" name="kmfVta" id="kmfVta" min="0" step=".01" value="0" onchange="calcularAutoconsumoFijo();">
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-2">
+    <label>Costo / litro</label>
+  </div>
+  <div class="col-md-2">
+    <input type="number" class="form-control form-control-sm" name="costoVta" id="costoVta" min="0" step=".01" value="0" onchange="calcularAutoconsumoFijo();">
+  </div>
+
+  <div class="col-md-2">
+    <label>Total</label>
+  </div>
+  <div class="col-md-2">
+    <input type="text" class="form-control form-control-sm" id="totalVtaFija" disabled>
+  </div>
+
+  <div class="col-md-2">
+    <label>Rendimiento</label>
+  </div>
+  <div class="col-md-2">
+    <input type="text" class="form-control form-control-sm" id="rendiVta" disabled>
+  </div>
+</div>
+
+
           <div class="row">
                 <div class="col-md-2">
                   <label>Traspasos</label>
@@ -643,27 +669,56 @@ $clientesDescuento = $modelClienteDescuento->listaZonaEstatus($zonaId, 1);
           alertify.error("No tienes inventario suficiente");
         }*/
     });
+    function calcularAutoconsumoFijo() {
+  const litros = parseFloat($("#consumoInternoVta").val()) || 0;
+  const kmi = parseFloat($("#kmiVta").val()) || 0;
+  const kmf = parseFloat($("#kmfVta").val()) || 0;
+  const costo = parseFloat($("#costoVta").val()) || 0;
 
-    function calcularCantidadVta(){
-      let productoId = parseFloat($("#productoVta").val());  
-        //Producto == Litros  
-        if(productoId == 4){
-        let otrasSalidasVta = parseFloat($("#otrasSalidasVta").val());
-        let consumoInternoVta = parseFloat($("#consumoInternoVta").val());
-        let traspasosVta = parseFloat($("#traspasosVta").val());
-        let pruebasVta = parseFloat($("#pruebasVta").val());
+  // Cálculo del total
+  const total = litros * costo;
+  $("#totalVtaFija").val(total.toFixed(2));
 
-        let totalSalidasVta = otrasSalidasVta + consumoInternoVta + traspasosVta + pruebasVta;
+  // Cálculo del rendimiento
+  let rendimiento = 0;
+  const kmRecorridos = kmf - kmi;
+  if (kmRecorridos > 0 && litros > 0) {
+    rendimiento = kmRecorridos / litros;
+  }
+  $("#rendiVta").val(rendimiento.toFixed(2));
+}
 
-        let lecturaFinalVta = parseFloat($("#lecturaFinalVta").val());
-        let lecturaInicialVta = parseFloat($("#lecturaInicialVta").val());
-        let cantidadVta = lecturaFinalVta - lecturaInicialVta;
 
-        let cantidadRealVta = parseFloat(cantidadVta - totalSalidasVta).toFixed(2);
-        $("#cantidadVta").val(cantidadRealVta);
-        calcularTotalVta();
-      }
-    }
+    function calcularCantidadVta() {
+  let productoId = parseFloat($("#productoVta").val());
+
+  // Producto == Litros
+  if (productoId == 4) {
+    let otrasSalidasVta = parseFloat($("#otrasSalidasVta").val()) || 0;
+    let consumoInternoVta = parseFloat($("#consumoInternoVta").val()) || 0;
+    let traspasosVta = parseFloat($("#traspasosVta").val()) || 0;
+    let pruebasVta = parseFloat($("#pruebasVta").val()) || 0;
+
+    // 🔄 Sumar litros de los autoconsumos dinámicos
+    let litrosAutoconsumo = 0;
+    document.querySelectorAll('.litrosAutoconsumo').forEach(input => {
+      litrosAutoconsumo += parseFloat(input.value) || 0;
+    });
+
+    let totalSalidasVta = otrasSalidasVta + consumoInternoVta + traspasosVta + pruebasVta + litrosAutoconsumo;
+
+    let lecturaFinalVta = parseFloat($("#lecturaFinalVta").val()) || 0;
+    let lecturaInicialVta = parseFloat($("#lecturaInicialVta").val()) || 0;
+
+    let cantidadVta = lecturaFinalVta - lecturaInicialVta;
+
+    let cantidadRealVta = parseFloat(cantidadVta - totalSalidasVta).toFixed(2);
+    $("#cantidadVta").val(cantidadRealVta);
+
+    calcularTotalVta();
+  }
+}
+
 
     function limpiarNuevaVta() {
       $("#divLecturas").hide();

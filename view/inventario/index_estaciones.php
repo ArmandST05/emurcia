@@ -198,19 +198,11 @@ foreach ($estacionesPorZona as $zona):
     $totalPorcentaje = $totalKgInventarioActual / 0.524;
     $totalLitrosReal = array_sum($litrosPorEstacion);
 $totalKgReal = $totalLitrosReal * 0.524;
-<<<<<<< HEAD
 $diferencia = $totalLitrosReal - $totalContableKg;
 $diferenciaTotal += $diferencia;
 
-$porcentajeDiferencia = ($totalKgInventarioActual != 0) 
-    ? (($totalPorcentaje /$totalContableKg) -1)*100
-=======
-$diferencia = $totalKgReal - $totalContableKg;
-$diferenciaTotal += $diferencia;
-
-$porcentajeDiferencia = ($totalKgInventarioActual != 0) 
-    ? (($totalPorcentaje - $totalContableKg) / $totalKgInventarioActual) * 10
->>>>>>> bf3a20454546eee43f9851a974acde8478fa3e49
+$porcentajeDiferencia = ($totalContableKg != 0) 
+    ? (($totalKgReal - $totalContableKg) / $totalContableKg) * 100
     : 0;
 
 ?>
@@ -223,14 +215,9 @@ $porcentajeDiferencia = ($totalKgInventarioActual != 0)
   <td><?php echo number_format($totalAutoconsumoKg, 2); ?></td>
   <td><?php echo number_format($totalVentaKg, 2); ?></td>
   <td><?php echo number_format($totalContableKg, 2); ?></td>
-<<<<<<< HEAD
 <?php foreach ($litrosPorEstacion as $litros): ?>
     <td><?php echo number_format($litros, 2); ?> Lts</td>
 <?php endforeach; ?>  <td><?php echo number_format($diferencia, 2); ?></td>
-=======
-  <td><?php echo number_format($totalKgReal, 2); ?></td> <!-- REAL corregido -->
-  <td><?php echo number_format($diferencia, 2); ?></td>
->>>>>>> bf3a20454546eee43f9851a974acde8478fa3e49
   <td><?php echo number_format($porcentajeDiferencia, 2); ?>%</td>
 </tr>
 <?php endforeach; ?>
