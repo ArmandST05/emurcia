@@ -17,7 +17,7 @@ if ($_SESSION["tipoUsuario"] == "su" || $_SESSION["tipoUsuario"] == "uc" || $_SE
   $companiaId = 0;
   $zonaId = $_SESSION['zonaId'];
 }
-$zonaId = $_SESSION['zonaId'];
+
 if ($companiaId != 0) {
   //Búsqueda por compañía - Obtener autoconsumos de todas las zonas de la compañía
   if($productoNombre != "0") $autoconsumos = $modelAutoconsumo->obtenerAutoconsumosCompaniaProductoFecha($companiaId,$productoNombre, $fechaInicial, $fechaFinal);
@@ -46,23 +46,13 @@ foreach ($autoconsumos as $autoconsumo) {
     <a href="#">Autoconsumos</a>
   </div>
 </div>
+
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
   <h1 class="h3 mb-0 text-gray-800">Autoconsumos</h1>
-  <div>
-    <?php if ($_SESSION["tipoUsuario"] == "u") : ?>
-      <a class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" href="index.php?action=autoconsumos/nuevo.php">Nuevo</a>
-    <?php endif; ?>
-
-    <?php
-    // Mostrar solo si la zona está permitida
-    $zonasPermitidas = [1, 3, 5, 8];
-    if (in_array($_SESSION["zonaId"], $zonasPermitidas)) :
-    ?>
-      <a class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm ml-2" href="index.php?action=autoconsumos/index_estaciones.php">Autoconsumos estaciones</a>
-    <?php endif; ?>
-  </div>
+  <?php if($_SESSION["tipoUsuario"] == "u"):?>
+  <a class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" href="index.php?action=autoconsumos/nuevo.php">Nuevo</a>
+  <?php endif;?>
 </div>
-
 
 <!-- Content Row -->
 <div class="row">
@@ -264,7 +254,7 @@ foreach ($autoconsumos as $autoconsumo) {
                         <td><?php echo $autoconsumoDatos["rendimiento"]; ?></td>
                         <td>
                             <?php if (!empty($autoconsumoDatos['comprobante_autoconsumo'])): ?>
-                                <a href="<?php echo 'https://www.credidesgrupoemurcia.com.mx/view/autoconsumos/comprobantes/' . basename($autoconsumoDatos['comprobante_autoconsumo']); ?>" download>
+                                <a href="<?php echo 'https://www.credidesgrupoemurcia.com.mx//view/autoconsumos/comprobantes/' . basename($autoconsumoDatos['comprobante_autoconsumo']); ?>" download>
                                     Descargar comprobante
                                 </a>
                             <?php else: ?>
