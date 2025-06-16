@@ -156,9 +156,10 @@ $totalGralDiferenciaLts = 0;
               <th>Kilos</th>
               <th>Litros</th>
               <th>Cilindros</th>
-              <th>Teórico L</th>
               <th>Real Lts</th>
+              <th>Teórico L</th>
               <th>Diferencia Lts</th>
+              <th>Porcentaje %</th>
             </tr>
           </thead>
           <tbody>
@@ -213,6 +214,7 @@ $totalGralDiferenciaLts = 0;
                 $totalTeoricoLts += $teoricoLecturaLts;
                 $totalRealLts += $realPorcentajeLts;
                 $totalDiferenciaLts += $diferenciaLts;
+                $totalPorcentaje = ($totalDiferenciaLts / $totalRealLts)*100;
               ?>
                 <!--Fechas -->
                 <tr data-tt-id="f<?php echo $claveFecha ?>" data-tt-parent-id="r<?php echo $claveRuta ?>" class="text-right">
@@ -220,12 +222,10 @@ $totalGralDiferenciaLts = 0;
                   <td><?php echo number_format($kilos, 2); ?></td>
                   <td><?php echo number_format($litros, 2); ?></td>
                   <td><?php echo number_format($cilindros, 2) ?></td>
-                  <!--<td><?php echo number_format($teoricoLecturaKg, 2); ?></td>-->
                   <td><?php echo number_format($teoricoLecturaLts, 2); ?></td>
-                  <!--<td><?php echo number_format($realPorcentajeKg, 2); ?></td>-->
                   <td><?php echo number_format($realPorcentajeLts, 2); ?></td>
-                  <!--<td><?php echo number_format($diferenciaKg, 2); ?></td>-->
                   <td class="<?php echo ($diferenciaLts < 0) ? 'text-danger' : ''; ?>"><b><?php echo number_format($diferenciaLts, 2); ?></b></td>
+                  <td><?php echo number_format($totalPorcentaje);?> %</td>
                 </tr>
                 <!--Fechas -->
               <?php endforeach; ?>
